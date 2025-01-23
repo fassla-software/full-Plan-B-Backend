@@ -2,8 +2,10 @@
 
 namespace Modules\Service\Entities;
 
+use App\Models\HeavyEquipment;
 use App\Models\JobPost;
 use App\Models\Project;
+use App\Models\SiteServiceCar;
 use App\Models\Skill;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -49,5 +51,15 @@ class Category extends Model
     public function blogs()
     {
         return $this->hasMany(BlogPost::class,'category_id','id');
+    }
+
+    public function heavy_equipment()
+    {
+        return $this->hasMany(HeavyEquipment::class,'category_id','id');
+    }
+
+    public function site_service_cars()
+    {
+        return $this->hasMany(SiteServiceCar::class,'category_id','id');
     }
 }
