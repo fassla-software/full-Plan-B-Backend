@@ -1,0 +1,11 @@
+{
+    "name": "GeneralSettings",
+    "alias": "generalsettings",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\GeneralSettings\\Providers\\GeneralSettingsServiceProvider"
+    ],
+    "files": []
+}

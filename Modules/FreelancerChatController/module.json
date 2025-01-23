@@ -1,0 +1,11 @@
+{
+    "name": "FreelancerChatController",
+    "alias": "freelancerchatcontroller",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\FreelancerChatController\\Providers\\FreelancerChatControllerServiceProvider"
+    ],
+    "files": []
+}

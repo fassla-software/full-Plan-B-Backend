@@ -1,0 +1,19 @@
+{
+    "name": "CoinPaymentGateway",
+    "alias": "coinpaymentgateway",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\CoinPaymentGateway\\Providers\\CoinPaymentGatewayServiceProvider"
+    ],
+    "files": [],
+    "xilancerMetaData": {
+        "plugin_type": "external",
+        "pageBuilderAddon": [
+            {
+                "addon": "Modules\\CoinPaymentGateway\\Http\\PageBuilder\\Header\\HeaderStyleCustom"
+            }
+        ]
+    }
+}

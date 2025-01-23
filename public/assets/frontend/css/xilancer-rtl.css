@@ -1,0 +1,216 @@
+.dashboard__right {
+    margin-left: 0;
+    margin-right: 320px;
+}
+
+/* dsfgdsfgdfg */
+@media only screen and (max-width:991.98px){
+    .nav-container{
+        flex-direction: row-reverse;
+    }
+}
+.navbar-area .nav-container .navbar-collapse .navbar-nav li a,
+.navbar-area .nav-container .navbar-collapse .navbar-nav li.menu-item-has-children>a{
+    padding: 10px 0 10px 30px ;
+}
+.navbar-area .nav-container .navbar-collapse .navbar-nav li.menu-item-has-children>a::after{
+    position: absolute;
+    top: 50%;
+    left: 17px;
+}
+@media only screen and (max-width:991.98px){
+    .navbar-area .nav-container .navbar-collapse .navbar-nav li{
+        text-align: right;
+    }
+}
+.categorySub-list{
+    flex-direction: row-reverse;
+    .hidden_item{
+        visibility: visible !important;
+    }
+}
+@media only screen and (max-width:574.98px){
+    .categorySub-arrow {
+        position: relative;
+        width: 0;
+        margin-left: 22px;
+    }
+    .categorySub-arrow.right-arrow {
+        margin-right: 0px;
+    }
+}
+.banner-single-content-title::before{
+    left: auto;
+    right: -40px;
+}
+.banner-right-content-shape img:nth-child(1){
+    left: auto;
+    right: -40px;
+}
+.banner-right-content-shape img:nth-child(2) {
+    right: auto;
+    left: -40px;
+}
+.append-team .slick-arrow, .append-jobs .slick-arrow, .append-project .slick-arrow, .append-freelancer .slick-arrow, .append-search .slick-arrow {
+    transform: rotate(180deg);
+}
+
+.faq-contents .faq-item .faq-title {
+    margin-left: 30px;
+    margin-right: 0;
+}
+.faq-contents .faq-item .faq-title::after {
+    right: auto;
+    left: 4px;
+}
+.faq-question-padding {
+    padding-right: unset;
+    padding-left: 100px;
+}
+a[data-bs-target="#questionModal"] i{
+    transform: rotate(180deg);
+}
+.slick-track {
+    margin-left: auto;
+    margin-right: 0;
+}
+.append-projectCategory .slick-arrow, .append-jobCategory .slick-arrow, .append-testimonial .slick-arrow, .append-testimonial2 .slick-arrow{
+    transform: rotate(180deg);
+}
+.newsletter-contents-form .single-input .form--control{
+    padding-left: 100px;
+    padding-right: 20px;
+}
+.newsletter-contents-form .single-input button {
+    right: auto;
+    left: 0px;
+}
+.shop-close-content{
+    left: auto;
+    right: -100%;
+}
+.shop-close-content.active{
+    left: auto;
+    right: 0;
+}
+.shop-close-content-icon{
+    right: auto;
+    left: -40px;
+}
+/*Footer Part*/
+.footer-widget-link-list-item a{
+    padding-left: auto;
+    padding-right: 20px;
+}
+.footer-widget-link-list-item a::before {
+    content: "\f105";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    position: absolute;
+    left: auto;
+    right: 0;
+    top: -1px;
+    transform: rotateY(180deg);
+}
+/*Login Form*/
+.login-right::before{
+    left: auto;
+    right: -50px;
+    border-radius:0 20px 20px 0;
+}
+.toggle-password {
+    position: absolute;
+    bottom: 7px;
+    right: auto;
+    left: 20px;
+    cursor: pointer;
+}
+/*Jobs page*/
+.inner-menu li:not(:last-child), .breadcrumb-contents-list-item:not(:last-child) {
+    padding-right: unset;
+    padding-left: 20px;
+}
+.inner-menu li:not(:last-child)::after, .breadcrumb-contents-list-item:not(:last-child)::after {
+    position: absolute;
+    right: auto;
+    left: -8px;
+    transform: translateY(-50%) rotateY(180deg);
+}
+.inner-menu li:not(:last-child), .breadcrumb-contents-list-item:not(:first-child) {
+    padding-left: auto;
+    padding-right: 20px;
+}
+.shop-contents-wrapper .shop-sidebar-content{
+    margin-right: auto;
+    margin-left: 24px;
+}
+.single-shop-left-title .title::after{
+    right: auto;
+    left: 0;
+}
+#set_price_range{
+    transform: rotateY(180deg);
+}
+/*About page*/
+.about-wrapper-left{
+    padding-right: auto;
+    padding-left: 50px;
+}
+.section-title.text-left {
+    text-align: right;
+}
+.about-counter-item:not(:last-child) {
+    padding-right: unset;
+    padding-left: 20px;
+    margin-right: unset;
+    margin-left: 20px;
+}
+.about-counter-item:not(:last-child):after{
+    right: auto;
+    left: 0;
+}
+/* Profile Icon */
+.navbar-author-wrapper{
+    left: 0;
+    right: auto;
+}
+.bookmark-wrap, .navbar-right-notification-wrapper{
+    right: auto;
+    left: 0;
+}
+.setup-footer-right{
+    transform: rotate(180deg);
+}
+.dynamic-page-content-wrap {
+    text-align: right;
+}
+.dynamic-page-content-wrap > p {
+    text-align: right !important;
+}
+/*Live chat*/
+.chat-wrapper-contact-list-thumb .notification-dots {
+    right: auto;
+    left: 0;
+}
+.section-title .subtitle::before {
+    left: auto;
+    right:105%;
+}
+
+.profile-settings-menu-inner.active {
+    left: auto;
+    right: 0px;
+}
+@media (min-width: 300px) and (max-width: 991.98px) {
+    .profile-settings-menu-inner {
+        left:auto;
+        right: -100%;
+    }
+}
+.profile-close {
+    right: auto;
+    left: -35px;
+}
+.banner-right-content-bottom {
+    left : -45px
+}

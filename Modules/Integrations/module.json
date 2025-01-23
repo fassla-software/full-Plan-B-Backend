@@ -1,0 +1,30 @@
+{
+    "name": "Integrations",
+    "alias": "integrations",
+    "version" : "1.0.0",
+    "description": "A plugin to manage integrations",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Integrations\\Providers\\IntegrationsServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": [],
+    "xilancerMetaData": {
+        "hooks": {
+            "head_start": [
+                "tracking-just-after-head-open"
+            ],
+            "head_end": [
+                "tracking-before-head"
+            ],
+            "body_start": [
+                "tracking-after-body-open"
+            ],
+            "body_end": [
+                "tracking-before-body-close"
+            ]
+        }
+    }
+}

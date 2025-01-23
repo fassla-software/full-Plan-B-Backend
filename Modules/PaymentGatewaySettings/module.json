@@ -1,0 +1,11 @@
+{
+    "name": "PaymentGatewaySettings",
+    "alias": "paymentgatewaysettings",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\PaymentGatewaySettings\\Providers\\PaymentGatewaySettingsServiceProvider"
+    ],
+    "files": []
+}

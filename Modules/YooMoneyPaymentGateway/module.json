@@ -1,0 +1,14 @@
+{
+    "name": "YooMoneyPaymentGateway",
+    "alias": "yoomoneypaymentgateway",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\YooMoneyPaymentGateway\\Providers\\YooMoneyPaymentGatewayServiceProvider"
+    ],
+    "files": [],
+    "xilancerMetaData": {
+        "plugin_type": "external"
+    }
+}

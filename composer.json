@@ -1,0 +1,106 @@
+{
+    "name": "laravel/laravel",
+    "type": "project",
+    "description": "The Laravel Framework.",
+    "keywords": ["framework", "laravel"],
+    "license": "MIT",
+    "require": {
+        "php": "^8.1.0",
+        "barryvdh/laravel-dompdf": "^2.0",
+        "brian2694/laravel-toastr": "^5.57",
+        "doctrine/dbal": "^3.6",
+        "endroid/qr-code": "^5.0",
+        "google/apiclient": "^2.17",
+        "guzzlehttp/guzzle": "^7.2",
+        "intervention/image": "^2.7",
+        "kkomelin/laravel-translatable-string-exporter": "^1.21",
+        "kreait/laravel-firebase": "^5.9",
+        "laravel/framework": "^10.0",
+        "laravel/sanctum": "^3.3",
+        "laravel/socialite": "^5.12",
+        "laravel/tinker": "^2.7",
+        "laravel/ui": "^4.1",
+        "league/flysystem-aws-s3-v3": "^3.28",
+        "mews/purifier": "^3.3",
+        "nwidart/laravel-modules": "^10.0",
+        "php-http/message-factory": "^1.1",
+        "pion/laravel-chunk-upload": "^1.5",
+        "pragmarx/google2fa-laravel": "^2.1",
+        "pusher/pusher-php-server": "^7.2",
+        "riskihajar/terbilang": "^2.0",
+        "spatie/laravel-permission": "^5.11",
+        "symfony/http-client": "^6.0",
+        "symfony/mailgun-mailer": "^6.0",
+        "symfony/postmark-mailer": "^6.0",
+        "xgenious/installer": "^1.5.0",
+        "xgenious/paymentgateway": "^4.1.0",
+        "xgenious/xgapiclient": "^3.0.2"
+    },
+    "require-dev": {
+        "fakerphp/faker": "^1.9.1",
+        "laravel/pint": "^1.0",
+        "laravel/sail": "^1.0.1",
+        "mockery/mockery": "^1.4.4",
+        "nunomaduro/collision": "^7.0",
+        "phpunit/phpunit": "^10.0",
+        "spatie/laravel-ignition": "^2.0"
+    },
+    "autoload": {
+        "files": [
+            "app/Helper/funtions.php",
+            "app/Helper/helpers.php",
+            "app/Helper/module-helper.php"
+
+        ],
+        "psr-4": {
+            "App\\": "app/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/",
+            "plugins\\": "plugins/",
+            "Modules\\": "Modules/",
+            "Support\\": "Support/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+            "@php artisan package:discover --ansi"
+        ],
+        "post-update-cmd": [
+            "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
+        ],
+        "post-root-package-install": [
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+        ],
+        "post-create-project-cmd": [
+            "@php artisan key:generate --ansi"
+        ]
+    },
+    "extra": {
+        "laravel": {
+            "dont-discover": []
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "php-http/discovery": true
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/Sharifur/paymentgateway.git"
+        }
+    ]
+}
