@@ -17,184 +17,149 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use App\Models\HeavyEquipment;
 
 class ProjectController extends Controller
 {
+    public function get_view()
+{
+    return view('your_blade_view');
+}
+
     
-    // project create
     public function create_project(Request $request)
     {
-        if($request->isMethod('post'))
-        {
+        if ($request->isMethod('post')) {
             $request->validate([
                 'category'=>'required',
-                'project_title'=>'required|min:20|max:100',
-                'project_description'=>'required|min:50',
-                'slug'=>'required|max:191|unique:projects,slug',
-                'image'=>'required|mimes:jpg,jpeg,png,bmp,tiff,svg|max:5120',
-                'basic_revision'=>'required|numeric|integer|max:1000',
-                'basic_regular_charge'=>'required|numeric|integer',
-                'basic_delivery'=>'required|string|max:191',
-                'checkbox_or_numeric_title'=>'required',
+                'size'=>'required|string|max:191',
+                'model'=>'required|string|max:191',
+                'year_of_manufacture'=>'required|numeric|digits:4',
+                'moves_on'=>'required|string|max:191',
+                'current_equipment_location'=>'required|string|max:191',
+                'data_certificate_image'=>'required|mimes:jpg,jpeg,png,bmp,tiff,svg|max:5120',
+                'driver_license_front_image'=>'required|mimes:jpg,jpeg,png,bmp,tiff,svg|max:5120',
+                'driver_license_back_image'=>'required|mimes:jpg,jpeg,png,bmp,tiff,svg|max:5120',
+                'additional_equipment_images'=>'required|mimes:jpg,jpeg,png,bmp,tiff,svg|max:5120',
+                'special_rental_conditions'=>'nullable|string',
+                'blade_width'=>'nullable|numeric',
+                'blade_width_near_digging_arm'=>'nullable|numeric',
+                'engine_power'=>'nullable|numeric',
+                'milling_blade_width'=>'nullable|numeric',
+                'sprinkler_system_type'=>'nullable|string|max:191',
+                'tank_capacity'=>'nullable|numeric',
+                'panda_width'=>'nullable|numeric',
+                'has_bitumen_temp_gauge'=>'nullable|boolean',
+                'has_bitumen_level_gauge'=>'nullable|boolean',
+                'paving_range'=>'nullable|string|max:191',
+                'max_equipment_load'=>'nullable|numeric',
+                'boom_length'=>'nullable|numeric',
+                'load_at_max_boom_height'=>'nullable|numeric',
+                'load_at_max_horizontal_boom_extension'=>'nullable|numeric',
+                'max_lifting_point'=>'nullable|numeric',
+                'attachments'=>'nullable|string',
+                'has_tank_discharge_pump'=>'nullable|boolean',
+                'has_band_sprinkler_bar'=>'nullable|boolean',
+                'has_discharge_pump_with_liters_meter'=>'nullable|boolean'
             ]);
-
-            $user_id  = auth('sanctum')->user()->id;
-            $slug = !empty($request->slug) ? $request->slug : $request->project_title;
-            $generated_slug = Str::slug(purify_html($slug));
-
-            $slugs = Project::select('slug')->get();
-            foreach($slugs as $slug){
-                if($slug->slug == $generated_slug){
-                    return response()->json([
-                        'msg'=>('Slug already exists')
-                    ])->setStatusCode(422);
-                }
-            }
-
-
-            if(get_static_option('project_auto_approval') == 'yes'){
-                $project_auto_approval = 1;
-                $project_approve_request = 1;
-            }else{
-                $project_auto_approval=0;
-                $project_approve_request=0;
-            }
-
-            $standard_title = null;
-            $premium_title = null;
-            $standard_regular_charge = null;
-            $standard_discount_charge = null;
-            $premium_regular_charge = null;
-            $premium_discount_charge = null;
-
-            if($request->offer_packages_available_or_not == 1){
-                $standard_title = 'Standard';
-                $premium_title = 'premium';
-                $standard_regular_charge = $request->standard_regular_charge;
-                $standard_discount_charge = $request->standard_discount_charge;
-                $premium_regular_charge = $request->premium_regular_charge;
-                $premium_discount_charge = $request->premium_discount_charge;
-            }
-
+    
+            $user_id = auth()->user()->id;
+    
             DB::beginTransaction();
             try {
-                $imageName = '';
-                $upload_folder = 'project';
+                $upload_folder = 'heavy_equipment';
                 $storage_driver = Storage::getDefaultDriver();
-
-                if ($image = $request->file('image')) {
-                    $imageName = time().'-'.uniqid().'.'.$image->getClientOriginalExtension();
-
-                    if (cloudStorageExist() && in_array(get_static_option('storage_driver'), ['s3', 'cloudFlareR2', 'wasabi'])) {
-                        add_frontend_cloud_image_if_module_exists($upload_folder, $image, $imageName,'public');
-                    }else{
-                        $image->move('assets/uploads/project', $imageName);
+                $imageNames = [];
+    
+                $imageFields = [
+                    'data_certificate_image', 'driver_license_front_image', 
+                    'driver_license_back_image', 'additional_equipment_images'
+                ];
+    
+                foreach ($imageFields as $field) {
+                    if ($image = $request->file($field)) {
+                        $imageName = time() . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
+                        $imageNames[$field] = $imageName;
+    
+                        if (cloudStorageExist() && in_array(get_static_option('storage_driver'), ['s3', 'cloudFlareR2', 'wasabi'])) {
+                            add_frontend_cloud_image_if_module_exists($upload_folder, $image, $imageName,'public');
+                        } else {
+                            $image->move('assets/uploads/heavy_equipment', $imageName);
+                        }
+                    } else {
+                        $imageNames[$field] = '';
                     }
                 }
-
-                $project = Project::create([
-                    'user_id'=>$user_id,
+    
+                HeavyEquipment::create([
                     'category_id'=>$request->category,
-                    'title'=>$request->project_title,
-                    'slug' => Str::slug(purify_html($slug),'-',null),
-                    'description'=>$request->project_description,
-                    'image'=>$imageName,
-                    'basic_title'=>'Basic',
-                    'standard_title'=>$standard_title,
-                    'premium_title'=>$premium_title,
-                    'basic_revision'=>$request->basic_revision ?? 1,
-                    'standard_revision'=>$request->standard_revision,
-                    'premium_revision'=>$request->premium_revision,
-                    'basic_delivery'=>$request->basic_delivery,
-                    'standard_delivery'=>$request->standard_delivery,
-                    'premium_delivery'=>$request->premium_delivery,
-                    'basic_regular_charge'=>$request->basic_regular_charge,
-                    'basic_discount_charge'=>$request->basic_discount_charge,
-                    'standard_regular_charge'=>$standard_regular_charge,
-                    'standard_discount_charge'=>$standard_discount_charge,
-                    'premium_regular_charge'=>$premium_regular_charge,
-                    'premium_discount_charge'=>$premium_discount_charge,
-                    'project_on_off'=>1,
-                    'status'=>$project_auto_approval,
-                    'project_approve_request'=>$project_approve_request,
-                    'offer_packages_available_or_not'=>$request->offer_packages_available_or_not,
-                    'load_from' => in_array($storage_driver,['CustomUploader']) ? 0 : 1, //added for cloud storage 0=local 1=cloud
+                    'size'=>$request->size,
+                    'model'=>$request->model,
+                    'year_of_manufacture'=>$request->year_of_manufacture,
+                    'moves_on'=>$request->moves_on,
+                    'current_equipment_location'=>$request->current_equipment_location,
+                    'data_certificate_image'=>$imageNames['data_certificate_image'],
+                    'driver_license_front_image'=>$imageNames['driver_license_front_image'],
+                    'driver_license_back_image'=>$imageNames['driver_license_back_image'],
+                    'additional_equipment_images'=>$imageNames['additional_equipment_images'],
+                    'special_rental_conditions'=>$request->special_rental_conditions,
+                    'blade_width'=>$request->blade_width,
+                    'blade_width_near_digging_arm'=>$request->blade_width_near_digging_arm,
+                    'engine_power'=>$request->engine_power,
+                    'milling_blade_width'=>$request->milling_blade_width,
+                    'sprinkler_system_type'=>$request->sprinkler_system_type,
+                    'tank_capacity'=>$request->tank_capacity,
+                    'panda_width'=>$request->panda_width,
+                    'has_bitumen_temp_gauge'=>$request->has_bitumen_temp_gauge,
+                    'has_bitumen_level_gauge'=>$request->has_bitumen_level_gauge,
+                    'paving_range'=>$request->paving_range,
+                    'max_equipment_load'=>$request->max_equipment_load,
+                    'boom_length'=>$request->boom_length,
+                    'load_at_max_boom_height'=>$request->load_at_max_boom_height,
+                    'load_at_max_horizontal_boom_extension'=>$request->load_at_max_horizontal_boom_extension,
+                    'max_lifting_point'=>$request->max_lifting_point,
+                    'attachments'=>$request->attachments,
+                    'has_tank_discharge_pump'=>$request->has_tank_discharge_pump,
+                    'has_band_sprinkler_bar'=>$request->has_band_sprinkler_bar,
+                    'has_discharge_pump_with_liters_meter'=>$request->has_discharge_pump_with_liters_meter,
+                    'created_at'=>now(),
+                    'updated_at'=>now()
                 ]);
-                $project->project_sub_categories()->attach(json_decode($request->subcategory,true));
-
-                $requestData= [];
-                foreach(json_decode($request->checkbox_or_numeric_title,true) as $key => $attr){
-                    $fallback_value = $attr['checkbox_or_numeric_select'] == 'checkbox' ? "off" : 0;
-                    $requestData["checkbox_or_numeric_select"][] = $attr['checkbox_or_numeric_select'];
-                    $requestData["check_numeric_title"][] = $attr['check_numeric_title'];
-                    $requestData["basic_check_numeric"][] = $attr['basic_check_numeric'] ?? $fallback_value;
-                    $requestData["standard_check_numeric"][] = $attr['standard_check_numeric'] ?? $fallback_value;
-                    $requestData["premium_check_numeric"][] = $attr['premium_check_numeric'] ?? $fallback_value;
-                }
-
-                $data = (array) Validator::make($requestData, [
-                    'checkbox_or_numeric_select.*' => 'required|max:100',
-                    'check_numeric_title.*' => 'required|max:100',
-                    'basic_check_numeric.*' => 'required|max:1000',
-                    'standard_check_numeric.*' => 'required',
-                    'premium_check_numeric.*' => 'required',
-                ])->validated();
-
-                $arr = [];
-                foreach($data['check_numeric_title'] as $key => $attr):
-
-                    $arr[] = [
-                        'user_id' => $user_id,
-                        'create_project_id' => $project->id,
-                        'check_numeric_title' => $attr,
-                        'basic_check_numeric' => $data["basic_check_numeric"][$key],
-                        'standard_check_numeric' => $data["standard_check_numeric"][$key],
-                        'premium_check_numeric' => $data["premium_check_numeric"][$key],
-                        'type' => $data["checkbox_or_numeric_select"][$key] ?? null,
-                        'created_at'=> date('Y-m-d H:i:s'),
-                        'updated_at'=> date('Y-m-d H:i:s'),
-                    ];
-                endforeach;
-
-                ProjectAttribute::insert($arr);
-
+    
                 DB::commit();
-            }catch(Exception $e){
-
+            } catch (Exception $e) {
                 DB::rollBack();
-
-                if ($request->file('image')) {
-                    $delete_img = 'assets/uploads/project/'.$imageName;
-                    File::delete($delete_img);
+                foreach ($imageNames as $imageName) {
+                    if (!empty($imageName)) {
+                        File::delete('assets/uploads/heavy_equipment/' . $imageName);
+                    }
                 }
-
                 return response()->json([
-                    'msg'=>('Basic check numeric field is required')
+                    'msg' => 'Error occurred during project creation'
                 ])->setStatusCode(422);
             }
-
-            try {
-                $message = get_static_option('project_create_email_message') ?? __('A new project is just created.');
-                $message = str_replace(["@project_id"],[$project->id], $message);
-                Mail::to(get_static_option('site_global_email'))->send(new BasicMail([
-                    'subject' => get_static_option('project_create_email_subject') ?? __('Project Create Email'),
-                    'message' => $message
-                ]));
-            }catch (\Exception $e) {}
-
-            //create project notification to admin
-            AdminNotification::create([
-                'identity'=>$project->id,
-                'user_id'=>$user_id,
-                'type'=>__('Create Project'),
-                'message'=>__('A new project has been created'),
-            ]);
+    
+            // try {
+            //     $message = get_static_option('project_create_email_message') ?? 'A new project is just created.';
+            //     $message = str_replace(["@project_id"], [$project->id], $message);
+            //     Mail::to(get_static_option('site_global_email'))->send(new BasicMail([
+            //         'subject' => get_static_option('project_create_email_subject') ?? 'Project Create Email',
+            //         'message' => $message
+            //     ]));
+            // } catch (Exception $e) {}
+    
+            // AdminNotification::create([
+            //     'identity' => $project->id,
+            //     'user_id' => $user_id,
+            //     'type' => 'Create Project',
+            //     'message' => 'A new project has been created',
+            // ]);
+    
             return response()->json([
-                'msg'=>('Project Successfully Created')
+                'msg' => 'Project Successfully Created'
             ]);
         }
-
     }
-
+    
     
 }
