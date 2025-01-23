@@ -1,30 +1,21 @@
 <?php
 
-namespace App\Http\Controllers\Api\Freelancer;
+namespace App\Http\Controllers\Frontend\Freelancer;
 
+use App\Http\Controllers\Api\Freelancer\Exception;
 use App\Http\Controllers\Controller;
-use App\Mail\BasicMail;
-use App\Models\AdminNotification;
-use App\Models\Project;
-use App\Models\ProjectAttribute;
-use App\Models\ProjectHistory;
-use App\Models\User;
+use App\Models\HeavyEquipment;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
-use App\Models\HeavyEquipment;
 
-class ProjectController extends Controller
+class HeavyEquipmentController extends Controller
 {
     public function get_view()
-{
-    return view('your_blade_view');
-}
+    {
+        return view('frontend.user.freelancer.heavy');
+    }
 
     
     public function create_project(Request $request)
@@ -37,10 +28,10 @@ class ProjectController extends Controller
                 'year_of_manufacture'=>'required|numeric|digits:4',
                 'moves_on'=>'required|string|max:191',
                 'current_equipment_location'=>'required|string|max:191',
-                'data_certificate_image'=>'required|mimes:jpg,jpeg,png,bmp,tiff,svg|max:5120',
-                'driver_license_front_image'=>'required|mimes:jpg,jpeg,png,bmp,tiff,svg|max:5120',
-                'driver_license_back_image'=>'required|mimes:jpg,jpeg,png,bmp,tiff,svg|max:5120',
-                'additional_equipment_images'=>'required|mimes:jpg,jpeg,png,bmp,tiff,svg|max:5120',
+                'data_certificate_image'=>'nullable|mimes:jpg,jpeg,png,bmp,tiff,svg|max:5120',
+                'driver_license_front_image'=>'nullable|mimes:jpg,jpeg,png,bmp,tiff,svg|max:5120',
+                'driver_license_back_image'=>'nullable|mimes:jpg,jpeg,png,bmp,tiff,svg|max:5120',
+                'additional_equipment_images'=>'nullable|mimes:jpg,jpeg,png,bmp,tiff,svg|max:5120',
                 'special_rental_conditions'=>'nullable|string',
                 'blade_width'=>'nullable|numeric',
                 'blade_width_near_digging_arm'=>'nullable|numeric',
@@ -62,9 +53,7 @@ class ProjectController extends Controller
                 'has_band_sprinkler_bar'=>'nullable|boolean',
                 'has_discharge_pump_with_liters_meter'=>'nullable|boolean'
             ]);
-    
-            $user_id = auth()->user()->id;
-    
+
             DB::beginTransaction();
             try {
                 $upload_folder = 'heavy_equipment';
