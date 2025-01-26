@@ -33,66 +33,78 @@ class NewCategoryController extends Controller
 
     public function storeData(Request $request, $subCategory)
     {
-        // Initialize $imageNames as an empty array to avoid "undefined variable" error
-        $imageNames = [];
-
-        // Start transaction
         DB::beginTransaction();
-
+    
         try {
-            // Validate data using the specific request class
-            $requests = [
-                'heavy_equipment' => HeavyEquipmentRequest::class,
-                'site_service_car' => SiteServiceCarRequest::class,
-                // Add other sub-category request classes here
+            // Base validation rules
+            $validationRules = [
+                'category_id' => 'required|integer',
+                'size' => 'nullable|string|max:255',
+                'model' => 'nullable|string|max:255',
+                'year_of_manufacture' => 'nullable|integer',
+                'moves_on' => 'nullable|string|max:255',
+                'current_equipment_location' => 'nullable|string|max:255',
+                'special_rental_conditions' => 'nullable|string',
             ];
-
-            if (!isset($requests[$subCategory])) {
-                abort(404, 'Sub-category not found');
+    
+            // Additional validation for specific subcategories
+            if ($subCategory === 'heavy_equipment') {
+                $validationRules = array_merge($validationRules, [
+                    'data_certificate_image' => 'nullable|file|mimes:jpg,jpeg,png',
+                    'driver_license_front_image' => 'nullable|file|mimes:jpg,jpeg,png',
+                    'driver_license_back_image' => 'nullable|file|mimes:jpg,jpeg,png',
+                ]);
+            } elseif ($subCategory === 'site_service_cars') {
+                $validationRules = array_merge($validationRules, [
+                    'image' => 'nullable|file|mimes:jpg,jpeg,png',
+                ]);
+            } else {
+                throw new \Exception('Invalid sub-category provided.');
             }
-
-            // Resolve and validate using the specific request class
-            $validatedData = app($requests[$subCategory])->validated();
-
-            // Handle file uploads for equipment images
-            $imageNames = $this->handleEquipmentImages($request, $subCategory);
-
-            // Merge the image names with the validated data
-            $validatedData = array_merge($validatedData, $imageNames);
-
-            // Map sub-category to model
-            $models = [
-                'heavy_equipment' => HeavyEquipment::class,
-                'site_service_car' => SiteServiceCar::class,
-                // Add other sub-category models here
-            ];
-            $model = $models[$subCategory];
-
-            // Uncomment to store the data in the database
-            // $model::create($validatedData);
-
-            // Commit the transaction
-            DB::commit();
-
-            return $validatedData;
-
-        } catch (\Exception $e) {
-            // Rollback transaction and delete uploaded images if something fails
-            DB::rollBack();
-
-            // Delete images if uploaded
-            foreach ($imageNames as $field => $imageName) {
-                if (!empty($imageName)) {
-                    // Adjust image path as per your storage method
-                    $imagePath = storage_path('app/public/assets/uploads/sub-category-images/' . $imageName);
-                    if (File::exists($imagePath)) {
-                        File::delete($imagePath);
-                    }
+    
+            // Validate the request
+            $validatedData = $request->validate($validationRules);
+    
+            // Debugging: Log validated data
+            \Log::info("Validated Data:", $validatedData);
+    
+            // Handle file uploads
+            $fileFields = ['data_certificate_image', 'driver_license_front_image', 'driver_license_back_image', 'image'];
+            foreach ($fileFields as $field) {
+                if ($request->hasFile($field)) {
+                    $validatedData[$field] = $request->file($field)->store("uploads/{$subCategory}", 'public');
                 }
             }
-
-            // Return a message or redirect to a previous page with error
-            return back()->withError('There was an error processing your request. Please try again.');
+    
+            // Debugging: Log after file uploads
+            \Log::info("Data after file uploads:", $validatedData);
+    
+            // Save data to the respective table
+            if ($subCategory === 'heavy_equipment') {
+                $saved = \App\Models\HeavyEquipment::create($validatedData);
+            } elseif ($subCategory === 'site_service_cars') {
+                $saved = \App\Models\SiteServiceCar::create($validatedData);
+            }
+    
+            // Debugging: Log if the model was saved successfully
+            if ($saved) {
+                \Log::info("Data saved successfully for {$subCategory}: ", $saved->toArray());
+            } else {
+                throw new \Exception("Failed to save data for {$subCategory}.");
+            }
+    
+            DB::commit();
+    
+            return redirect()->back()->with('success', ucfirst(str_replace('_', ' ', $subCategory)) . ' data saved successfully!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+    
+            // Debugging: Log the error
+            \Log::error("Error saving data for {$subCategory}: " . $e->getMessage());
+    
+            return redirect()->back()->with('error', 'An error occurred: ' . $e->getMessage());
         }
     }
+    
+    
 }
