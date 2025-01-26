@@ -7,6 +7,7 @@ use App\Http\Controllers\Frontend\CategoryJobController;
 use App\Http\Controllers\Frontend\CategoryProjectController;
 use App\Http\Controllers\Frontend\FormController;
 use App\Http\Controllers\Frontend\Freelancer\HeavyEquipmentController;
+use App\Http\Controllers\Frontend\Freelancer\NewCategoryController;
 use App\Http\Controllers\Frontend\FreelancerListController;
 use App\Http\Controllers\Frontend\FrontendController;
 use App\Http\Controllers\Frontend\FrontendHomeController;
@@ -29,10 +30,10 @@ require_once __DIR__ . '/client.php';
 require_once __DIR__ . '/freelancer.php';
 require_once __DIR__ . '/admin.php';
 
-
-Route::controller(HeavyEquipmentController::class)->group(function () {
-    Route::post('heavy/store', 'create_project')->name('heavy.store');
-    Route::get('heavy/view', 'get_view')->name('heavy.view');
+// new routes
+Route::controller(NewCategoryController::class)->group(function () {
+    Route::get('/form/{subCategory}', 'showForm')->name('form.show');
+    Route::post('/form/{subCategory}/store', 'storeData')->name('form.store');
 });
 
 
