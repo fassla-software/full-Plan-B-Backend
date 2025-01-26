@@ -45,9 +45,11 @@ trait ImageUploadTrait
                 'data_certificate_image', 'driver_license_front_image',
                 'driver_license_back_image', 'additional_equipment_images'
             ],
+            'site_service_car' => [
+                'data_certificate_image', 'driver_license_front_image',
+                'driver_license_back_image', 'additional_equipment_images'
+            ],
             // Add other sub-categories here and their respective image fields
-            // Example for light_equipment:
-            // 'light_equipment' => ['image_1', 'image_2']
         ];
 
         return $imageFields[$subCategory] ?? [];

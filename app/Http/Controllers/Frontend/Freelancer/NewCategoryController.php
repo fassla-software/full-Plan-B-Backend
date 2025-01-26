@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\Frontend\Freelancer;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CategoryRequest\HeavyEquipmentRequest;
+use App\Http\Requests\CategoryRequest\SiteServiceCarRequest;
+use App\Models\HeavyEquipment;
+use App\Models\SiteServiceCar;
 use App\Traits\ImageUploadTrait;
 use Illuminate\Http\Request;
-use App\Http\Requests\CategoryRequest\HeavyEquipmentRequest;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 
 class NewCategoryController extends Controller
@@ -15,7 +19,7 @@ class NewCategoryController extends Controller
     {
         $views = [
             'heavy_equipment' => 'forms.heavy_equipment',
-            //'light_equipment' => 'forms.light_equipment',
+            'site_service_car' => 'forms.site_service_car',
             // Add other sub-categories here
         ];
 
@@ -35,6 +39,7 @@ class NewCategoryController extends Controller
             // Validate data using the specific request class
             $requests = [
                 'heavy_equipment' => HeavyEquipmentRequest::class,
+                'site_service_car' => SiteServiceCarRequest::class,
                 // Add other sub-category request classes here
             ];
 
@@ -53,7 +58,8 @@ class NewCategoryController extends Controller
 
             // Map sub-category to model
             $models = [
-                'heavy_equipment' => \App\Models\HeavyEquipment::class,
+                'heavy_equipment' => HeavyEquipment::class,
+                'site_service_car' => SiteServiceCar::class,
                 // Add other sub-category models here
             ];
             $model = $models[$subCategory];
