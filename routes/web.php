@@ -37,6 +37,29 @@ Route::controller(NewCategoryController::class)->group(function () {
 });
 
 
+
+// Route for the first page to select a category
+Route::get('/form', function () {
+    return view('forms.select_category');
+})->name('form.select');
+
+// Route for the second page to display the form for the selected category
+Route::controller(NewCategoryController::class)->group(function () {
+    Route::get('/form/{subCategory}', 'showForm')->name('form.show');
+    Route::post('/form/{subCategory}/store', 'storeData')->name('form.store');
+});
+
+
+
+
+Route::post('/logout', function () {
+    Auth::logout();
+    return redirect('/'); // Redirect to the homepage or any other route
+})->name('logout');
+
+
+
+
 // frontend starts
 Route::group(['middleware' => ['globalVariable', 'maintains_mode','setlang']], function () {
 

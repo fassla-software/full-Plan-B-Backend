@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\File;
 class NewCategoryController extends Controller
 {
     use ImageUploadTrait;
+
     public function showForm($subCategory)
     {
         $views = [
@@ -32,6 +33,9 @@ class NewCategoryController extends Controller
 
     public function storeData(Request $request, $subCategory)
     {
+        // Initialize $imageNames as an empty array to avoid "undefined variable" error
+        $imageNames = [];
+
         // Start transaction
         DB::beginTransaction();
 
@@ -63,7 +67,9 @@ class NewCategoryController extends Controller
                 // Add other sub-category models here
             ];
             $model = $models[$subCategory];
-//            $model::create($validatedData);
+
+            // Uncomment to store the data in the database
+            // $model::create($validatedData);
 
             // Commit the transaction
             DB::commit();
