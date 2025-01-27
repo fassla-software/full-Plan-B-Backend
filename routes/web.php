@@ -30,13 +30,6 @@ require_once __DIR__ . '/client.php';
 require_once __DIR__ . '/freelancer.php';
 require_once __DIR__ . '/admin.php';
 
-// new routes
-Route::controller(NewCategoryController::class)->group(function () {
-    Route::get('/form/{subCategory}', 'showForm')->name('form.show');
-    Route::post('/form/{subCategory}/store', 'storeData')->name('form.store');
-});
-
-
 
 // Route for the first page to select a category
 Route::get('/form', function () {
