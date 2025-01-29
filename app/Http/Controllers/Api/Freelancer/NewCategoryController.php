@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Frontend\Freelancer;
+namespace App\Http\Controllers\Api\Freelancer;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CategoryRequest\HeavyEquipmentRequest;
@@ -69,8 +69,9 @@ class NewCategoryController extends Controller
         DB::commit();
 
         // Return success response
-        return back()->with('success', 'New category added successfully');
-
+        return response()->json([
+            'message' => ucfirst(str_replace('_', ' ', $subCategory)) . ' data saved successfully!'
+        ], 201); // 201 Created
 
     } catch (\Exception $e) {
         // Rollback transaction and delete uploaded images if something fails
@@ -89,7 +90,9 @@ class NewCategoryController extends Controller
         }
 
         // Return error response
-        return back()->with('error', $e->getMessage());
+        return response()->json([
+            'error' => 'There was an error processing your request. Please try again.'
+        ], 500); // 500 Internal Server Error
     }
 }
 

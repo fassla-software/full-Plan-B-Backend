@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-use App\Http\Controllers\Frontend\Freelancer\NewCategoryController;
+use App\Http\Controllers\Api\Freelancer\NewCategoryController;
 
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
