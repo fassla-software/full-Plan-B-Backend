@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+use App\Http\Controllers\Api\Freelancer\NewCategoryController;
+
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -20,6 +22,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 
 Route::group(['prefix'=>'v1', 'middleware' => 'setlang'],function(){
+    Route::get('category/{subCategory}/form', [NewCategoryController::class, 'getFormForApi']);
+    Route::post('category/{subCategory}/form', [NewCategoryController::class, 'storeData']);
 
     //freelancer route start
     Route::group(['prefix'=>'freelancer'],function(){

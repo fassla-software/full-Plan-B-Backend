@@ -6,6 +6,8 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Frontend\CategoryJobController;
 use App\Http\Controllers\Frontend\CategoryProjectController;
 use App\Http\Controllers\Frontend\FormController;
+use App\Http\Controllers\Frontend\Freelancer\HeavyEquipmentController;
+use App\Http\Controllers\Frontend\Freelancer\NewCategoryController;
 use App\Http\Controllers\Frontend\FreelancerListController;
 use App\Http\Controllers\Frontend\FrontendController;
 use App\Http\Controllers\Frontend\FrontendHomeController;
@@ -27,6 +29,28 @@ use Illuminate\Support\Facades\Route;
 require_once __DIR__ . '/client.php';
 require_once __DIR__ . '/freelancer.php';
 require_once __DIR__ . '/admin.php';
+
+
+// Route for the first page to select a category
+Route::get('/form', function () {
+    return view('forms.select_category');
+})->name('form.select');
+
+// Route for the second page to display the form for the selected category
+Route::controller(NewCategoryController::class)->group(function () {
+    Route::get('/form/{subCategory}', 'showForm')->name('form.show');
+    Route::post('/form/{subCategory}/store', 'storeData')->name('form.store');
+});
+
+
+
+
+Route::post('/logout', function () {
+    Auth::logout();
+    return redirect('/'); // Redirect to the homepage or any other route
+})->name('logout');
+
+
 
 
 // frontend starts

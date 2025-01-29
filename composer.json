@@ -23,6 +23,7 @@
         "league/flysystem-aws-s3-v3": "^3.28",
         "mews/purifier": "^3.3",
         "nwidart/laravel-modules": "^10.0",
+        "paytabscom/laravel_paytabs": "^1.8",
         "php-http/message-factory": "^1.1",
         "pion/laravel-chunk-upload": "^1.5",
         "pragmarx/google2fa-laravel": "^2.1",
@@ -33,7 +34,6 @@
         "symfony/mailgun-mailer": "^6.0",
         "symfony/postmark-mailer": "^6.0",
         "xgenious/installer": "^1.5.0",
-        "xgenious/paymentgateway": "^4.1.0",
         "xgenious/xgapiclient": "^3.0.2"
     },
     "require-dev": {
@@ -96,11 +96,6 @@
         }
     },
     "minimum-stability": "dev",
-    "prefer-stable": true,
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/Sharifur/paymentgateway.git"
-        }
-    ]
+    "prefer-stable": true
+    
 }
