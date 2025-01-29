@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Frontend\Freelancer;
 
+use App\Enums\MachineType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CategoryRequest\HeavyEquipmentRequest;
 use App\Http\Requests\CategoryRequest\SiteServiceCarRequest;
@@ -9,89 +10,96 @@ use App\Traits\ImageUploadTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Validation\Rule;
 
 class NewCategoryController extends Controller
 {
     use ImageUploadTrait;
 
-    public function showForm($subCategory)
+    public function showForm(Request $request, $subCategory)
     {
         $views = [
-            'heavy_equipment' => 'forms.heavy_equipment',
-            'site_service_car' => 'forms.site_service_car',
+            MachineType::heavyEquipment->value => 'forms.heavy_equipment',
+            MachineType::vehicleRental->value => 'forms.site_service_car',
             // Add other sub-categories here
         ];
+
+        $request->validate([
+            'equipment_type' => ['required', Rule::in(MachineType::values())],
+        ]);
+
+        $equipment_type = $request->equipment_type;
 
         if (!isset($views[$subCategory])) {
             abort(404, 'Sub-category not found');
         }
 
-        return view($views[$subCategory]);
+        return view($views[$subCategory], compact('subCategory', 'equipment_type'));
     }
 
     public function storeData(Request $request, $subCategory)
-{
-    // Start transaction
-    DB::beginTransaction();
+    {
+        // Start transaction
+        DB::beginTransaction();
 
-    try {
-        // Validate data using the specific request class
-        $requests = [
-            'heavy_equipment' => HeavyEquipmentRequest::class,
-            'site_service_car' => SiteServiceCarRequest::class,
-            // Add other sub-category request classes here
-        ];
+        try {
+            // Validate data using the specific request class
+            $requests = [
+                MachineType::heavyEquipment->value => HeavyEquipmentRequest::class,
+                MachineType::vehicleRental->value => SiteServiceCarRequest::class,
+                // Add other sub-category request classes here
+            ];
 
-        if (!isset($requests[$subCategory])) {
-            return response()->json(['error' => 'Sub-category not found'], 404);
-        }
+            if (!isset($requests[$subCategory])) {
+                return response()->json(['error' => 'Sub-category not found'], 404);
+            }
 
-        // Resolve and validate using the specific request class
-        $validatedData = app($requests[$subCategory])->validated();
+            // Resolve and validate using the specific request class
+            $validatedData = app($requests[$subCategory])->validated();
 
-        // Handle file uploads for equipment images
-        $imageNames = $this->handleEquipmentImages($request, $subCategory);
+            // Handle file uploads for equipment images
+            $imageNames = $this->handleEquipmentImages($request, $subCategory);
 
-        // Merge the image names with the validated data
-        $validatedData = array_merge($validatedData, $imageNames);
+            // Merge the image names with the validated data
+            $validatedData = array_merge($validatedData, $imageNames);
 
-        // Map sub-category to model
-        $models = [
-            'heavy_equipment' => \App\Models\HeavyEquipment::class,
-            'site_service_car' => \App\Models\SiteServiceCar::class,
-            // Add other sub-category models here
-        ];
+            // Map sub-category to model
+            $models = [
+                MachineType::heavyEquipment->value => \App\Models\HeavyEquipment::class,
+                MachineType::vehicleRental->value => \App\Models\SiteServiceCar::class,
+                // Add other sub-category models here
+            ];
 
-        $model = $models[$subCategory];
-        $model::create($validatedData);
+            $model = $models[$subCategory];
+            $model::create($validatedData);
 
-        // Commit the transaction
-        DB::commit();
+            // Commit the transaction
+            DB::commit();
 
-        // Return success response
-        return back()->with('success', 'New category added successfully');
+            // Return success response
+            return back()->with('success', 'New category added successfully');
 
 
-    } catch (\Exception $e) {
-        // Rollback transaction and delete uploaded images if something fails
-        DB::rollBack();
+        } catch (\Exception $e) {
+            // Rollback transaction and delete uploaded images if something fails
+            DB::rollBack();
 
-        // Delete images if uploaded
-        if (isset($imageNames)) {
-            foreach ($imageNames as $field => $imageName) {
-                if (!empty($imageName)) {
-                    $imagePath = storage_path('app/public/assets/uploads/sub-category-images/' . $imageName);
-                    if (File::exists($imagePath)) {
-                        File::delete($imagePath);
+            // Delete images if uploaded
+            if (isset($imageNames)) {
+                foreach ($imageNames as $field => $imageName) {
+                    if (!empty($imageName)) {
+                        $imagePath = storage_path('app/public/assets/uploads/sub-category-images/' . $imageName);
+                        if (File::exists($imagePath)) {
+                            File::delete($imagePath);
+                        }
                     }
                 }
             }
-        }
 
-        // Return error response
-        return back()->with('error', $e->getMessage());
+            // Return error response
+            return back()->with('error', $e->getMessage());
+        }
     }
-}
 
     public function getFormForApi($subCategory)
 {
