@@ -22,13 +22,9 @@ trait ImageUploadTrait
                 $imageName = time() . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
                 $imageNames[$field] = $imageName;
 
-                if (cloudStorageExist() && in_array(get_static_option('storage_driver'), ['s3', 'cloudFlareR2', 'wasabi'])) {
-                    // Cloud storage logic (if using cloud storage)
-                    add_frontend_cloud_image_if_module_exists($uploadFolder, $image, $imageName, 'public');
-                } else {
-                    // Local storage logic
-                    $image->move(storage_path('app/' . $uploadFolder), $imageName);
-                }
+                // Local storage logic
+                $image->move(storage_path('app/' . $uploadFolder), $imageName);
+
             } else {
                 $imageNames[$field] = ''; // If no image is provided, save an empty string
             }
