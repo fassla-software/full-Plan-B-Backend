@@ -10,26 +10,28 @@ class ImageUploadController extends Controller
 {
     public function handleEquipmentImages(Request $request)
     {
+        return $request;
         // Validate that images are present and are of type image
         $request->validate([
+            'images' => 'required|array', // Ensure it's an array
             'images.*' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
-        // Define the folder path within the storage/public directory
-        $uploadFolder = 'sub-category-images/';
+        // Folder path
+        $uploadFolder = 'public/assets/uploads/sub-category-images/';
         $imageNames = [];
 
-        // Check if images are sent in the request
+        // Check if images exist in the request
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $image) {
-                // Generate a unique name for the image
+                // Generate a unique name
                 $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
 
-                // Store the image in the storage/app/public/sub-category-images folder
-                $path = $image->storeAs('public/' . $uploadFolder, $imageName);
+                // Store the image
+                $image->move(storage_path('app/' . $uploadFolder), $imageName);
 
-                // Get the publicly accessible URL of the stored image
-                $imageNames[] = asset('storage/' . $uploadFolder . $imageName);
+                // Get the URL
+                //$imageNames[] = asset('storage/' . $uploadFolder . $imageName);
             }
         }
 
