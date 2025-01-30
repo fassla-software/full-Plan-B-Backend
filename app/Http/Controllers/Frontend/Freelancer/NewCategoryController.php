@@ -37,8 +37,8 @@ class NewCategoryController extends Controller
         return view($views[$subCategory], compact('subCategory', 'equipment_type'));
     }
 
-    public function storeData(Request $request, $subCategory)
-    {
+    public function storeData(Request $request, $subCategory, $subSubCategory)
+    { 
         // Start transaction
         DB::beginTransaction();
 
@@ -58,7 +58,7 @@ class NewCategoryController extends Controller
             $validatedData = app($requests[$subCategory])->validated();
             // Handle file uploads for equipment images
             $imageNames = $this->handleEquipmentImages($request, $subCategory);
-
+            $request['equipment_type'] = $subSubCategory;
             // Merge the image names with the validated data
             $validatedData = array_merge($validatedData, $imageNames);
 

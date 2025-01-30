@@ -73,10 +73,9 @@
                 </ul>
             </div>
         @endif
-
         <h1>Heavy Equipment Form</h1>
-        <form method="POST" action="{{ route('form.store', 'heavyEquipment') }}" enctype="multipart/form-data">
-            @csrf
+        <form method="POST" action="{{ route('form.store', ['subCategory' => $subCategory, 'subSubCategory' => $equipment_type]) }}" enctype="multipart/form-data">
+        @csrf
 
             <!-- Category ID -->
             <div class="form-group">

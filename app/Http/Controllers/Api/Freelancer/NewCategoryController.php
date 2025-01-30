@@ -30,7 +30,7 @@ class NewCategoryController extends Controller
 //        return view($views[$subCategory]);
 //    }
 
-    public function storeData(Request $request, $subCategory)
+    public function storeData(Request $request, $subCategory, $subSubCategory)
     {
         // Start transaction
         DB::beginTransaction();
@@ -46,7 +46,7 @@ class NewCategoryController extends Controller
             if (!isset($requests[$subCategory])) {
                 return response()->json(['error' => 'Sub-category not found'], 404);
             }
-
+            $request['equipment_type'] = $subSubCategory;
             // Resolve and validate using the specific request class
             $validatedData = app($requests[$subCategory])->validated();
 
@@ -55,7 +55,6 @@ class NewCategoryController extends Controller
 
             // Merge the image names with the validated data
             $validatedData = array_merge($validatedData, $imageNames);
-
             // Map sub-category to model
             $models = [
                 MachineType::heavyEquipment->value => \App\Models\HeavyEquipment::class,
