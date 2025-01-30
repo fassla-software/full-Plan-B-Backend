@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use App\Enums\MachineType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -18,15 +19,25 @@ trait ImageUploadTrait
         $imageNames = [];
 
         foreach ($imageFields as $field) {
-            if ($image = $request->file($field)) {
-                $imageName = time() . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
-                $imageNames[$field] = $imageName;
-
-                // Local storage logic
-                $image->move(storage_path('app/' . $uploadFolder), $imageName);
-
+            if ($request->hasFile($field)) {
+                if (is_array($request->file($field))) {
+                    // Handle multiple images
+                    $multipleImages = [];
+                    foreach ($request->file($field) as $image) {
+                        $imageName = time() . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
+                        $image->move(storage_path('app/' . $uploadFolder), $imageName);
+                        $multipleImages[] = $imageName;
+                    }
+                    $imageNames[$field] = json_encode($multipleImages); // Store as JSON
+                } else {
+                    // Handle single image
+                    $image = $request->file($field);
+                    $imageName = time() . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
+                    $image->move(storage_path('app/' . $uploadFolder), $imageName);
+                    $imageNames[$field] = $imageName;
+                }
             } else {
-                $imageNames[$field] = ''; // If no image is provided, save an empty string
+                $imageNames[$field] = null; // Store null if no image is uploaded
             }
         }
 
@@ -37,13 +48,16 @@ trait ImageUploadTrait
     protected function getImageFieldsForSubCategory($subCategory)
     {
         $imageFields = [
-            'heavy_equipment' => [
+            MachineType::heavyEquipment->value => [
                 'data_certificate_image', 'driver_license_front_image',
-                'driver_license_back_image', 'additional_equipment_images'
+                'driver_license_back_image', 'additional_equipment_images',
+                'tractor_license_front_image', 'tractor_license_back_image',
+                'flatbed_license_front_image', 'flatbed_license_back_image',
             ],
-            'site_service_car' => [
+            MachineType::vehicleRental->value => [
                 'data_certificate_image', 'driver_license_front_image',
-                'driver_license_back_image', 'additional_equipment_images'
+                'driver_license_back_image', 'additional_vehicle_images', // Multiple images
+                'vehicle_license_front_image', 'vehicle_license_back_image',
             ],
             // Add other sub-categories here and their respective image fields
         ];
@@ -51,4 +65,5 @@ trait ImageUploadTrait
         return $imageFields[$subCategory] ?? [];
     }
 }
+
 

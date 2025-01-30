@@ -23,36 +23,37 @@ class HeavyEquipment extends Model
      * @var array
      */
     protected $fillable = [
+        'category_id',
         'size',
+        'name',
         'model',
         'year_of_manufacture',
-        'moves_on',
         'current_equipment_location',
         'data_certificate_image',
         'driver_license_front_image',
         'driver_license_back_image',
         'additional_equipment_images',
         'special_rental_conditions',
-        'blade_width',
         'blade_width_near_digging_arm',
-        'engine_power',
-        'milling_blade_width',
+        'add_bucket',
         'sprinkler_system_type',
         'tank_capacity',
         'panda_width',
         'has_bitumen_temp_gauge',
         'has_bitumen_level_gauge',
-        'paving_range',
         'max_equipment_load',
         'boom_length',
         'load_at_max_boom_height',
         'load_at_max_horizontal_boom_extension',
-        'max_lifting_point',
-        'attachments',
-        'has_tank_discharge_pump',
-        'has_band_sprinkler_bar',
-        'has_discharge_pump_with_liters_meter',
-        'category_id',
+        'tractor_license_front_image',
+        'tractor_license_back_image',
+        'engine_power',
+        'blade_width',
+        'blade_type',
+        'flatbed_license_front_image',
+        'flatbed_license_back_image',
+        'moves_on',
+        'scraper_width',
     ];
 
     /**
@@ -63,9 +64,6 @@ class HeavyEquipment extends Model
     protected $casts = [
         'has_bitumen_temp_gauge' => 'boolean',
         'has_bitumen_level_gauge' => 'boolean',
-        'has_tank_discharge_pump' => 'boolean',
-        'has_band_sprinkler_bar' => 'boolean',
-        'has_discharge_pump_with_liters_meter' => 'boolean',
     ];
 
     /**

@@ -13,18 +13,20 @@ return new class extends Migration
     {
         Schema::create('heavy_equipment', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->unsignedBigInteger('category_id');
+            $table->string('name')->nullable();
+            $table->unsignedBigInteger('category_id')->nullable();
             $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
 
             $table->string('size')->nullable(); // حجم
-            $table->string('model'); // الطراز
-            $table->year('year_of_manufacture'); // الموديل (سنة الصنع)
+            $table->string('model')->nullable(); // الطراز
+            $table->year('year_of_manufacture')->nullable(); // الموديل (سنة الصنع)
             $table->string('moves_on')->nullable(); // يتحرك على
-            $table->string('current_equipment_location'); // موقع المعدة الحالي
-            $table->string('data_certificate_image'); // صورة شهادة البيانات
-            $table->string('driver_license_front_image'); // صورة رخصة سائق المعدة من الامام
-            $table->string('driver_license_back_image'); // صورة رخصة سائق المعدة من الخلف
+            $table->string('current_equipment_location')->nullable(); // موقع المعدة الحالي
+            $table->string('data_certificate_image')->nullable(); // صورة شهادة البيانات
+            $table->string('driver_license_front_image')->nullable(); // صورة رخصة سائق المعدة من الامام
+            $table->string('driver_license_back_image')->nullable(); // صورة رخصة سائق المعدة من الخلف
+            $table->string('tractor_license_front_image')->nullable(); // صورة رخصة سائق المعدة من الخلف
+            $table->string('tractor_license_back_image')->nullable(); // صورة رخصة سائق المعدة من الخلف
             $table->json('additional_equipment_images')->nullable(); // اضف صور المعدة من زوايا مختلفة
             $table->text('special_rental_conditions')->nullable(); // اضف الشروط الخاصة بتأجير هذه المعدة
             $table->string('blade_width')->nullable(); // عرض الشفرة(الباكيت)

@@ -30,6 +30,7 @@ enum MachineType: string
     case potableWaterTanker = 'potableWaterTanker'; // سيارة تانك نقل مياه شرب
     case constructionWaterTanker = 'constructionWaterTanker'; // سيارة تانك نقل مياه لأعمال الإنشاءات
     case petroleumMaterialTanker = 'petroleumMaterialTanker'; // سيارة تانك نقل مواد بترولية
+    case soilTipper = 'soilTipper';
 
     // Cranes and Lifting Equipment Rental (تأجير الأوناش والرافعات)
     case craneRental = 'craneRental'; // تأجير الأوناش والرافعات
