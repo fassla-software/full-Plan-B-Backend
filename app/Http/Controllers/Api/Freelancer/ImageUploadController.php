@@ -8,61 +8,34 @@ use Illuminate\Http\Request;
 
 class ImageUploadController extends Controller
 {
-
     public function handleEquipmentImages(Request $request)
     {
-        // Folder path where all equipment images will be stored
-        $uploadFolder = 'public/assets/uploads/sub-category-images/';
+        // Validate that images are present and are of type image
+        $request->validate([
+            'images.*' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
 
-        // Define the image fields for equipment (can be adjusted per sub-category)
-        $imageFields = $this->getImageFieldsForSubCategory($subCategory);
-
+        // Define the folder path within the storage/public directory
+        $uploadFolder = 'sub-category-images/';
         $imageNames = [];
 
-        foreach ($imageFields as $field) {
-            if ($request->hasFile($field)) {
-                if (is_array($request->file($field))) {
-                    // Handle multiple images
-                    $multipleImages = [];
-                    foreach ($request->file($field) as $image) {
-                        $imageName = time() . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
-                        $image->move(storage_path('app/' . $uploadFolder), $imageName);
-                        $multipleImages[] = $imageName;
-                    }
-                    $imageNames[$field] = json_encode($multipleImages); // Store as JSON
-                } else {
-                    // Handle single image
-                    $image = $request->file($field);
-                    $imageName = time() . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
-                    $image->move(storage_path('app/' . $uploadFolder), $imageName);
-                    $imageNames[$field] = $imageName;
-                }
-            } else {
-                $imageNames[$field] = null; // Store null if no image is uploaded
+        // Check if images are sent in the request
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                // Generate a unique name for the image
+                $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+
+                // Store the image in the storage/app/public/sub-category-images folder
+                $path = $image->storeAs('public/' . $uploadFolder, $imageName);
+
+                // Get the publicly accessible URL of the stored image
+                $imageNames[] = asset('storage/' . $uploadFolder . $imageName);
             }
         }
 
-        return $imageNames;
-    }
-
-    // This method returns the image fields based on the sub-category
-    protected function getImageFieldsForSubCategory($subCategory)
-    {
-        $imageFields = [
-            MachineType::heavyEquipment->value => [
-                'data_certificate_image', 'driver_license_front_image',
-                'driver_license_back_image', 'additional_equipment_images',
-                'tractor_license_front_image', 'tractor_license_back_image',
-                'flatbed_license_front_image', 'flatbed_license_back_image',
-            ],
-            MachineType::vehicleRental->value => [
-                'data_certificate_image', 'driver_license_front_image',
-                'driver_license_back_image', 'additional_vehicle_images', // Multiple images
-                'vehicle_license_front_image', 'vehicle_license_back_image',
-            ],
-            // Add other sub-categories here and their respective image fields
-        ];
-
-        return $imageFields[$subCategory] ?? [];
+        return response()->json([
+            'message' => 'Images uploaded successfully',
+            'images' => $imageNames,
+        ]);
     }
 }

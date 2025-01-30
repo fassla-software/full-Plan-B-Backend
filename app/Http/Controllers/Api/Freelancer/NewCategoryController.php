@@ -51,10 +51,10 @@ class NewCategoryController extends Controller
             $validatedData = app($requests[$subCategory])->validated();
 
             // Handle file uploads for equipment images
-            $imageNames = $this->handleEquipmentImages($request, $subCategory);
-
-            // Merge the image names with the validated data
-            $validatedData = array_merge($validatedData, $imageNames);
+//            $imageNames = $this->handleEquipmentImages($request, $subCategory);
+//
+//            // Merge the image names with the validated data
+//            $validatedData = array_merge($validatedData, $imageNames);
             // Map sub-category to model
             $models = [
                 MachineType::heavyEquipment->value => \App\Models\HeavyEquipment::class,
