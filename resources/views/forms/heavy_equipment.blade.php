@@ -52,14 +52,42 @@
 </head>
 <body>
     <div class="container">
+        @if (session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="alert alert-danger">
+                {{ session('error') }}
+            </div>
+        @endif
+
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <h1>Heavy Equipment Form</h1>
-        <form method="POST" action="{{ route('form.store', 'heavy_equipment') }}" enctype="multipart/form-data">
+        <form method="POST" action="{{ route('form.store', 'heavyEquipment') }}" enctype="multipart/form-data">
             @csrf
 
             <!-- Category ID -->
             <div class="form-group">
                 <label for="category_id">Category ID:</label>
-                <input type="number" id="category_id" name="category_id" required>
+                <input type="number" id="category_id" name="category_id" value="1" readonly>
+            </div>
+
+            <!-- Name -->
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required>
             </div>
 
             <!-- Size -->
@@ -107,7 +135,7 @@
             </div>
             <div class="form-group">
                 <label for="additional_equipment_images">Additional Equipment Images:</label>
-                <input type="file" id="additional_equipment_images" name="additional_equipment_images">
+                <input type="file" id="additional_equipment_images" name="additional_equipment_images[]" multiple>
             </div>
 
             <!-- Special Rental Conditions -->
@@ -118,9 +146,9 @@
 
             <!-- Numeric Fields -->
             @foreach ([
-                'blade_width', 'blade_width_near_digging_arm', 'engine_power', 'milling_blade_width', 'tank_capacity',
+                'blade_width', 'blade_width_near_digging_arm', 'engine_power', 'tank_capacity',
                 'panda_width', 'max_equipment_load', 'boom_length', 'load_at_max_boom_height',
-                'load_at_max_horizontal_boom_extension', 'max_lifting_point'
+                'load_at_max_horizontal_boom_extension',
             ] as $field)
             <div class="form-group">
                 <label for="{{ $field }}">{{ ucwords(str_replace('_', ' ', $field)) }}:</label>
@@ -130,8 +158,8 @@
 
             <!-- Boolean Fields -->
             @foreach ([
-                'has_bitumen_temp_gauge', 'has_bitumen_level_gauge', 'has_tank_discharge_pump',
-                'has_band_sprinkler_bar', 'has_discharge_pump_with_liters_meter'
+                'has_bitumen_temp_gauge', 'has_bitumen_level_gauge',
+                'has_discharge_pump_with_liters_meter'
             ] as $field)
             <div class="form-group">
                 <label for="{{ $field }}">{{ ucwords(str_replace('_', ' ', $field)) }}:</label>
@@ -141,12 +169,6 @@
                 </select>
             </div>
             @endforeach
-
-            <!-- Attachments -->
-            <div class="form-group">
-                <label for="attachments">Attachments:</label>
-                <textarea id="attachments" name="attachments" rows="3"></textarea>
-            </div>
 
             <!-- Submit Button -->
             <button type="submit">Submit</button>

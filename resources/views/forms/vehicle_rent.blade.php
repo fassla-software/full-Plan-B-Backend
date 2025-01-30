@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Site Service Cars Form</title>
+    <title>Vehicle Rent Form</title>
     <style>
         /* Global Styles */
         * {
@@ -91,7 +91,7 @@
     <div class="container">
         <h1>Site Service Cars Form</h1>
         <div class="form-container">
-            <form method="POST" action="{{ route('form.store', 'site_service_cars') }}" enctype="multipart/form-data">
+            <form method="POST" action="{{ route('form.store', 'vehicleRent') }}" enctype="multipart/form-data">
                 @csrf
                 <!-- Category ID -->
                 <div class="form-group">
