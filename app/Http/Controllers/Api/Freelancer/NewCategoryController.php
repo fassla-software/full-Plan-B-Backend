@@ -50,11 +50,37 @@ class NewCategoryController extends Controller
             // Resolve and validate using the specific request class
             $validatedData = app($requests[$subCategory])->validated();
 
-            // Handle file uploads for equipment images
-//            $imageNames = $this->handleEquipmentImages($request, $subCategory);
-//
-//            // Merge the image names with the validated data
-//            $validatedData = array_merge($validatedData, $imageNames);
+            // List of fields that might contain image URLs
+            $imageFields = [
+                'data_certificate_image',
+                'driver_license_front_image',
+                'driver_license_back_image',
+                'additional_equipment_images',
+                'tractor_license_front_image',
+                'tractor_license_back_image',
+                'flatbed_license_front_image',
+                'flatbed_license_back_image',
+            ];
+
+            // Convert full URLs to just image names
+            foreach ($imageFields as $field) {
+                if (!empty($validatedData[$field])) {
+                    if (is_array($validatedData[$field])) {
+                        // If field contains multiple images (e.g., `additional_equipment_images`)
+                        $validatedData[$field] = array_map(function ($url) {
+                            return basename($url);
+                        }, $validatedData[$field]);
+
+                        // Encode to JSON before saving
+                        $validatedData[$field] = json_encode($validatedData[$field]);
+                    } else {
+                        // If field contains a single image URL
+                        $validatedData[$field] = basename($validatedData[$field]);
+                    }
+                }
+            }
+
+
             // Map sub-category to model
             $models = [
                 MachineType::heavyEquipment->value => \App\Models\HeavyEquipment::class,
@@ -64,7 +90,6 @@ class NewCategoryController extends Controller
 
             $model = $models[$subCategory];
             $model::create($validatedData);
-
             // Commit the transaction
             DB::commit();
 
@@ -91,7 +116,7 @@ class NewCategoryController extends Controller
 
             // Return error response
             return response()->json([
-                'error' => 'There was an error processing your request. Please try again.'
+                'error' => 'There was an error processing your request. Please try again. ' . $e->getMessage()
             ], 500); // 500 Internal Server Error
         }
     }
