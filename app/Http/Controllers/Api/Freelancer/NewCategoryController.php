@@ -36,7 +36,7 @@ class NewCategoryController extends Controller
             $request['equipment_type'] = $subSubCategory;
             // Resolve and validate using the specific request class
             $validatedData = app($requests[$subCategory])->validated();
-
+            $validatedData['user_id'] = 1;
             // List of fields that might contain image URLs
             $imageFields = [
                 'data_certificate_image',

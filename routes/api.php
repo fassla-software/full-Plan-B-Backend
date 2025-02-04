@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Freelancer\ImageUploadController;
+use App\Http\Controllers\Api\Freelancer\NewJobController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -26,6 +27,8 @@ Route::group(['prefix'=>'v1', 'middleware' => 'setlang'],function(){
     Route::get('categories', [NewCategoryController::class, 'getCategories']);
     Route::post('category/{subCategory}/{subSubCategory}', [NewCategoryController::class, 'storeData']);
     Route::post('image/upload', [ImageUploadController::class, 'handleEquipmentImages']);
+
+    Route::post('job/{subCategory}/{subSubCategory}', [NewJobController::class, 'storeData']);
 
     //freelancer route start
     Route::group(['prefix'=>'freelancer'],function(){

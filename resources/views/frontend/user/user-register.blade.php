@@ -1,7 +1,7 @@
 @extends('frontend.layout.master')
 @section('site_title', __('User Register'))
 @section('content')
-    <script src='https://www.google.com/recaptcha/api.js'></script>
+{{--    <script src='https://www.google.com/recaptcha/api.js'></script>--}}
     <!-- login Area Starts -->
     <section class="choose-account-area pat-100 pab-100 user_type_area">
         <div class="container">
@@ -128,14 +128,14 @@
                                        class="fw-bold">{{ __('Privacy Policy') }}</a>
                                 </label>
 
-                                @if((!empty(get_static_option('site_google_captcha_enable'))))
-                                    <div class="col-md-12 my-3">
-                                        <div class="g-recaptcha" id="recaptcha_element_register" data-sitekey="{{ get_static_option('recaptcha_site_key') ?? '' }}"></div>
-                                        @if ($errors->has('g-recaptcha-response'))
-                                            <span class="text-danger">{{ $errors->first('g-recaptcha-response') }}</span>
-                                        @endif
-                                    </div>
-                                @endif
+{{--                                @if((!empty(get_static_option('site_google_captcha_enable'))))--}}
+{{--                                    <div class="col-md-12 my-3">--}}
+{{--                                        <div class="g-recaptcha" id="recaptcha_element_register" data-sitekey="{{ get_static_option('recaptcha_site_key') ?? '' }}"></div>--}}
+{{--                                        @if ($errors->has('g-recaptcha-response'))--}}
+{{--                                            <span class="text-danger">{{ $errors->first('g-recaptcha-response') }}</span>--}}
+{{--                                        @endif--}}
+{{--                                    </div>--}}
+{{--                                @endif--}}
                                 <button class="submit-btn w-100 mt-4 sign_up_now_button" type="submit"> {{ __('Sign Up Now') }} <span id="user_register_load_spinner"></span></button>
                                 <span class="account color-light mt-3"> {{ __('Already have an account?') }} <a
                                         class="color-one" href="{{ route('user.login') }}"> {{ __('Login') }} </a>
@@ -316,10 +316,10 @@
                     let user_type = $('#user_type').val();
                     let terms_condition = $('#terms_condition:checked').val();
 
-                    let recaptchaResponse;
-                    if (document.getElementById('recaptcha_element_register')) {
-                        recaptchaResponse = grecaptcha.getResponse();
-                    }
+                    // let recaptchaResponse;
+                    // if (document.getElementById('recaptcha_element_register')) {
+                    //     recaptchaResponse = grecaptcha.getResponse();
+                    // }
 
                     let erContainer = $(".error-message");
                     erContainer.html('');
@@ -327,7 +327,7 @@
                      $.ajax({
                             url: "{{ route('user.register') }}",
                             type: 'post',
-                            data: {user_type:user_type,first_name: first_name,last_name:last_name,username:username,email:email,phone:phone,password:password,confirm_password:confirm_password,terms_condition:terms_condition,recaptchaResponse:recaptchaResponse},
+                            data: {user_type:user_type,first_name: first_name,last_name:last_name,username:username,email:email,phone:phone,password:password,confirm_password:confirm_password,terms_condition:terms_condition},//,recaptchaResponse:recaptchaResponse},
                              error:function(res){
                                  let errors = res.responseJSON;
                                  erContainer.html('<div class="alert alert-danger"></div>');

@@ -132,13 +132,13 @@ class RegisterController extends Controller
                 'terms_condition' => 'required',
             ]);
 
-            if(!empty(get_static_option('site_google_captcha_enable'))){
-                $request->validate([
-                    'recaptchaResponse' => 'required',
-                ]);
-            }
+//            if(!empty(get_static_option('site_google_captcha_enable'))){
+//                $request->validate([
+//                    'recaptchaResponse' => 'required',
+//                ]);
+//            }
 
-            $email_verify_tokn = sprintf("%d", random_int(123456, 999999));
+//            $email_verify_tokn = sprintf("%d", random_int(123456, 999999));
             $user = User::create([
                 'first_name' => $request->first_name,
                 'last_name' => $request->last_name,
@@ -148,7 +148,8 @@ class RegisterController extends Controller
                 'password' => Hash::make($request->password),
                 'user_type' => $request->user_type,
                 'terms_condition' =>1,
-                'email_verify_token'=> $email_verify_tokn,
+                'is_email_verified' =>1,
+                'email_verify_token'=> now(),
             ]);
 
             Wallet::create([
@@ -206,14 +207,14 @@ class RegisterController extends Controller
                 }
                 catch (\Exception $e) {}
 
-                //send welcome mail
-                try {
-                    Mail::to($user->email)->send(new BasicMail([
-                        'subject' =>  __('Otp Email'),
-                        'message' => __('Your otp code').' '.$email_verify_tokn
-                    ]));
-                }
-                catch (\Exception $e) {}
+//                //send welcome mail
+//                try {
+//                    Mail::to($user->email)->send(new BasicMail([
+//                        'subject' =>  __('Otp Email'),
+//                        'message' => __('Your otp code').' '.$email_verify_tokn
+//                    ]));
+//                }
+//                catch (\Exception $e) {}
             }
 
              if (Auth::guard('web')->attempt(['username' => $request->username, 'password' => $request->password])) {
