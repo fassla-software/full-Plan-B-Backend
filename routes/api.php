@@ -23,7 +23,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 
 Route::group(['prefix'=>'v1', 'middleware' => 'setlang'],function(){
-    Route::get('category/{subCategory}/form', [NewCategoryController::class, 'getFormForApi']);
+    Route::get('categories', [NewCategoryController::class, 'getCategories']);
     Route::post('category/{subCategory}/{subSubCategory}', [NewCategoryController::class, 'storeData']);
     Route::post('image/upload', [ImageUploadController::class, 'handleEquipmentImages']);
 
