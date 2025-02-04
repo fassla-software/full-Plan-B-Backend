@@ -39,7 +39,7 @@ Route::get('/form', function () {
 // Route for the second page to display the form for the selected category
 Route::controller(NewCategoryController::class)->group(function () {
     Route::get('/form/{subCategory}', 'showForm')->name('form.show');
-    Route::post('/form/{subCategory}/store', 'storeData')->name('form.store');
+    Route::post('/form/{subCategory}/{subSubCategory}/store', 'storeData')->name('form.store');
 });
 
 

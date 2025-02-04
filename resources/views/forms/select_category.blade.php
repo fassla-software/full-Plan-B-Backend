@@ -87,37 +87,104 @@
         }
     </style>
 </head>
-<body>
-    <div class="container">
+    <body>
+        <div class="container">
         <h1>Choose a Category</h1>
         <div class="form-container">
-            <form method="GET" action="{{ route('form.show', '') }}">
+            <form method="GET" action="{{ route('form.show', '') }}" id="categoryForm">
                 <!-- Select Category -->
                 <div class="form-group">
                     <label for="category">Select a Category:</label>
-                    <select name="subCategory" id="category" onchange="redirectToForm(this)">
+                    <select name="category" id="category" onchange="populateSubCategory(this.value)">
                         <option value="" disabled selected>-- Choose a Category --</option>
-                        <option value="heavy_equipment">Heavy Equipment</option>
-                        <option value="site_service_car">Site Service Car</option>
-                        <!-- Add more categories here -->
+                        <option value="heavyEquipment">Heavy Equipment</option>
+                        <option value="vehicleRental">Vehicle Rental</option>
+                    </select>
+                </div>
+
+                <!-- Sub Category -->
+                <div class="form-group">
+                    <label for="subCategory">Select Equipment Type:</label>
+                    <select name="equipment_type" id="subCategory" disabled>
+                        <option value="" disabled selected>-- First Select a Category --</option>
                     </select>
                 </div>
 
                 <!-- Proceed Button -->
-                <button type="button" onclick="redirectToForm(document.getElementById('category'))">
+                <button type="button" onclick="redirectToForm(document.getElementById('category'))" id="proceedBtn" disabled>
                     Proceed
                 </button>
             </form>
         </div>
     </div>
 
-    <script>
-        function redirectToForm(selectElement) {
-            const selectedValue = selectElement.value;
-            if (selectedValue) {
-                window.location.href = `{{ route('form.show', '') }}/${selectedValue}`;
+        <script>
+        const equipmentOptions = {
+            heavyEquipment: [
+                { value: 'loader', label: 'Loader' },
+                { value: 'excavator', label: 'Excavator' },
+                { value: 'backhoeLoader', label: 'Backhoe Loader' },
+                { value: 'bulldozer', label: 'Bulldozer' },
+                { value: 'grader', label: 'Grader' },
+                { value: 'harrow', label: 'Harrow' },
+                { value: 'asphaltScraper', label: 'Asphalt Scraper' },
+                { value: 'bitumenSprayerTruck', label: 'Bitumen Sprayer Truck' },
+                { value: 'finisher', label: 'Finisher' },
+                { value: 'telehandler', label: 'Telehandler' },
+                { value: 'forklift', label: 'Forklift' },
+                { value: 'agriculturalTractor', label: 'Agricultural Tractor' },
+                { value: 'equipmentTransportFlatbed', label: 'Equipment Transport Flatbed' }
+            ],
+            vehicleRental: [
+                // Add vehicle rental options here
+            ]
+        };
+
+        function populateSubCategory(category) {
+            const subCategorySelect = document.getElementById('subCategory');
+            const proceedBtn = document.getElementById('proceedBtn');
+
+            // Clear existing options
+            subCategorySelect.innerHTML = '<option value="" disabled selected>-- Select Equipment Type --</option>';
+
+            if (category) {
+                // Enable the sub-category dropdown
+                subCategorySelect.disabled = false;
+
+                // Add new options based on selected category
+                const options = equipmentOptions[category] || [];
+                options.forEach(option => {
+                    const optionElement = document.createElement('option');
+                    optionElement.value = option.value;
+                    optionElement.textContent = option.label;
+                    subCategorySelect.appendChild(optionElement);
+                });
+
+                // Enable proceed button when category is selected
+                proceedBtn.disabled = false;
+            } else {
+                subCategorySelect.disabled = true;
+                proceedBtn.disabled = true;
             }
         }
+
+        // Your original redirect function
+        function redirectToForm(selectElement) {
+            const selectedValue = selectElement.value;
+            const equipmentType = document.getElementById('subCategory').value;
+            if (selectedValue) {
+                window.location.href = `{{ route('form.show', '') }}/${selectedValue}?equipment_type=${equipmentType}`;
+            }
+        }
+
+        // Add event listener to sub-category select to handle selection
+        document.getElementById('subCategory').addEventListener('change', function() {
+            const category = document.getElementById('category').value;
+            if (category && this.value) {
+                // You could modify the redirect here if you want to include both values
+                // Or handle it differently based on your needs
+            }
+        });
     </script>
-</body>
+    </body>
 </html>

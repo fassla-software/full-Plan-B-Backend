@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\Freelancer\ImageUploadController;
+use App\Http\Controllers\Api\Freelancer\NewJobController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -22,8 +24,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 
 Route::group(['prefix'=>'v1', 'middleware' => 'setlang'],function(){
-    Route::get('category/{subCategory}/form', [NewCategoryController::class, 'getFormForApi']);
-    Route::post('category/{subCategory}/form', [NewCategoryController::class, 'storeData']);
+    Route::get('categories', [NewCategoryController::class, 'getCategories']);
+    Route::post('category/{subCategory}/{subSubCategory}', [NewCategoryController::class, 'storeData']);
+    Route::post('image/upload', [ImageUploadController::class, 'handleEquipmentImages']);
+
+    Route::post('job/{subCategory}/{subSubCategory}', [NewJobController::class, 'storeData']);
 
     //freelancer route start
     Route::group(['prefix'=>'freelancer'],function(){

@@ -15,11 +15,11 @@ class CategoryManageController extends Controller
     public function category(Request $request)
     {
         if(!empty($request->category)){
-            $category_list = Category::with('sub_categories')->select(['id','category'])->where('status',1)
+            $category_list = Category::with('sub_categories')->select(['id','category', 'image'])->where('status',1)
                 ->where('category', 'LIKE', "%". strip_tags($request->category) ."%")
                 ->paginate(10)->withQueryString();
         }else{
-            $category_list = Category::select(['id','category'])->with('sub_categories')->where('status',1)->paginate(10)->withQueryString();
+            $category_list = Category::select(['id','category', 'image'])->with('sub_categories')->where('status',1)->paginate(10)->withQueryString();
         }
 
         if($category_list){

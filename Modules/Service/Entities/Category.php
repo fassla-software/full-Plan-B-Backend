@@ -5,8 +5,8 @@ namespace Modules\Service\Entities;
 use App\Models\HeavyEquipment;
 use App\Models\JobPost;
 use App\Models\Project;
-use App\Models\SiteServiceCar;
 use App\Models\Skill;
+use App\Models\VehicleRent;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Modules\Blog\Entities\BlogPost;
@@ -38,6 +38,7 @@ class Category extends Model
         return $this->hasMany(SubCategory::class,'category_id','id')->select(['id','category_id','sub_category','slug', 'image'])->where('status','1');
     }
 
+
     public function projects()
     {
         return $this->hasMany(Project::class,'category_id','id')->select(['id','category_id','slug'])->where(['project_on_off'=>'1','project_approve_request'=>1,'status'=>'1']);
@@ -58,8 +59,24 @@ class Category extends Model
         return $this->hasMany(HeavyEquipment::class,'category_id','id');
     }
 
-    public function site_service_cars()
+    public function vehicle_rent()
     {
-        return $this->hasMany(SiteServiceCar::class,'category_id','id');
+        return $this->hasMany(VehicleRent::class,'category_id','id');
     }
+
+//    public function sub_categories()
+//    {
+//        // Get all related subcategory relationships dynamically
+//        $relations = ['heavy_equipment', 'vehicle_rent']; // Add future subcategory relations here
+//
+//        $subCategories = collect();
+//
+//        foreach ($relations as $relation) {
+//            if ($this->relationLoaded($relation)) {
+//                $subCategories = $subCategories->merge($this->$relation);
+//            }
+//        }
+//
+//        return $subCategories;
+//    }
 }
