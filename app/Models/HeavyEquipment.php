@@ -23,6 +23,7 @@ class HeavyEquipment extends Model
      * @var array
      */
     protected $fillable = [
+      	'sub_category_id',
         'user_id',
         'category_id',
         'size',

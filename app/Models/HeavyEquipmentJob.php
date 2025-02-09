@@ -10,10 +10,14 @@ class HeavyEquipmentJob extends Model
     use HasFactory;
 
     protected $fillable = [
+        'sub_category_id',
+      	'name',
         'user_id',
         'category_id',
         'work_site_location',
-        'rental_duration',
+        'hour',
+      	'day',
+      	'month',
         'search_radius',
         'max_arrival_date',
         'max_offer_deadline',

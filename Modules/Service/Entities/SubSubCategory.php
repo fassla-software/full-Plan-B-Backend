@@ -7,6 +7,8 @@ use App\Models\Project;
 use App\Models\Skill;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SubSubCategory extends Model
 {
@@ -36,6 +38,14 @@ class SubSubCategory extends Model
     public function skills()
     {
         return $this->hasMany(Skill::class,'sub_category_id','id');
+    }
+  public function translations(): HasMany
+    {
+        return $this->hasMany(SubSubCategoryTranslation::class);
+    }
+  public function getTranslatedName($locale)
+    {
+        return optional($this->translations->where('locale', $locale)->first())->name ?? $this->sub_sub_category;
     }
 
 }

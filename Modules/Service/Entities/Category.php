@@ -10,6 +10,8 @@ use App\Models\VehicleRent;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Modules\Blog\Entities\BlogPost;
+use Illuminate\Database\Eloquent\Relations\HasMany; // Import the correct class
+use Modules\Service\Entities\CategoryTranslation;
 
 class Category extends Model
 {
@@ -64,6 +66,16 @@ class Category extends Model
         return $this->hasMany(VehicleRent::class,'category_id','id');
     }
 
+  	public function translations(): HasMany
+    {
+        return $this->hasMany(CategoryTranslation::class);
+    }
+  public function getTranslatedName($locale)
+    {
+        return optional($this->translations->where('locale', $locale)->first())->name ?? $this->category;
+    }
+  
+  
 //    public function sub_categories()
 //    {
 //        // Get all related subcategory relationships dynamically

@@ -4,31 +4,28 @@ namespace App\Http\Controllers\Api\Freelancer;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CategoryResource;
-use App\Http\Resources\CountryResource;
 use Illuminate\Http\Request;
-use Modules\CountryManage\Entities\Country;
 use Modules\Service\Entities\Category;
+use Illuminate\Support\Facades\App;
 
 class CategoryManageController extends Controller
 {
-    //get all category
     public function category(Request $request)
     {
-        if(!empty($request->category)){
-            $category_list = Category::with('sub_categories')->select(['id','category', 'image'])->where('status',1)
-                ->where('category', 'LIKE', "%". strip_tags($request->category) ."%")
-                ->paginate(10)->withQueryString();
-        }else{
-            $category_list = Category::select(['id','category', 'image'])->with('sub_categories')->where('status',1)->paginate(10)->withQueryString();
+        $locale = $request->header('Accept-Language', 'en');
+        App::setLocale($locale);
+
+        $query = Category::with(['translations' => function ($query) use ($locale) {
+            $query->where('locale', $locale);
+        }])->where('status', 1);
+
+        if (!empty($request->category)) {
+            $query->whereHas('translations', function ($q) use ($request, $locale) {
+                $q->where('locale', $locale)->where('name', 'LIKE', "%". strip_tags($request->category) ."%");
+            });
         }
 
-        if($category_list){
-            return CategoryResource::collection($category_list);
-        }
-
-        return response()->json([
-            'msg'=> __('No category found'),
-        ]);
-
+        return CategoryResource::collection($query->paginate(10)->withQueryString());
     }
 }
+

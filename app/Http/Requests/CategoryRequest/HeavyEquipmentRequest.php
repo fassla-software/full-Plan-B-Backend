@@ -22,6 +22,7 @@ class HeavyEquipmentRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'sub_category_id' => 'nullable|exists:sub_categories,id',
             'category_id' => 'nullable|max:50',
             'size' => 'nullable|string',
             'name' => 'nullable|string',

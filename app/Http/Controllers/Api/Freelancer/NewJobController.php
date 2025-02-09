@@ -13,6 +13,7 @@ class NewJobController extends Controller
 {
     public function storeData(Request $request, $subCategory, $subSubCategory)
     {
+                            
         // Start transaction
         DB::beginTransaction();
 
@@ -26,10 +27,26 @@ class NewJobController extends Controller
             if (!isset($requests[$subCategory])) {
                 return response()->json(['error' => 'Sub-category not found'], 404);
             }
+          
+          
+            $booleanFields = [
+                'safety_compliant',
+                'environmental_compliant',
+                'has_night_lighting',
+            ];
+
+            foreach ($booleanFields as $field) {
+                if (isset($request[$field]) && is_string($request[$field])) {
+                    $request[$field] = json_decode($request[$field], true);
+                }
+            }
+          
             $request['equipment_type'] = $subSubCategory;
             // Resolve and validate using the specific request class
             $validatedData = app($requests[$subCategory])->validated();
-            $validatedData['user_id'] = 1;
+            $validatedData['user_id'] = auth('sanctum')->user()->id;
+          
+          
             // Map sub-category to model
             $models = [
                 MachineType::heavyEquipment->value => \App\Models\HeavyEquipmentJob::class,

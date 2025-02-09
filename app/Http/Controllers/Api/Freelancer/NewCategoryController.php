@@ -17,96 +17,103 @@ class NewCategoryController extends Controller
 {
     use ImageUploadTrait;
 
-    public function storeData(Request $request, $subCategory, $subSubCategory)
-    {
-        // Start transaction
-        DB::beginTransaction();
+   public function storeData(Request $request, $subCategory, $subSubCategory)
+{
+    // Start transaction
+    DB::beginTransaction();
 
-        try {
-            // Validate data using the specific request class
-            $requests = [
-                MachineType::heavyEquipment->value => HeavyEquipmentRequest::class,
-                MachineType::vehicleRental->value => VehicleRentRequest::class,
-                // Add other sub-category request classes here
-            ];
-
-            if (!isset($requests[$subCategory])) {
-                return response()->json(['error' => 'Sub-category not found'], 404);
-            }
-            $request['equipment_type'] = $subSubCategory;
-            // Resolve and validate using the specific request class
-            $validatedData = app($requests[$subCategory])->validated();
-            $validatedData['user_id'] = 1;
-            // List of fields that might contain image URLs
-            $imageFields = [
-                'data_certificate_image',
-                'driver_license_front_image',
-                'driver_license_back_image',
-                'additional_equipment_images',
-                'tractor_license_front_image',
-                'tractor_license_back_image',
-                'flatbed_license_front_image',
-                'flatbed_license_back_image',
-            ];
-
-            // Convert full URLs to just image names
-            foreach ($imageFields as $field) {
-                if (!empty($validatedData[$field])) {
-                    if (is_array($validatedData[$field])) {
-                        // If field contains multiple images (e.g., `additional_equipment_images`)
-                        $validatedData[$field] = array_map(function ($url) {
-                            return basename($url);
-                        }, $validatedData[$field]);
-
-                        // Encode to JSON before saving
-                        $validatedData[$field] = json_encode($validatedData[$field]);
-                    } else {
-                        // If field contains a single image URL
-                        $validatedData[$field] = basename($validatedData[$field]);
-                    }
-                }
-            }
-
-
-            // Map sub-category to model
-            $models = [
-                MachineType::heavyEquipment->value => \App\Models\HeavyEquipment::class,
-                MachineType::vehicleRental->value => \App\Models\VehicleRent::class,
-                // Add other sub-category models here
-            ];
-
-            $model = $models[$subCategory];
-            $model::create($validatedData);
-            // Commit the transaction
-            DB::commit();
-
-            // Return success response
-            return response()->json([
-                'message' => ucfirst(str_replace('_', ' ', $subCategory)) . ' data saved successfully!'
-            ], 201); // 201 Created
-
-        } catch (\Exception $e) {
-            // Rollback transaction and delete uploaded images if something fails
-            DB::rollBack();
-
-            // Delete images if uploaded
-            if (isset($imageNames)) {
-                foreach ($imageNames as $field => $imageName) {
-                    if (!empty($imageName)) {
-                        $imagePath = storage_path('app/public/assets/uploads/sub-category-images/' . $imageName);
-                        if (File::exists($imagePath)) {
-                            File::delete($imagePath);
-                        }
-                    }
-                }
-            }
-
-            // Return error response
-            return response()->json([
-                'error' => 'There was an error processing your request. Please try again. ' . $e->getMessage()
-            ], 500); // 500 Internal Server Error
+    try {
+        // Decode 'additional_equipment_images' to an array (if it's a JSON string)
+        if (is_string($request['additional_equipment_images'])) {
+            // Only decode if it's a string (JSON)
+            $request['additional_equipment_images'] = json_decode($request['additional_equipment_images'], true);
         }
+
+
+        // Validate data using the specific request class
+        $requests = [
+            MachineType::heavyEquipment->value => HeavyEquipmentRequest::class,
+            MachineType::vehicleRental->value => VehicleRentRequest::class,
+        ];
+
+        if (!isset($requests[$subCategory])) {
+            return response()->json(['error' => 'Sub-category not found'], 404);
+        }
+        $request['equipment_type'] = $subSubCategory;
+        // Resolve and validate using the specific request class
+        $validatedData = app($requests[$subCategory])->validated();
+        $validatedData['user_id'] = auth('sanctum')->user()->id;
+
+        // Handle image fields
+        $imageFields = [
+            'data_certificate_image',
+            'driver_license_front_image',
+            'driver_license_back_image',
+            'additional_equipment_images',
+            'tractor_license_front_image',
+            'tractor_license_back_image',
+            'flatbed_license_front_image',
+            'flatbed_license_back_image',
+        ];
+
+        // Process image fields
+        foreach ($imageFields as $field) {
+            if (!empty($validatedData[$field])) {
+                if (is_array($validatedData[$field])) {
+                    // If it's an array of images (for example: additional_equipment_images)
+                    $validatedData[$field] = array_map(function ($url) {
+                        return basename($url);  // Extract only the file name
+                    }, $validatedData[$field]);
+
+                    // Encode the images back to JSON for storage
+                    $validatedData[$field] = json_encode($validatedData[$field]);
+                } else {
+                    // If it's a single image URL
+                    $validatedData[$field] = basename($validatedData[$field]);
+                }
+            }
+        }
+
+        // Map sub-category to model
+        $models = [
+            MachineType::heavyEquipment->value => \App\Models\HeavyEquipment::class,
+            MachineType::vehicleRental->value => \App\Models\VehicleRent::class,
+        ];
+
+        $model = $models[$subCategory];
+        $model::create($validatedData);
+
+        // Commit the transaction
+        DB::commit();
+
+        // Return success response
+        return response()->json([
+            'message' => ucfirst(str_replace('_', ' ', $subCategory)) . ' data saved successfully!'
+        ], 201); // 201 Created
+
+    } catch (\Exception $e) {
+        // Rollback transaction and delete uploaded images if something fails
+        DB::rollBack();
+
+        // Handle image deletions
+        if (isset($imageNames)) {
+            foreach ($imageNames as $field => $imageName) {
+                if (!empty($imageName)) {
+                    $imagePath = storage_path('app/public/assets/uploads/sub-category-images/' . $imageName);
+                    if (File::exists($imagePath)) {
+                        File::delete($imagePath);
+                    }
+                }
+            }
+        }
+
+        // Return error response
+        return response()->json([
+            'error' => 'There was an error processing your request. Please try again. ' . $e->getMessage()
+        ], 500); // 500 Internal Server Error
     }
+}
+
 
     public function getCategories()
     {

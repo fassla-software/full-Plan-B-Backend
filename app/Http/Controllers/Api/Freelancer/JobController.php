@@ -7,6 +7,8 @@ use App\Models\JobPost;
 use App\Models\JobProposal;
 use App\Models\Order;
 use App\Models\User;
+use App\Models\HeavyEquipmentJob;
+use App\Models\HeavyEquipment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -225,6 +227,19 @@ class JobController extends Controller
     //job filter
     public function jobs_filter(Request $request)
     {
+      	$user = auth('sanctum')->user();
+
+
+      	$services = HeavyEquipment::where('user_id', $user->id)->get();
+        $subCategoryIds = $services->pluck('sub_category_id')->unique();
+
+        $jobs = HeavyEquipmentJob::whereIn('sub_category_id', $subCategoryIds)
+          ->where('user_id', '!=', $user->id)
+    	  ->get();;
+      
+      	
+        return response()->json($jobs);
+      
         $jobs = JobPost::with('job_creator:id,first_name,last_name,username,image,country_id,state_id,city_id,created_at,user_verified_status','job_skills','job_sub_categories')
             ->withCount('job_proposals')
             ->where('on_off','1')
