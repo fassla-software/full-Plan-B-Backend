@@ -7,6 +7,7 @@
 /storage/pail
 /storage/*
 /storage/!.gitignore
+/storage/framework/views/
 /vendor
 .env
 .env.backup

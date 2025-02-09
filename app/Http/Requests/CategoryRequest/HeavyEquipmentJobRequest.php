@@ -22,14 +22,18 @@ class HeavyEquipmentJobRequest extends FormRequest
     public function rules(): array
     {
         return [
+          	'sub_category_id'=> 'nullable|exists:sub_categories,id',
+            'name' => 'nullable|string',
             'category_id' => 'nullable|exists:categories,id',
             'work_site_location' => 'nullable|string',
-            'rental_duration' => 'nullable|string',
+            'hour' => 'nullable|string',
+          	'day' => 'nullable|string',
+          	'month' => 'nullable|string',
             'search_radius' => 'nullable|integer',
             'max_arrival_date' => 'nullable|date',
             'max_offer_deadline' => 'nullable|date',
             'size' => 'nullable|string',
-            'attachments' => 'nullable|array',
+            'attachments' => 'nullable|string',
             'flatbed_load_description' => 'nullable|string',
             'flatbed_loading_location' => 'nullable|string',
             'flatbed_destination_location' => 'nullable|string',

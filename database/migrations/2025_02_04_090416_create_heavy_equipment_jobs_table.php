@@ -17,7 +17,6 @@ return new class extends Migration
             $table->unsignedBigInteger('category_id')->nullable();
             $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
             $table->string('work_site_location')->nullable(); // Required work site location
-            $table->string('rental_duration')->nullable(); // Desired rental duration
             $table->integer('search_radius')->nullable(); // Search range for equipment around the work site
             $table->date('max_arrival_date')->nullable(); // Latest date for equipment arrival
             $table->date('max_offer_deadline')->nullable(); // Latest date to receive offers
