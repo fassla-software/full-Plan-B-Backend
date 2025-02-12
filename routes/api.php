@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Freelancer\ImageUploadController;
 use App\Http\Controllers\Api\Freelancer\NewJobController;
+use App\Http\Controllers\Api\Freelancer\NewProposalController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -28,7 +29,8 @@ Route::group(['prefix'=>'v1', 'middleware' => 'setlang'],function(){
   	Route::middleware('auth:sanctum')->group(function(){
     	Route::get('categories', [NewCategoryController::class, 'getCategories']);
     	Route::post('category/{subCategory}/{subSubCategory}', [NewCategoryController::class, 'storeData']);
-    });
+        Route::post('/proposal/{request_id}', [NewProposalController::class, 'store']);
+      });
 
     Route::post('image/upload', [ImageUploadController::class, 'handleEquipmentImages']);
 

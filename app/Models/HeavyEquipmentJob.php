@@ -9,6 +9,19 @@ class HeavyEquipmentJob extends Model
 {
     use HasFactory;
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::created(function ($heavyEquipmentJob) {
+            Request::create([
+                'user_id' => $heavyEquipmentJob->user_id,
+                'requestable_type' => HeavyEquipmentJob::class, // Polymorphic type
+                'requestable_id' => $heavyEquipmentJob->id,
+            ]);
+        });
+    }
+
     protected $fillable = [
         'sub_category_id',
       	'name',
@@ -39,4 +52,9 @@ class HeavyEquipmentJob extends Model
         'environmental_compliant' => 'boolean',
         'has_night_lighting' => 'boolean',
     ];
+
+    public function request()
+    {
+        return $this->morphOne(Request::class, 'requestable');
+    }
 }
