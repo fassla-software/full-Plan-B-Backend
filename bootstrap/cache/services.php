@@ -26,6 +26,7 @@
     22 => 'Barryvdh\\DomPDF\\ServiceProvider',
     23 => 'Brian2694\\Toastr\\ToastrServiceProvider',
     24 => 'Intervention\\Image\\ImageServiceProvider',
+<<<<<<< HEAD
     25 => 'Billplz\\Laravel\\BillplzServiceProvider',
     26 => 'KKomelin\\TranslatableStringExporter\\Providers\\ExporterServiceProvider',
     27 => 'Kreait\\Laravel\\Firebase\\ServiceProvider',
@@ -65,6 +66,39 @@
     61 => 'plugins\\WidgetBuilder\\Providers\\WidgetBuilderServiceProvider',
     62 => 'Riskihajar\\Terbilang\\TerbilangServiceProvider',
     63 => 'Paytabscom\\Laravel_paytabs\\PaypageServiceProvider',
+=======
+    25 => 'KKomelin\\TranslatableStringExporter\\Providers\\ExporterServiceProvider',
+    26 => 'Kreait\\Laravel\\Firebase\\ServiceProvider',
+    27 => 'Laravel\\Sail\\SailServiceProvider',
+    28 => 'Laravel\\Sanctum\\SanctumServiceProvider',
+    29 => 'Laravel\\Socialite\\SocialiteServiceProvider',
+    30 => 'Laravel\\Tinker\\TinkerServiceProvider',
+    31 => 'Laravel\\Ui\\UiServiceProvider',
+    32 => 'Mews\\Purifier\\PurifierServiceProvider',
+    33 => 'Carbon\\Laravel\\ServiceProvider',
+    34 => 'NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider',
+    35 => 'Termwind\\Laravel\\TermwindServiceProvider',
+    36 => 'Nwidart\\Modules\\LaravelModulesServiceProvider',
+    37 => 'Pion\\Laravel\\ChunkUpload\\Providers\\ChunkUploadServiceProvider',
+    38 => 'PragmaRX\\Google2FALaravel\\ServiceProvider',
+    39 => 'Riskihajar\\Terbilang\\TerbilangServiceProvider',
+    40 => 'Spatie\\LaravelIgnition\\IgnitionServiceProvider',
+    41 => 'Spatie\\Permission\\PermissionServiceProvider',
+    42 => 'Xgenious\\Installer\\InstallerServiceProvider',
+    43 => 'Xgenious\\XgApiClient\\XgApiClientServiceProvider',
+    44 => 'Intervention\\Image\\ImageServiceProvider',
+    45 => 'Spatie\\Permission\\PermissionServiceProvider',
+    46 => 'App\\Providers\\AppServiceProvider',
+    47 => 'App\\Providers\\AuthServiceProvider',
+    48 => 'App\\Providers\\BroadcastServiceProvider',
+    49 => 'App\\Providers\\EventServiceProvider',
+    50 => 'App\\Providers\\RouteServiceProvider',
+    51 => 'plugins\\MenuBuilder\\Providers\\MenuBuilderServiceProvider',
+    52 => 'plugins\\FormBuilder\\Providers\\FormBuilderServiceProvider',
+    53 => 'plugins\\WidgetBuilder\\Providers\\WidgetBuilderServiceProvider',
+    54 => 'Riskihajar\\Terbilang\\TerbilangServiceProvider',
+    55 => 'Paytabscom\\Laravel_paytabs\\PaypageServiceProvider',
+>>>>>>> yassin
   ),
   'eager' => 
   array (
@@ -86,6 +120,7 @@
     15 => 'Laravel\\Sanctum\\SanctumServiceProvider',
     16 => 'Laravel\\Ui\\UiServiceProvider',
     17 => 'Mews\\Purifier\\PurifierServiceProvider',
+<<<<<<< HEAD
     18 => 'Mollie\\Laravel\\MollieServiceProvider',
     19 => 'Carbon\\Laravel\\ServiceProvider',
     20 => 'NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider',
@@ -116,6 +151,31 @@
     45 => 'plugins\\WidgetBuilder\\Providers\\WidgetBuilderServiceProvider',
     46 => 'Riskihajar\\Terbilang\\TerbilangServiceProvider',
     47 => 'Paytabscom\\Laravel_paytabs\\PaypageServiceProvider',
+=======
+    18 => 'Carbon\\Laravel\\ServiceProvider',
+    19 => 'NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider',
+    20 => 'Termwind\\Laravel\\TermwindServiceProvider',
+    21 => 'Nwidart\\Modules\\LaravelModulesServiceProvider',
+    22 => 'Pion\\Laravel\\ChunkUpload\\Providers\\ChunkUploadServiceProvider',
+    23 => 'PragmaRX\\Google2FALaravel\\ServiceProvider',
+    24 => 'Riskihajar\\Terbilang\\TerbilangServiceProvider',
+    25 => 'Spatie\\LaravelIgnition\\IgnitionServiceProvider',
+    26 => 'Spatie\\Permission\\PermissionServiceProvider',
+    27 => 'Xgenious\\Installer\\InstallerServiceProvider',
+    28 => 'Xgenious\\XgApiClient\\XgApiClientServiceProvider',
+    29 => 'Intervention\\Image\\ImageServiceProvider',
+    30 => 'Spatie\\Permission\\PermissionServiceProvider',
+    31 => 'App\\Providers\\AppServiceProvider',
+    32 => 'App\\Providers\\AuthServiceProvider',
+    33 => 'App\\Providers\\BroadcastServiceProvider',
+    34 => 'App\\Providers\\EventServiceProvider',
+    35 => 'App\\Providers\\RouteServiceProvider',
+    36 => 'plugins\\MenuBuilder\\Providers\\MenuBuilderServiceProvider',
+    37 => 'plugins\\FormBuilder\\Providers\\FormBuilderServiceProvider',
+    38 => 'plugins\\WidgetBuilder\\Providers\\WidgetBuilderServiceProvider',
+    39 => 'Riskihajar\\Terbilang\\TerbilangServiceProvider',
+    40 => 'Paytabscom\\Laravel_paytabs\\PaypageServiceProvider',
+>>>>>>> yassin
   ),
   'deferred' => 
   array (
@@ -258,8 +318,11 @@
     'validator' => 'Illuminate\\Validation\\ValidationServiceProvider',
     'validation.presence' => 'Illuminate\\Validation\\ValidationServiceProvider',
     'Illuminate\\Contracts\\Validation\\UncompromisedVerifier' => 'Illuminate\\Validation\\ValidationServiceProvider',
+<<<<<<< HEAD
     'billplz' => 'Billplz\\Laravel\\BillplzServiceProvider',
     'Billplz\\Client' => 'Billplz\\Laravel\\BillplzServiceProvider',
+=======
+>>>>>>> yassin
     'Laravel\\Sail\\Console\\InstallCommand' => 'Laravel\\Sail\\SailServiceProvider',
     'Laravel\\Sail\\Console\\PublishCommand' => 'Laravel\\Sail\\SailServiceProvider',
     'Laravel\\Socialite\\Contracts\\Factory' => 'Laravel\\Socialite\\SocialiteServiceProvider',
@@ -303,9 +366,12 @@
     'Illuminate\\Validation\\ValidationServiceProvider' => 
     array (
     ),
+<<<<<<< HEAD
     'Billplz\\Laravel\\BillplzServiceProvider' => 
     array (
     ),
+=======
+>>>>>>> yassin
     'Laravel\\Sail\\SailServiceProvider' => 
     array (
     ),

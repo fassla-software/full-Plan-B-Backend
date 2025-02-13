@@ -33,6 +33,7 @@
       0 => 'Intervention\\Image\\ImageServiceProvider',
     ),
   ),
+<<<<<<< HEAD
   'jomweb/billplz-laravel' => 
   array (
     'aliases' => 
@@ -44,6 +45,8 @@
       0 => 'Billplz\\Laravel\\BillplzServiceProvider',
     ),
   ),
+=======
+>>>>>>> yassin
   'kkomelin/laravel-translatable-string-exporter' => 
   array (
     'providers' => 
@@ -112,6 +115,7 @@
       0 => 'Mews\\Purifier\\PurifierServiceProvider',
     ),
   ),
+<<<<<<< HEAD
   'mollie/laravel-mollie' => 
   array (
     'aliases' => 
@@ -123,6 +127,8 @@
       0 => 'Mollie\\Laravel\\MollieServiceProvider',
     ),
   ),
+=======
+>>>>>>> yassin
   'nesbot/carbon' => 
   array (
     'providers' => 
@@ -184,6 +190,7 @@
       0 => 'Riskihajar\\Terbilang\\TerbilangServiceProvider',
     ),
   ),
+<<<<<<< HEAD
   'sharifur/payfast' => 
   array (
     'providers' => 
@@ -191,6 +198,8 @@
       0 => 'Billow\\PayfastServiceProvider',
     ),
   ),
+=======
+>>>>>>> yassin
   'spatie/laravel-ignition' => 
   array (
     'aliases' => 
@@ -209,6 +218,7 @@
       0 => 'Spatie\\Permission\\PermissionServiceProvider',
     ),
   ),
+<<<<<<< HEAD
   'srmklive/paypal' => 
   array (
     'aliases' => 
@@ -253,6 +263,8 @@
       0 => 'Unicodeveloper\\Paystack\\PaystackServiceProvider',
     ),
   ),
+=======
+>>>>>>> yassin
   'xgenious/installer' => 
   array (
     'providers' => 
@@ -260,6 +272,7 @@
       0 => 'Xgenious\\Installer\\InstallerServiceProvider',
     ),
   ),
+<<<<<<< HEAD
   'xgenious/paymentgateway' => 
   array (
     'providers' => 
@@ -267,6 +280,8 @@
       0 => 'Xgenious\\Paymentgateway\\Providers\\PaymentgatewayServiceProvider',
     ),
   ),
+=======
+>>>>>>> yassin
   'xgenious/xgapiclient' => 
   array (
     'aliases' => 
