@@ -24,28 +24,28 @@ class ProjectController extends Controller
     public function project_list()
     {
         $user_id  = auth('sanctum')->user()->id;
-        $project_lists = Project::select(['id','user_id','title','image','basic_delivery','basic_regular_charge','basic_discount_charge','status','project_on_off','is_pro','pro_expire_date','load_from'])
-            ->withCount(['complete_orders','ratings'])->withAvg('ratings','rating')
-            ->where('user_id', $user_id)
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
-
-        if(cloudStorageExist() && in_array(Storage::getDefaultDriver(), ['s3', 'cloudFlareR2', 'wasabi'])) {
-            $project_lists->transform(function ($project) {
-                $project->cloud_link = render_frontend_cloud_image_if_module_exists('project/'.$project->image, load_from: $project->load_from);
-                return $project;
-            });
-        }
-
+    
+        // Fetch heavy equipment for the authenticated user
+        $equipment_list = \App\Models\HeavyEquipment::where('user_id', $user_id)
+            ->get()
+            ->map(function ($equipment) {
+                // Remove entries that have all null values
+                $filteredEquipment = collect($equipment)->filter(function ($value, $key) {
+                    return !is_null($value); // Remove null columns
+                });
+    
+                // If all columns are null, exclude the entry
+                return $filteredEquipment->isNotEmpty() ? $filteredEquipment : null;
+            })
+            ->filter(); // Remove null entries
+    
         return response()->json([
-            'project_lists' => $project_lists,
-            'project_image_path' => asset('assets/uploads/project/'),
-            'freelancer_level' => freelancer_level_api($user_id) ?? '',
-            'storage_driver' => Storage::getDefaultDriver() ?? '',
+            'status' => true,
+            'message' => 'Heavy equipment data retrieved successfully',
+            'equipment' => $equipment_list->values(), // Reindex the array
         ]);
     }
-
+    
     // project create
     public function create_project(Request $request)
     {
