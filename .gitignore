@@ -5,9 +5,6 @@
 /public/storage
 /storage/*.key
 /storage/pail
-/storage/*
-/storage/!.gitignore
-/storage/framework/views/
 /vendor
 .env
 .env.backup
@@ -25,3 +22,14 @@ yarn-error.log
 /.vscode
 /.zed
 README.md
+
+# Ignore all files inside storage except .gitignore
+/storage/*
+!/storage/.gitignore
+
+# Ensure framework cache is ignored
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*
+/bootstrap/cache/*

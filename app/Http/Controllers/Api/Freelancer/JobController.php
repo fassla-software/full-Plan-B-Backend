@@ -15,9 +15,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Modules\Chat\Entities\Offer;
 use Modules\Subscription\Entities\UserSubscription;
+use App\Traits\ApiResponseTrait;
 
 class JobController extends Controller
 {
+  use ApiResponseTrait;
     public function all_job()
     {
         $jobs = JobPost::with('job_creator:id,first_name,last_name,username,image,country_id,state_id,city_id,created_at,user_verified_status','job_skills')
@@ -233,14 +235,15 @@ class JobController extends Controller
       	$services = HeavyEquipment::where('user_id', $user->id)->get();
         $subCategoryIds = $services->pluck('sub_category_id')->unique();
 
-        $jobs = HeavyEquipmentJob::whereIn('sub_category_id', $subCategoryIds)
+        $jobs = HeavyEquipmentJob::with('subCategory') // Eager load sub-category
+    	  ->whereIn('sub_category_id', $subCategoryIds)
           ->where('user_id', '!=', $user->id)
-    	  ->get();;
+    	  ->get();
       
       	
-        return response()->json($jobs);
+        return $this->successResponse($jobs,'success', 200);
       
-        $jobs = JobPost::with('job_creator:id,first_name,last_name,username,image,country_id,state_id,city_id,created_at,user_verified_status','job_skills','job_sub_categories')
+        /*$jobs = JobPost::with('job_creator:id,first_name,last_name,username,image,country_id,state_id,city_id,created_at,user_verified_status','job_skills','job_sub_categories')
             ->withCount('job_proposals')
             ->where('on_off','1')
             ->where('status','1')
@@ -299,7 +302,7 @@ class JobController extends Controller
             ]);
         }else{
             return response()->json(['msg' => __('no jobs found.')]);
-        }
+        }*/
     }
 
     //my proposals

@@ -6,9 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreNewProposalRequest;
 use App\Models\NewProposal;
 use Illuminate\Http\Request;
+use App\Traits\ApiResponseTrait;
 
 class NewProposalController extends Controller
 {
+    use ApiResponseTrait;
+  
     public function store(StoreNewProposalRequest $request, $request_id)
     {
         $validatedData = $request->validated();
@@ -18,9 +21,6 @@ class NewProposalController extends Controller
 
         $proposal = NewProposal::create($validatedData);
 
-        return response()->json([
-            'message' => 'Proposal created successfully',
-            'proposal' => $proposal
-        ], 201);
+        return $this->successResponse($proposal, 'Proposal created successfully', 201);
     }
 }

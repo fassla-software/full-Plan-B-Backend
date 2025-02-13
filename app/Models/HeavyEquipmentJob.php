@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use Modules\Service\Entities\SubCategory;
 class HeavyEquipmentJob extends Model
 {
     use HasFactory;
@@ -57,4 +57,9 @@ class HeavyEquipmentJob extends Model
     {
         return $this->morphOne(Request::class, 'requestable');
     }
+  
+  public function subCategory()
+{
+    return $this->belongsTo(SubCategory::class, 'sub_category_id');
+}
 }

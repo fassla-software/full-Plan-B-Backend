@@ -33,6 +33,17 @@
       0 => 'Intervention\\Image\\ImageServiceProvider',
     ),
   ),
+  'jomweb/billplz-laravel' => 
+  array (
+    'aliases' => 
+    array (
+      'Billplz' => 'Billplz\\Laravel\\Billplz',
+    ),
+    'providers' => 
+    array (
+      0 => 'Billplz\\Laravel\\BillplzServiceProvider',
+    ),
+  ),
   'kkomelin/laravel-translatable-string-exporter' => 
   array (
     'providers' => 
@@ -101,6 +112,17 @@
       0 => 'Mews\\Purifier\\PurifierServiceProvider',
     ),
   ),
+  'mollie/laravel-mollie' => 
+  array (
+    'aliases' => 
+    array (
+      'Mollie' => 'Mollie\\Laravel\\Facades\\Mollie',
+    ),
+    'providers' => 
+    array (
+      0 => 'Mollie\\Laravel\\MollieServiceProvider',
+    ),
+  ),
   'nesbot/carbon' => 
   array (
     'providers' => 
@@ -162,6 +184,13 @@
       0 => 'Riskihajar\\Terbilang\\TerbilangServiceProvider',
     ),
   ),
+  'sharifur/payfast' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'Billow\\PayfastServiceProvider',
+    ),
+  ),
   'spatie/laravel-ignition' => 
   array (
     'aliases' => 
@@ -180,11 +209,62 @@
       0 => 'Spatie\\Permission\\PermissionServiceProvider',
     ),
   ),
+  'srmklive/paypal' => 
+  array (
+    'aliases' => 
+    array (
+      'PayPal' => 'Srmklive\\PayPal\\Facades\\PayPal',
+    ),
+    'providers' => 
+    array (
+      0 => 'Srmklive\\PayPal\\Providers\\PayPalServiceProvider',
+    ),
+  ),
+  'stevebauman/location' => 
+  array (
+    'aliases' => 
+    array (
+      'Location' => 'Stevebauman\\Location\\Facades\\Location',
+    ),
+    'providers' => 
+    array (
+      0 => 'Stevebauman\\Location\\LocationServiceProvider',
+    ),
+  ),
+  'tzsk/payu' => 
+  array (
+    'aliases' => 
+    array (
+      'Payu' => 'Tzsk\\Payu\\Facades\\Payu',
+    ),
+    'providers' => 
+    array (
+      0 => 'Tzsk\\Payu\\PayuServiceProvider',
+    ),
+  ),
+  'unicodeveloper/laravel-paystack' => 
+  array (
+    'aliases' => 
+    array (
+      'Paystack' => 'Unicodeveloper\\Paystack\\Facades\\Paystack',
+    ),
+    'providers' => 
+    array (
+      0 => 'Unicodeveloper\\Paystack\\PaystackServiceProvider',
+    ),
+  ),
   'xgenious/installer' => 
   array (
     'providers' => 
     array (
       0 => 'Xgenious\\Installer\\InstallerServiceProvider',
+    ),
+  ),
+  'xgenious/paymentgateway' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'Xgenious\\Paymentgateway\\Providers\\PaymentgatewayServiceProvider',
     ),
   ),
   'xgenious/xgapiclient' => 
