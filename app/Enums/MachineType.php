@@ -79,4 +79,11 @@ enum MachineType: string
     {
         return array_map(fn($enum) => $enum->value, self::cases());
     }
+
+    public static function getIndex(string $value): int
+    {
+        $values = array_map(fn($enum) => $enum->value, self::cases());
+        return array_search($value, $values, true);
+    }
+
 }

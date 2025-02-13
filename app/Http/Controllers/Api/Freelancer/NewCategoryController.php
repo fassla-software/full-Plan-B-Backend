@@ -40,6 +40,7 @@ class NewCategoryController extends Controller
             return response()->json(['error' => 'Sub-category not found'], 404);
         }
         $request['equipment_type'] = $subSubCategory;
+        $request['name'] = ucfirst($subSubCategory);
         // Resolve and validate using the specific request class
         $validatedData = app($requests[$subCategory])->validated();
         $validatedData['user_id'] = auth('sanctum')->user()->id;
