@@ -32,5 +32,5 @@ README.md
 /storage/framework/sessions/*
 /storage/framework/views/*
 /storage/logs/*
-/bootstrap/cache/*"storage/logs/*.log" 
+/bootstrap/cache/*
 "storage/logs/*.log" 
