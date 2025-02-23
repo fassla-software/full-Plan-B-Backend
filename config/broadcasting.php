@@ -65,6 +65,11 @@ return [
             'driver' => 'null',
         ],
 
+        'firebase' => [
+            'driver' => 'firebase',
+            'credentials' => env('FIREBASE_CREDENTIALS'),
+        ],
+
     ],
 
 ];
