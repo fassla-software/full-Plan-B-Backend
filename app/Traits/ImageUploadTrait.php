@@ -8,43 +8,38 @@ use Illuminate\Support\Facades\Storage;
 
 trait ImageUploadTrait
 {
-    public function handleEquipmentImages(Request $request, $subCategory)
+    /**
+     * Handles single and multiple image uploads dynamically.
+     */
+    public function processImages(array $validatedData, $subCategory)
     {
-        // Folder path where all equipment images will be stored
-        $uploadFolder = 'public/assets/uploads/sub-category-images/';
-
-        // Define the image fields for equipment (can be adjusted per sub-category)
+        // Get image fields dynamically based on the sub-category
         $imageFields = $this->getImageFieldsForSubCategory($subCategory);
 
-        $imageNames = [];
-
+        // Process each image field
         foreach ($imageFields as $field) {
-            if ($request->hasFile($field)) {
-                if (is_array($request->file($field))) {
-                    // Handle multiple images
-                    $multipleImages = [];
-                    foreach ($request->file($field) as $image) {
-                        $imageName = time() . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
-                        $image->move(storage_path('app/' . $uploadFolder), $imageName);
-                        $multipleImages[] = $imageName;
-                    }
-                    $imageNames[$field] = json_encode($multipleImages); // Store as JSON
+            if (!empty($validatedData[$field])) {
+                if (is_array($validatedData[$field])) {
+                    // Multiple images (array)
+                    $validatedData[$field] = array_map(function ($url) {
+                        return basename($url);
+                    }, $validatedData[$field]);
+
+                    // Convert to JSON for storage
+                    $validatedData[$field] = json_encode($validatedData[$field]);
                 } else {
-                    // Handle single image
-                    $image = $request->file($field);
-                    $imageName = time() . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
-                    $image->move(storage_path('app/' . $uploadFolder), $imageName);
-                    $imageNames[$field] = $imageName;
+                    // Single image
+                    $validatedData[$field] = basename($validatedData[$field]);
                 }
-            } else {
-                $imageNames[$field] = null; // Store null if no image is uploaded
             }
         }
 
-        return $imageNames;
+        return $validatedData;
     }
 
-    // This method returns the image fields based on the sub-category
+    /**
+     * Dynamically fetch image fields based on sub-category.
+     */
     protected function getImageFieldsForSubCategory($subCategory)
     {
         $imageFields = [
@@ -56,10 +51,20 @@ trait ImageUploadTrait
             ],
             MachineType::vehicleRental->value => [
                 'data_certificate_image', 'driver_license_front_image',
-                'driver_license_back_image', 'additional_vehicle_images', // Multiple images
+                'driver_license_back_image', 'additional_vehicle_images',
                 'vehicle_license_front_image', 'vehicle_license_back_image',
             ],
-            // Add other sub-categories here and their respective image fields
+
+            MachineType::craneRental->value => [
+                'additional_equipment_images', 'vehicle_license_front',
+                'vehicle_license_back', 'driver_license_front',
+                'driver_license_back', 'load_data_documents',
+                'insurance_documents', 'operator_qualification_documents',
+            ],
+
+            MachineType::craneRental->value => [
+                'load_image',
+            ],
         ];
 
         return $imageFields[$subCategory] ?? [];

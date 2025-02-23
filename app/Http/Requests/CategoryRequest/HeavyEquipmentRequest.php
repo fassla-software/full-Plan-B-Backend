@@ -31,9 +31,9 @@ class HeavyEquipmentRequest extends FormRequest
             'current_equipment_location' => 'required|string',
 
 
-            'data_certificate_image' => 'required',
-            'driver_license_front_image' => 'required',
-            'driver_license_back_image' => 'required',
+            'data_certificate_image' => 'nullable',
+            'driver_license_front_image' => 'nullable',
+            'driver_license_back_image' => 'nullable',
 
             'additional_equipment_images' => 'nullable|array|max:5',
             'special_rental_conditions' => 'nullable|max:500',
@@ -59,6 +59,8 @@ class HeavyEquipmentRequest extends FormRequest
             'blade_type' => 'required_if:equipment_type,grader|string',
             'moves_on' => 'required_if:equipment_type,finisher,loader,asphaltScraper|string',
             'scraper_width' => 'required_if:equipment_type,asphaltScraper|numeric|max:3',
+            'lat' => 'nullable',
+            'long' => 'nullable',
         ];
     }
 }

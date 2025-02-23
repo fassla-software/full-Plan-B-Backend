@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Api\Freelancer;
 
 use App\Enums\MachineType;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CategoryRequest\CraneRentJobRequest;
 use App\Http\Requests\CategoryRequest\HeavyEquipmentJobRequest;
+use App\Http\Requests\CategoryRequest\VehicleRentJobRequest;
+use App\Models\VehicleRental;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -21,6 +24,8 @@ class NewJobController extends Controller
             // Validate data using the specific request class
             $requests = [
                 MachineType::heavyEquipment->value => HeavyEquipmentJobRequest::class,
+                MachineType::vehicleRental->value => VehicleRentJobRequest::class,
+                MachineType::craneRental->value => CraneRentJobRequest::class,
                 // Add other sub-category request classes here
             ];
 
@@ -42,6 +47,8 @@ class NewJobController extends Controller
             }
           
             $request['equipment_type'] = $subSubCategory;
+            //$request['name'] = ucfirst($subSubCategory);
+
             // Resolve and validate using the specific request class
             $validatedData = app($requests[$subCategory])->validated();
             $validatedData['user_id'] = auth('sanctum')->user()->id;
@@ -50,6 +57,8 @@ class NewJobController extends Controller
             // Map sub-category to model
             $models = [
                 MachineType::heavyEquipment->value => \App\Models\HeavyEquipmentJob::class,
+                MachineType::vehicleRental->value => \App\Models\VehicleRentalJob::class,
+                MachineType::craneRental->value => \App\Models\CraneRentalJob::class,
                 // Add other sub-category models here
             ];
             $model = $models[$subCategory];

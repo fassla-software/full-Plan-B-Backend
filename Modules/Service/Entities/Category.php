@@ -6,7 +6,7 @@ use App\Models\HeavyEquipment;
 use App\Models\JobPost;
 use App\Models\Project;
 use App\Models\Skill;
-use App\Models\VehicleRent;
+use App\Models\VehicleRental;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Modules\Blog\Entities\BlogPost;
@@ -63,7 +63,7 @@ class Category extends Model
 
     public function vehicle_rent()
     {
-        return $this->hasMany(VehicleRent::class,'category_id','id');
+        return $this->hasMany(VehicleRental::class,'category_id','id');
     }
 
   	public function translations(): HasMany

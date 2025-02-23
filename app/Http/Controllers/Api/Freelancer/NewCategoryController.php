@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Freelancer;
 
 use App\Enums\MachineType;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CategoryRequest\CraneRentRequest;
 use App\Http\Requests\CategoryRequest\HeavyEquipmentRequest;
 use App\Http\Requests\CategoryRequest\VehicleRentRequest;
 use App\Http\Resources\NewCategoryResource;
@@ -17,103 +18,88 @@ class NewCategoryController extends Controller
 {
     use ImageUploadTrait;
 
-   public function storeData(Request $request, $subCategory, $subSubCategory)
-{
-    // Start transaction
-    DB::beginTransaction();
+    public function storeData(Request $request, $subCategory, $subSubCategory)
+    {
+        // Start transaction
+        DB::beginTransaction();
 
-    try {
-        // Decode 'additional_equipment_images' to an array (if it's a JSON string)
-        if (is_string($request['additional_equipment_images'])) {
-            // Only decode if it's a string (JSON)
-            $request['additional_equipment_images'] = json_decode($request['additional_equipment_images'], true);
-        }
+        try {
+            // Define the fields that need to be decoded from JSON
+            $jsonFields = [
+                'additional_equipment_images',
+                'load_data_documents',
+                'insurance_documents',
+                'operator_qualification_documents'
+            ];
 
+            // Decode JSON fields dynamically
+            $requestData = $this->decodeJsonFields($request->all(), $jsonFields);
 
-        // Validate data using the specific request class
-        $requests = [
-            MachineType::heavyEquipment->value => HeavyEquipmentRequest::class,
-            MachineType::vehicleRental->value => VehicleRentRequest::class,
-        ];
+            // Validate data using the specific request class
+            $requests = [
+                MachineType::heavyEquipment->value => HeavyEquipmentRequest::class,
+                MachineType::vehicleRental->value => VehicleRentRequest::class,
+                MachineType::craneRental->value => CraneRentRequest::class,
+            ];
 
-        if (!isset($requests[$subCategory])) {
-            return response()->json(['error' => 'Sub-category not found'], 404);
-        }
-        $request['equipment_type'] = $subSubCategory;
-        $request['name'] = ucfirst($subSubCategory);
-        // Resolve and validate using the specific request class
-        $validatedData = app($requests[$subCategory])->validated();
-        $validatedData['user_id'] = auth('sanctum')->user()->id;
-
-        // Handle image fields
-        $imageFields = [
-            'data_certificate_image',
-            'driver_license_front_image',
-            'driver_license_back_image',
-            'additional_equipment_images',
-            'tractor_license_front_image',
-            'tractor_license_back_image',
-            'flatbed_license_front_image',
-            'flatbed_license_back_image',
-        ];
-
-        // Process image fields
-        foreach ($imageFields as $field) {
-            if (!empty($validatedData[$field])) {
-                if (is_array($validatedData[$field])) {
-                    // If it's an array of images (for example: additional_equipment_images)
-                    $validatedData[$field] = array_map(function ($url) {
-                        return basename($url);  // Extract only the file name
-                    }, $validatedData[$field]);
-
-                    // Encode the images back to JSON for storage
-                    $validatedData[$field] = json_encode($validatedData[$field]);
-                } else {
-                    // If it's a single image URL
-                    $validatedData[$field] = basename($validatedData[$field]);
-                }
+            if (!isset($requests[$subCategory])) {
+                return response()->json(['error' => 'Sub-category not found'], 404);
             }
-        }
 
-        // Map sub-category to model
-        $models = [
-            MachineType::heavyEquipment->value => \App\Models\HeavyEquipment::class,
-            MachineType::vehicleRental->value => \App\Models\VehicleRent::class,
-        ];
+            $request['equipment_type'] = $subSubCategory;
+            $request['name'] = ucfirst(preg_replace('/([a-z])([A-Z])/', '$1 $2', $subSubCategory));
 
-        $model = $models[$subCategory];
-        $model::create($validatedData);
+            // Resolve and validate using the specific request class
+            $validatedData = app($requests[$subCategory])->validated();
+            $validatedData['user_id'] = auth('sanctum')->user()->id;
 
-        // Commit the transaction
-        DB::commit();
+            // Handle images using the trait
+            $validatedData = $this->processImages($validatedData, $subCategory);
 
-        // Return success response
-        return response()->json([
-            'message' => ucfirst(str_replace('_', ' ', $subCategory)) . ' data saved successfully!'
-        ], 201); // 201 Created
+            // Dynamically encode arrays before saving
+            $validatedData = $this->encodeJsonFields($validatedData, $jsonFields);
 
-    } catch (\Exception $e) {
-        // Rollback transaction and delete uploaded images if something fails
-        DB::rollBack();
+            // Map sub-category to model
+            $models = [
+                MachineType::heavyEquipment->value => \App\Models\HeavyEquipment::class,
+                MachineType::vehicleRental->value => \App\Models\VehicleRental::class,
+                MachineType::craneRental->value => \App\Models\CraneRental::class,
+            ];
 
-        // Handle image deletions
-        if (isset($imageNames)) {
-            foreach ($imageNames as $field => $imageName) {
-                if (!empty($imageName)) {
-                    $imagePath = storage_path('app/public/assets/uploads/sub-category-images/' . $imageName);
-                    if (File::exists($imagePath)) {
-                        File::delete($imagePath);
+            $model = $models[$subCategory];
+            $model::create($validatedData);
+
+            // Commit the transaction
+            DB::commit();
+
+            // Return success response
+            return response()->json([
+                'message' => ucfirst(str_replace('_', ' ', $subCategory)) . ' data saved successfully!'
+            ], 201); // 201 Created
+
+        } catch (\Exception $e) {
+            // Rollback transaction and delete uploaded images if something fails
+            DB::rollBack();
+
+            // Handle image deletions
+            if (isset($imageNames)) {
+                foreach ($imageNames as $field => $imageName) {
+                    if (!empty($imageName)) {
+                        $imagePath = storage_path('app/public/assets/uploads/sub-category-images/' . $imageName);
+                        if (File::exists($imagePath)) {
+                            File::delete($imagePath);
+                        }
                     }
                 }
             }
-        }
 
-        // Return error response
-        return response()->json([
-            'error' => 'There was an error processing your request. Please try again. ' . $e->getMessage()
-        ], 500); // 500 Internal Server Error
+            // Return error response
+            return response()->json([
+                'error' => 'There was an error processing your request. Please try again. ' . $e->getMessage()
+            ], 500); // 500 Internal Server Error
+        }
     }
-}
+
 
 
     public function getCategories()
@@ -131,5 +117,30 @@ class NewCategoryController extends Controller
         ]);
     }
 
+    /**
+     * Dynamically decode JSON fields if they are strings.
+     */
+    private function decodeJsonFields(array $request, array $jsonFields): array
+    {
+        foreach ($jsonFields as $field) {
+            if (isset($request[$field]) && is_string($request[$field])) {
+                $request[$field] = json_decode($request[$field], true);
+            }
+        }
+        return $request;
+    }
+
+    /**
+     * Dynamically encode array fields to JSON before saving.
+     */
+    private function encodeJsonFields(array $data, array $jsonFields): array
+    {
+        foreach ($jsonFields as $field) {
+            if (isset($data[$field]) && is_array($data[$field])) {
+                $data[$field] = json_encode($data[$field]);
+            }
+        }
+        return $data;
+    }
     
 }

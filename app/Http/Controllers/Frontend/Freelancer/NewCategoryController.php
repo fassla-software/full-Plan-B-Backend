@@ -65,7 +65,7 @@ class NewCategoryController extends Controller
             // Map sub-category to model
             $models = [
                 MachineType::heavyEquipment->value => \App\Models\HeavyEquipment::class,
-                MachineType::vehicleRental->value => \App\Models\VehicleRent::class,
+                MachineType::vehicleRental->value => \App\Models\VehicleRental::class,
                 // Add other sub-category models here
             ];
 
