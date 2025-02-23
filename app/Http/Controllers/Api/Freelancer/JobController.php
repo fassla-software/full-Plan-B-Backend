@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Freelancer;
 
+use App\Enums\MachineType;
 use App\Http\Controllers\Controller;
 use App\Models\JobPost;
 use App\Models\JobProposal;
@@ -12,7 +13,9 @@ use App\Models\HeavyEquipment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Modules\Chat\Entities\Offer;
 use Modules\Subscription\Entities\UserSubscription;
 use App\Traits\ApiResponseTrait;
@@ -225,84 +228,184 @@ class JobController extends Controller
             return response()->json(['msg' => __('Proposal successfully send')]);
         }
     }
-
-    //job filter
     public function jobs_filter(Request $request)
     {
-      	$user = auth('sanctum')->user();
+        $user = auth('sanctum')->user();
+        $allJobs = collect(); // Collection to store all jobs dynamically
+        foreach (MachineType::values() as $serviceType) {
+            $serviceModel = $this->getModelClassFromServiceType($serviceType);
+            $jobModel = $this->getJobModelClassFromServiceType($serviceType);
 
+            // Check if both service and job models exist
+            if (class_exists($serviceModel) && class_exists($jobModel)) {
+                // Fetch all user-owned services
+                $userServices = $serviceModel::where('user_id', $user->id)->get();
 
-      	$services = HeavyEquipment::where('user_id', $user->id)->get();
-        $subCategoryIds = $services->pluck('sub_category_id')->unique();
+                if (!$userServices->isEmpty()) {
+                    $subCategoryIds = $userServices->pluck('sub_category_id')->unique();
 
-        $jobs = HeavyEquipmentJob::with('subCategory') // Eager load sub-category
-    	  ->whereIn('sub_category_id', $subCategoryIds)
-          ->where('user_id', '!=', $user->id)
-    	  ->get();
-      
-      	
-        return $this->successResponse($jobs,'success', 200);
-      
-        /*$jobs = JobPost::with('job_creator:id,first_name,last_name,username,image,country_id,state_id,city_id,created_at,user_verified_status','job_skills','job_sub_categories')
-            ->withCount('job_proposals')
-            ->where('on_off','1')
-            ->where('status','1')
-            ->where('job_approve_request','1')
-            ->latest();
+                    // Loop through each user's service
+                    foreach ($userServices as $equipment) {
+                        $equipmentLat = $equipment->lat;
+                        $equipmentLong = $equipment->long;
 
-        if(!empty($request->country) || !empty($request->type) || !empty($request->level) || !empty($request->min_price) || !empty($request->max_price) || !empty($request->duration || !empty($request->category) || !empty($request->subcategory) || !empty($request->string) )){
-            if(!empty($request->country)){
+                        // Fetch jobs related to those services, excluding the user's own jobs
+                        $jobs = $jobModel::with('subCategory')
+                            ->whereIn('sub_category_id', $subCategoryIds)
+                            ->where('user_id', '!=', $user->id)
+                            ->get();
 
-                $jobs = $jobs->WhereHas('job_creator',function($q) use($request){
-                    $q->where('country_id',$request->country);
-                });
-            }
+                        // Manually filter jobs by distance
+                        $filteredJobs = $jobs->filter(function ($job) use ($equipmentLat, $equipmentLong) {
+                            $distance = $this->calculateDistance(
+                                $equipmentLat,
+                                $equipmentLong,
+                                $job->lat,
+                                $job->long
+                            );
 
-            if(!empty($request->type)){
-                $jobs = $jobs->where('type',$request->type);
-            }
+                            return $distance <= (float) $job->search_radius;
+                        });
 
-            if(!empty($request->level)){
-                $jobs = $jobs->where('level',$request->level);
-            }
-
-            if(!empty($request->min_price) && !empty($request->max_price)){
-                $jobs = $jobs->whereBetween('budget',[$request->min_price,$request->max_price]);
-            }
-
-            if(!empty($request->duration)){
-                $jobs = $jobs->where('duration',$request->duration);
-            }
-
-            if(!empty($request->category)){
-                $jobs = $jobs->where('category',$request->category);
-            }
-
-            if(!empty($request->subcategory)){
-                $jobs = $jobs->WhereHas('job_sub_categories',function($q) use($request){
-                    $q->where('sub_categories.id',$request->subcategory);
-                });
-            }
-
-            if(!empty($request->string)){
-                $jobs = $jobs->where('title','LIKE','%'.$request->string.'%');
+                        $allJobs = $allJobs->merge($filteredJobs);
+                    }
+                }
             }
         }
 
-        $jobs = $jobs->paginate(10)->withQueryString();
+        return $this->successResponse($allJobs, 'All related requests fetched successfully.', 200);
+    }
 
-        $arr = [];
-        foreach($jobs as $key=> $job){
-            $arr = $job->job_creator?->user_country?->country;
-        }
+    /**
+     * Calculate distance between two points using the Haversine formula.
+     */
+    private function calculateDistance($lat1, $lon1, $lat2, $lon2)
+    {
+        $earthRadius = 6371; // Radius of the earth in km
 
-        if($jobs->total() > 0){
-            return response()->json([
-                'jobs' => $jobs,
-            ]);
-        }else{
-            return response()->json(['msg' => __('no jobs found.')]);
-        }*/
+        $latFrom = deg2rad($lat1);
+        $lonFrom = deg2rad($lon1);
+        $latTo = deg2rad($lat2);
+        $lonTo = deg2rad($lon2);
+
+        $latDelta = $latTo - $latFrom;
+        $lonDelta = $lonTo - $lonFrom;
+
+        $angle = 2 * asin(sqrt(pow(sin($latDelta / 2), 2) +
+                cos($latFrom) * cos($latTo) * pow(sin($lonDelta / 2), 2)));
+
+        return $earthRadius * $angle; // Distance in km
+    }
+    //job filter
+//    public function jobs_filter(Request $request)
+//    {
+//
+//      	/*$user = auth('sanctum')->user();
+//        $allJobs = collect(); // Collection to store all jobs dynamically
+//
+//        foreach (MachineType::values() as $serviceType) {
+//            $serviceModel = $this->getModelClassFromServiceType($serviceType);
+//            $jobModel = $this->getJobModelClassFromServiceType($serviceType);
+//
+//            // Check if both service and job models exist
+//            if (class_exists($serviceModel) && class_exists($jobModel)) {
+//                // Fetch all user-owned services
+//                $userServices = $serviceModel::where('user_id', $user->id)->get();
+//
+//                if (!$userServices->isEmpty()) {
+//                    $subCategoryIds = $userServices->pluck('sub_category_id')->unique();
+//
+//                    // Fetch jobs related to those services, excluding the user's own jobs
+//                    $jobs = $jobModel::with('subCategory')
+//                        ->whereIn('sub_category_id', $subCategoryIds)
+//                        ->where('user_id', '!=', $user->id)
+//                        ->get();
+//
+//                    $allJobs = $allJobs->merge($jobs);
+//                }
+//            }
+//        }
+//
+//        return $this->successResponse($allJobs, 'All related jobs fetched successfully', 200);*/
+//
+//        /*$jobs = JobPost::with('job_creator:id,first_name,last_name,username,image,country_id,state_id,city_id,created_at,user_verified_status','job_skills','job_sub_categories')
+//            ->withCount('job_proposals')
+//            ->where('on_off','1')
+//            ->where('status','1')
+//            ->where('job_approve_request','1')
+//            ->latest();
+//
+//        if(!empty($request->country) || !empty($request->type) || !empty($request->level) || !empty($request->min_price) || !empty($request->max_price) || !empty($request->duration || !empty($request->category) || !empty($request->subcategory) || !empty($request->string) )){
+//            if(!empty($request->country)){
+//
+//                $jobs = $jobs->WhereHas('job_creator',function($q) use($request){
+//                    $q->where('country_id',$request->country);
+//                });
+//            }
+//
+//            if(!empty($request->type)){
+//                $jobs = $jobs->where('type',$request->type);
+//            }
+//
+//            if(!empty($request->level)){
+//                $jobs = $jobs->where('level',$request->level);
+//            }
+//
+//            if(!empty($request->min_price) && !empty($request->max_price)){
+//                $jobs = $jobs->whereBetween('budget',[$request->min_price,$request->max_price]);
+//            }
+//
+//            if(!empty($request->duration)){
+//                $jobs = $jobs->where('duration',$request->duration);
+//            }
+//
+//            if(!empty($request->category)){
+//                $jobs = $jobs->where('category',$request->category);
+//            }
+//
+//            if(!empty($request->subcategory)){
+//                $jobs = $jobs->WhereHas('job_sub_categories',function($q) use($request){
+//                    $q->where('sub_categories.id',$request->subcategory);
+//                });
+//            }
+//
+//            if(!empty($request->string)){
+//                $jobs = $jobs->where('title','LIKE','%'.$request->string.'%');
+//            }
+//        }
+//
+//        $jobs = $jobs->paginate(10)->withQueryString();
+//
+//        $arr = [];
+//        foreach($jobs as $key=> $job){
+//            $arr = $job->job_creator?->user_country?->country;
+//        }
+//
+//        if($jobs->total() > 0){
+//            return response()->json([
+//                'jobs' => $jobs,
+//            ]);
+//        }else{
+//            return response()->json(['msg' => __('no jobs found.')]);
+//        }*/
+//    }
+
+    /**
+     * Dynamically resolve the model class based on the service type.
+     */
+    private function getModelClassFromServiceType($serviceType)
+    {
+        $modelName = Str::studly($serviceType); // Convert to StudlyCase
+        return "App\\Models\\$modelName";
+    }
+
+    /**
+     * Dynamically resolve the job model class based on the service type.
+     */
+    private function getJobModelClassFromServiceType($serviceType)
+    {
+        $modelName = Str::studly($serviceType) . 'Job'; // Add 'Job' suffix for job models
+        return "App\\Models\\$modelName";
     }
 
     //my proposals

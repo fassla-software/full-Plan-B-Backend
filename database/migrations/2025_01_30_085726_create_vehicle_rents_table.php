@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('vehicle_rents', function (Blueprint $table) {
             $table->id();
-
             $table->string('name');
             $table->unsignedBigInteger('category_id');
             $table->decimal('vehicle_load', 8, 2)->nullable();

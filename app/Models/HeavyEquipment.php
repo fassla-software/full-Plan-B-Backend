@@ -56,6 +56,8 @@ class HeavyEquipment extends Model
         'flatbed_license_back_image',
         'moves_on',
         'scraper_width',
+        'lat',
+        'long',
     ];
 
     /**

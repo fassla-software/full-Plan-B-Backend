@@ -35,6 +35,7 @@ return new class extends Migration
             $table->text('special_rental_conditions')->nullable(); // اضف الشروط الخاصة بتأجير هذه المعدة
             $table->string('blade_width')->nullable(); // عرض الشفرة(الباكيت)
             $table->string('blade_width_near_digging_arm')->nullable(); // عرض الشفرة(الباكيت) ناحية ذراع الحفر
+            $table->string('add_bucket')->nullable();
             $table->integer('engine_power')->nullable(); // قدرة المحرك
             $table->string('scraper_width')->nullable(); // عرض سلاح الكشط
             $table->string('sprinkler_system_type')->nullable(); // نظام تشغيل الرشاشات

@@ -2,63 +2,69 @@
 
 namespace App\Http\Controllers\Api\Freelancer;
 
+use App\Enums\MachineType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreNewProposalRequest;
 use App\Models\NewProposal;
 use Illuminate\Http\Request;
 use App\Traits\ApiResponseTrait;
-use App\Models\HeavyEquipmentJob;
+use Illuminate\Support\Facades\Auth;
+
 class NewProposalController extends Controller
 {
     use ApiResponseTrait;
-  
-public function store(StoreNewProposalRequest $request, $heavyEquipmentJobId)
-{
-    $validatedData = $request->validated();
-  
-    // Get the corresponding `requests.id` from `HeavyEquipmentJob.id`
-    $requestEntry = \App\Models\Request::where('requestable_type', HeavyEquipmentJob::class)
-                           ->where('requestable_id', $heavyEquipmentJobId)
-                           ->first();
 
-    if (!$requestEntry) {
-        return response()->json([
-            'success' => false,
-            'message' => 'No matching request found for this HeavyEquipmentJob.',
-        ], 400);
+    /**
+     * Store a new proposal dynamically for different equipment types.
+     */
+    public function store(StoreNewProposalRequest $request, $jobType, $jobId)
+    {
+        $validatedData = $request->validated();
+
+        // Dynamically determine the requestable type based on input
+        $modelClass = $this->getModelClassFromType($jobType);
+
+        if (!$modelClass) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid job type provided.',
+            ], 400);
+        }
+
+        // Retrieve the associated job request dynamically
+        $requestEntry = \App\Models\Request::where('requestable_type', $modelClass)
+            ->where('requestable_id', $jobId)
+            ->first();
+
+        if (!$requestEntry) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No matching request found for the provided job type.',
+            ], 400);
+        }
+
+        // Set the necessary fields dynamically
+        $validatedData['request_id'] = $requestEntry->id;
+        $validatedData['user_id'] = Auth::id();
+
+        // Create the proposal dynamically
+        $proposal = NewProposal::create($validatedData);
+
+        return $this->successResponse($proposal, 'Proposal created successfully.', 201);
     }
 
-    // Set the correct `request_id`
-    $validatedData['request_id'] = $requestEntry->id;
-    $validatedData['user_id'] = auth('sanctum')->id();
+    /**
+     * Dynamically map job type to its corresponding model class.
+     */
+    private function getModelClassFromType($type)
+    {
+        $types = [
+            MachineType::heavyEquipment->value => \App\Models\HeavyEquipmentJob::class,
+            MachineType::vehicleRental->value => \App\Models\VehicleRentalJob::class,
+            MachineType::craneRental->value => \App\Models\CraneRentalJob::class,
+            // Add other sub-category models here
+        ];
 
-    // Create proposal
-    $proposal = NewProposal::create($validatedData);
-
-    return $this->successResponse($proposal, 'Proposal created successfully', 201);
-}
-  
-  /*public function store(StoreNewProposalRequest $request, $requestableId)
-{
-    $validatedData = $request->validated();
-
-    // Find the matching request based on requestable_id
-    $requestEntry = Request::where('requestable_id', $requestableId)->first();
-
-    if (!$requestEntry) {
-        return response()->json([
-            'success' => false,
-            'message' => 'No matching request found for this requestable_id.',
-        ], 400);
+        return $types[$type] ?? null;
     }
-
-    // Set the correct `request_id`
-    $validatedData['request_id'] = $requestEntry->id;
-    $validatedData['user_id'] = auth('sanctum')->id();
-
-    // Create the proposal
-    $proposal = NewProposal::create($validatedData);
-
-    return $this->successResponse($proposal, 'Proposal created successfully', 201);
-}*/
 }
