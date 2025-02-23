@@ -29,7 +29,7 @@ Route::group(['prefix'=>'v1', 'middleware' => 'setlang'],function(){
   	Route::middleware('auth:sanctum')->group(function(){
     	Route::get('categories', [NewCategoryController::class, 'getCategories']);
     	Route::post('category/{subCategory}/{subSubCategory}', [NewCategoryController::class, 'storeData']);
-        Route::post('/proposal/{request_id}', [NewProposalController::class, 'store']);
+        Route::post('/proposal/{heavyEquipmentJobId}', [NewProposalController::class, 'store']);
       });
 
     Route::post('image/upload', [ImageUploadController::class, 'handleEquipmentImages']);

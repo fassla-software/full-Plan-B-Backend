@@ -22,10 +22,10 @@ class StoreNewProposalRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'price' => 'required|numeric|min:0',
+            'price' => 'required|string|min:0',
             'per' => 'required|in:day,month,hour',
             'current_location' => 'required|string|max:255',
-            'offer_ends_at' => 'required|date',
+            'offer_ends_at' => 'required|string',
             'other_terms' => 'nullable|string',
         ];
     }
