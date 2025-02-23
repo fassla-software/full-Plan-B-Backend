@@ -44,6 +44,8 @@ class HeavyEquipmentJob extends Model
         'environmental_compliant',
         'has_night_lighting',
         'additional_requirements',
+        'lat',
+        'long',
     ];
 
     protected $casts = [
@@ -58,8 +60,8 @@ class HeavyEquipmentJob extends Model
         return $this->morphOne(Request::class, 'requestable');
     }
   
-  public function subCategory()
-{
-    return $this->belongsTo(SubCategory::class, 'sub_category_id');
-}
+    public function subCategory()
+    {
+        return $this->belongsTo(SubCategory::class, 'sub_category_id');
+    }
 }

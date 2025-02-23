@@ -22,18 +22,20 @@ class VehicleRentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string',
-            'category_id' => 'required|integer|max:50',
-            'vehicle_load' => 'required|numeric',
-            'model' => 'required|max:4',
-            'current_vehicle_location' => 'required|string',
-            'vehicle_license_front_image' => 'required|image',
-            'vehicle_license_back_image' => 'required|image',
-            'driver_license_front_image' => 'required|image',
-            'driver_license_back_image' => 'required|image',
-            'additional_vehicle_images' => 'required|array|max:5',
-            'additional_vehicle_images.*' => 'image',
+            'name' => 'nullable|string',
+            'category_id' => 'nullable|integer|max:50',
+            'sub_category_id' => 'nullable|integer|max:50',
+            'vehicle_load' => 'nullable|numeric',
+            'model' => 'nullable',
+            'current_vehicle_location' => 'nullable|string',
+            'vehicle_license_front_image' => 'nullable',
+            'vehicle_license_back_image' => 'nullable',
+            'driver_license_front_image' => 'nullable',
+            'driver_license_back_image' => 'nullable',
+            'additional_vehicle_images' => 'nullable|array|max:5',
             'comment' => 'nullable|string|max:500',
+            'lat' => 'nullable',
+            'long' => 'nullable',
 
             // Conditional required fields based on vehicle type
             'has_tank_discharge_pump' => 'required_if:equipment_type,potableWaterTanker|boolean',
