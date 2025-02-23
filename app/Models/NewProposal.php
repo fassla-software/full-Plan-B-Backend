@@ -18,7 +18,16 @@ class NewProposal extends Model
         'offer_ends_at',
         'other_terms',
     ];
-
+  
+    protected $casts = [
+        'price' => 'decimal:2',
+    ];
+  
+    protected function setPriceAttribute($value)
+    {
+        $this->attributes['price'] = number_format((float) $value, 2, '.', '');
+    }
+  
     public function request()
     {
         return $this->belongsTo(Request::class);
