@@ -7,20 +7,94 @@ use App\Http\Controllers\Controller;
 use App\Mail\BasicMail;
 use App\Models\AdminNotification;
 use App\Models\Bookmark;
+use App\Models\CraneRental;
+use App\Models\HeavyEquipment;
 use App\Models\Project;
 use App\Models\ProjectAttribute;
 use App\Models\ProjectHistory;
 use App\Models\User;
+use App\Models\VehicleRental;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Mail;
 
 class ProjectController extends Controller
 {
     // all projects
-    public function all_project()
+    public function all_project(Request $request)
     {
-        $all_projects = Project::whereHas('project_creator')->latest()->paginate(10);
-        return view('backend.pages.project.all-project',compact('all_projects'));
+
+        // Define all equipment models
+        $equipmentModels = [
+            HeavyEquipment::class,
+            VehicleRental::class,
+            CraneRental::class, // Add other models if needed
+        ];
+
+        $perPage = $request->get('per_page', 10); // Default to 10 items per page
+        $page = $request->get('page', 1); // Get the current page number
+
+        $allEquipment = collect();
+
+        foreach ($equipmentModels as $model) {
+            // Eager load the subCategory relation with the image field only
+            $equipmentList = $model::with('subCategory:id,image')
+                ->get()
+                ->map(function ($equipment) {
+                    // Filter out null values from the equipment record
+                    $filteredEquipment = collect($equipment)->filter(function ($value) {
+                        return !is_null($value);
+                    });
+
+                    // Attach the sub-category image if it exists
+                    if ($equipment->subCategory && $equipment->subCategory->image) {
+                        $filteredEquipment['sub_category_image'] = $this->getFullImageUrl($equipment->subCategory->image);
+                    } else {
+                        $filteredEquipment['sub_category_image'] = $this->getDefaultImageUrl();
+                    }
+
+                    // Remove the `subCategory` relation from the response
+                    $filteredEquipment->forget('subCategory');
+
+                    // Only include non-empty equipment data
+                    return $filteredEquipment->isNotEmpty() ? $filteredEquipment : null;
+                })
+                ->filter();
+
+            // Merge all equipment into a single collection
+            $allEquipment = $allEquipment->merge($equipmentList);
+        }
+
+        // Paginate the combined equipment list
+        $paginated = new LengthAwarePaginator(
+            $allEquipment->forPage($page, $perPage),
+            $allEquipment->count(),
+            $perPage,
+            $page,
+            ['path' => url()->current(), 'query' => $request->query()]
+        );
+
+        //return $paginated;
+        return view('backend.pages.project.all-project',compact('paginated'));
+//        $all_projects = Project::whereHas('project_creator')->latest()->paginate(10);
+//        return view('backend.pages.project.all-project',compact('all_projects'));
+    }
+
+    /**
+     * Returns a default image URL if the actual image is missing.
+     */
+    private function getDefaultImageUrl()
+    {
+        return asset('assets/uploads/no-image.png');
+    }
+
+    private function getFullImageUrl($imageId)
+    {
+        if (!$imageId) {
+            return null;
+        }
+        $imageDetails = get_attachment_image_by_id($imageId);
+        return $imageDetails['img_url'] ?? null;
     }
 
     //auto approval settings

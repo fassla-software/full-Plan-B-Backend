@@ -70,7 +70,7 @@ class Category extends Model
     {
         return $this->hasMany(CategoryTranslation::class);
     }
-  public function getTranslatedName($locale)
+    public function getTranslatedName($locale)
     {
         return optional($this->translations->where('locale', $locale)->first())->name ?? $this->category;
     }

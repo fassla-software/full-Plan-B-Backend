@@ -234,11 +234,11 @@
 
                 <li
                     class="dashboard__bottom__list__item has-children @if (request()->is('admin/project*')) active open show @endif">
-                    <a href="javascript:void(0)"> <i class="fa-solid fa-file-word"></i>{{ __('Projects') }} </a>
+                    <a href="javascript:void(0)"> <i class="fa-solid fa-file-word"></i>{{ __('Services') }} </a>
                     <ul class="submenu">
                         @can('project-list')
                             <li class="dashboard__bottom__list__item @if (request()->routeIs(['admin.project'])) selected @endif">
-                                <a href="{{ route('admin.project') }}"> {{ __('All Projects') }} </a>
+                                <a href="{{ route('admin.project') }}"> {{ __('All Services') }} </a>
                             </li>
                         @endcan
                         @can('project-history-list')
@@ -254,7 +254,7 @@
 
                 <li
                     class="dashboard__bottom__list__item has-children @if (request()->is('admin/job*')) active open show @endif">
-                    <a href="javascript:void(0)"> <i class="fa-solid fa-file-word"></i>{{ __('Jobs') }} </a>
+                    <a href="javascript:void(0)"> <i class="fa-solid fa-file-word"></i>{{ __('Requests') }} </a>
                     <ul class="submenu">
                         @can('job-auto-approval')
                             <li class="dashboard__bottom__list__item @if (request()->routeIs(['admin.job.approval.settings'])) selected @endif">
@@ -264,12 +264,12 @@
                         @endcan
                         @can('job-list')
                             <li class="dashboard__bottom__list__item @if (request()->routeIs(['admin.jobs'])) selected @endif">
-                                <a href="{{ route('admin.jobs') }}"> {{ __('All Jobs') }} </a>
+                                <a href="{{ route('admin.jobs') }}"> {{ __('All Requests') }} </a>
                             </li>
                         @endcan
                         @can('job-history-list')
                             <li class="dashboard__bottom__list__item @if (request()->routeIs(['admin.job.history'])) selected @endif">
-                                <a href="{{ route('admin.job.history') }}"> {{ __('Job History') }} </a>
+                                <a href="{{ route('admin.job.history') }}"> {{ __('Request History') }} </a>
                             </li>
                         @endcan
                     </ul>
