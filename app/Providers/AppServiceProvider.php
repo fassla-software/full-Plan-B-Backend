@@ -2,12 +2,15 @@
 
 namespace App\Providers;
 
+use App\Services\FirebaseBroadcaster;
 use Carbon\Carbon;
+use Illuminate\Broadcasting\BroadcastManager;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Pagination\Paginator;
+use Kreait\Firebase\Contract\Messaging;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -93,6 +96,11 @@ class AppServiceProvider extends ServiceProvider
             ],$tempUrl);
 
             return $finalUrl;
+        });
+
+        // Register custom Firebase broadcaster
+        $this->app->make(BroadcastManager::class)->extend('firebase', function ($app, $config) {
+            return new FirebaseBroadcaster($app->make(Messaging::class));
         });
 
     }

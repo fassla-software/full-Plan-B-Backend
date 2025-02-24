@@ -9,6 +9,7 @@ use App\Models\Project;
 use App\Models\ProjectAttribute;
 use App\Models\ProjectHistory;
 use App\Models\User;
+use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -20,32 +21,45 @@ use Illuminate\Support\Str;
 
 class ProjectController extends Controller
 {
+    use ApiResponseTrait;
+
     // project list
-    public function project_list()
+        public function project_list()
     {
-        $user_id  = auth('sanctum')->user()->id;
-    
-        // Fetch heavy equipment for the authenticated user
-        $equipment_list = \App\Models\HeavyEquipment::where('user_id', $user_id)
-            ->get()
-            ->map(function ($equipment) {
-                // Remove entries that have all null values
-                $filteredEquipment = collect($equipment)->filter(function ($value, $key) {
-                    return !is_null($value); // Remove null columns
-                });
-    
-                // If all columns are null, exclude the entry
-                return $filteredEquipment->isNotEmpty() ? $filteredEquipment : null;
-            })
-            ->filter(); // Remove null entries
-    
-        return response()->json([
-            'status' => true,
-            'message' => 'Heavy equipment data retrieved successfully',
-            'equipment' => $equipment_list->values(), // Reindex the array
-        ]);
+        $user_id = auth('sanctum')->user()->id;
+
+        // List all equipment models
+        $equipmentModels = [
+            \App\Models\HeavyEquipment::class,
+            \App\Models\VehicleRental::class,
+            \App\Models\CraneRental::class,
+            // Add other models here as needed
+        ];
+
+        $allEquipment = collect();
+
+        foreach ($equipmentModels as $model) {
+            // Fetch user-specific equipment from each model
+            $equipmentList = $model::where('user_id', $user_id)
+                ->get()
+                ->map(function ($equipment) {
+                    // Filter out null values from the equipment record
+                    $filteredEquipment = collect($equipment)->filter(function ($value) {
+                        return !is_null($value);
+                    });
+
+                    // If any non-null fields remain, include this equipment
+                    return $filteredEquipment->isNotEmpty() ? $filteredEquipment : null;
+                })
+                ->filter(); // Remove null entries
+
+            // Merge the result into the main collection
+            $allEquipment = $allEquipment->merge($equipmentList);
+        }
+
+        return $this->successResponse($allEquipment->values(), 'All equipment fetched successfully.', 200);
     }
-    
+
     // project create
     public function create_project(Request $request)
     {

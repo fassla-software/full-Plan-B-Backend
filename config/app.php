@@ -203,7 +203,8 @@ return [
         FormBuilderServiceProvider::class,
         WidgetBuilderServiceProvider::class,
         Riskihajar\Terbilang\TerbilangServiceProvider::class,
-        \Paytabscom\Laravel_paytabs\PaypageServiceProvider::class
+        \Paytabscom\Laravel_paytabs\PaypageServiceProvider::class,
+        App\Providers\FirebaseBroadcastServiceProvider::class,
     ],
 
     /*

@@ -6,6 +6,7 @@ use App\Enums\MachineType;
 use App\Http\Controllers\Controller;
 use App\Models\JobPost;
 use App\Models\JobProposal;
+use App\Models\NewProposal;
 use App\Models\Order;
 use App\Models\User;
 use App\Models\HeavyEquipmentJob;
@@ -411,27 +412,13 @@ class JobController extends Controller
     //my proposals
     public function my_proposal()
     {
-        $my_proposals = JobProposal::with('job:id,user_id,title,budget')
-            ->where('freelancer_id',auth('sanctum')->user()->id)
+        $my_proposals = NewProposal::where('user_id',auth('sanctum')->user()->id)
             ->latest()
             ->paginate(10)
             ->withQueryString();
 
-        if(cloudStorageExist() && in_array(Storage::getDefaultDriver(), ['s3', 'cloudFlareR2', 'wasabi'])) {
-            $my_proposals->transform(function ($proposal) {
-                if($proposal->attachment){
-                    $proposal->cloud_link = render_frontend_cloud_image_if_module_exists('jobs/proposal/'.$proposal->attachment, load_from: $proposal->load_from);
-                }else{
-                    $proposal->cloud_link = null;
-                }
-                return $proposal;
-            });
-        }
+        return $this->successResponse($my_proposals, 'success', 200);
 
-        return response()->json([
-            'my_proposals' => $my_proposals,
-            'storage_driver' => Storage::getDefaultDriver() ?? '',
-        ]);
     }
 
     public function my_offer()

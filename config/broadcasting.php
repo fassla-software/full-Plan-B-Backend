@@ -66,11 +66,10 @@ return [
         ],
 
         'firebase' => [
-            'driver' => 'custom',
-            'via' => App\Services\FirebaseBroadcaster::class,
+            'driver' => 'firebase',
+            'via' => App\Services\FirebaseBroadcaster::class,  // Custom Broadcaster Class
             'credentials' => env('FIREBASE_CREDENTIALS'),
         ],
-
     ],
 
 ];
