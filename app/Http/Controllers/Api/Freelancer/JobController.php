@@ -410,17 +410,57 @@ class JobController extends Controller
     }
 
     //my proposals
-    public function my_proposal()
+public function my_proposal()
+{
+    $my_proposals = NewProposal::with(['request.requestable.subCategory']) // Eager load related data
+        ->where('user_id', auth('sanctum')->user()->id)
+        ->latest()
+        ->paginate(10)
+        ->withQueryString();
+
+    // Transform the response to only include the sub_category_image
+    $my_proposals->getCollection()->transform(function ($proposal) {
+        $request = $proposal->request;
+
+        if ($request && $request->requestable) {
+            $subCategory = $request->requestable->subCategory;
+
+            // Attach the sub_category_image only
+            if ($subCategory && $subCategory->image) {
+                $proposal->sub_category_image = $this->getFullImageUrl($subCategory->image);
+            } else {
+                $proposal->sub_category_image = $this->getDefaultImageUrl();
+            }
+        } else {
+            $proposal->sub_category_image = $this->getDefaultImageUrl();
+        }
+
+        // Remove the request relationship from the response
+        unset($proposal->request);
+
+        return $proposal;
+    });
+
+    // Return the paginated response
+    return $this->paginatedResponse($my_proposals, 'All proposals fetched successfully.', 200);
+}
+
+
+  
+    private function getFullImageUrl($imageId)
     {
-        $my_proposals = NewProposal::where('user_id',auth('sanctum')->user()->id)
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
-
-        // Merge pagination data with custom status and message
-        return $this->paginatedResponse($my_proposals, 'All equipment fetched successfully.', 200);
+        if (!$imageId) {
+            return null;
+        }
+        $imageDetails = get_attachment_image_by_id($imageId);
+        return $imageDetails['img_url'] ?? null;
     }
-
+  
+private function getDefaultImageUrl()
+{
+    return asset('assets/uploads/no-image.png');
+}
+  
     public function my_offer()
     {
         $my_offers = Offer::with('client:id,first_name,last_name,image,load_from')->where('freelancer_id',auth('sanctum')->user()->id)
