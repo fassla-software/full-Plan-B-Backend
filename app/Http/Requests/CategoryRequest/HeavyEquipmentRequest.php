@@ -28,7 +28,7 @@ class HeavyEquipmentRequest extends FormRequest
             'name' => 'nullable|string',
             'model' => 'required|max:50',
             'year_of_manufacture' => 'required|max:4',
-            'current_equipment_location' => 'required|string',
+            'current_equipment_location' => 'nullable|string',
 
 
             'data_certificate_image' => 'nullable',
