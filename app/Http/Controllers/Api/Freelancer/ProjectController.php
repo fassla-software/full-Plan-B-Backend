@@ -25,61 +25,72 @@ class ProjectController extends Controller
     use ApiResponseTrait;
 
     // project list
-    public function project_list(Request $request)
-    {
-        $user_id = auth('sanctum')->user()->id;
+public function project_list(Request $request)
+{
+    $user_id = auth('sanctum')->user()->id;
 
-        // List all equipment models
-        $equipmentModels = [
-            \App\Models\HeavyEquipment::class,
-            \App\Models\VehicleRental::class,
-            \App\Models\CraneRental::class,
-            // Add other models here as needed
-        ];
-        $perPage = $request->get('per_page', 10); // Default to 10 items per page
-        $page = $request->get('page', 1); // Get the current page number
+    // List all equipment models
+    $equipmentModels = [
+        \App\Models\HeavyEquipment::class,
+        \App\Models\VehicleRental::class,
+        \App\Models\CraneRental::class,
+    ];
 
-        $allEquipment = collect();
+    $perPage = $request->get('per_page', 10); // Default to 10 items per page
+    $page = $request->get('page', 1); // Get the current page number
 
-        foreach ($equipmentModels as $model) {
-            // Fetch user-specific equipment from each model with eager-loaded subCategory
-            $equipmentList = $model::with('subCategory:id,image') // Load only ID and image fields
+    $allEquipment = collect();
+
+    foreach ($equipmentModels as $model) {
+        // Eager-load subCategory for all equipment
+        $equipmentList = $model::with('subCategory:id,image')
             ->where('user_id', $user_id)
-                ->get()
-                ->map(function ($equipment) {
-                    // Filter out null values from the equipment record
-                    $filteredEquipment = collect($equipment)->filter(function ($value) {
-                        return !is_null($value);
-                    });
+            ->get()
+            ->map(function ($equipment) {
+                // Filter out null values from the equipment record
+                $filteredEquipment = collect($equipment)->filter(function ($value) {
+                    return !is_null($value);
+                });
 
-                    // Transform the image inside sub_category directly
-                    if ($equipment->subCategory && $equipment->subCategory->image) {
-                        $equipment->subCategory->image = $this->getFullImageUrl($equipment->subCategory->image);
-                    } else {
-                        $equipment->subCategory->image = null;
-                    }
+                // Get sub-category image
+                $subCategoryImage = null;
 
-                    // If any non-null fields remain, include this equipment
-                    return $filteredEquipment->isNotEmpty() ? $filteredEquipment : null;
-                })
-                ->filter(); // Remove null entries
+                if ($equipment->subCategory && $equipment->subCategory->image) {
+                    $subCategoryImage = $this->getFullImageUrl($equipment->subCategory->image);
+                } else {
+                    $subCategoryImage = $this->getDefaultImageUrl();
+                }
 
-            // Merge the result into the main collection
-            $allEquipment = $allEquipment->merge($equipmentList);
-        }
+                // Attach the consistent image to the equipment
+                $filteredEquipment['sub_category_image'] = $subCategoryImage;
 
-        $paginated = new LengthAwarePaginator(
-            $allEquipment->forPage($page, $perPage),
-            $allEquipment->count(),
-            $perPage,
-            $page,
-            ['path' => url()->current(), 'query' => $request->query()] // Maintain query string
-        );
+                return $filteredEquipment->isNotEmpty() ? $filteredEquipment : null;
+            })
+            ->filter();
 
-        return $this->paginatedResponse($paginated, 'All equipment fetched successfully.', 200);
+        $allEquipment = $allEquipment->merge($equipmentList);
     }
 
+    // Paginate results using Laravel's paginator
+    $paginated = new LengthAwarePaginator(
+        $allEquipment->forPage($page, $perPage),
+        $allEquipment->count(),
+        $perPage,
+        $page,
+        ['path' => url()->current(), 'query' => $request->query()] // Maintain query string
+    );
 
+    return $this->paginatedResponse($paginated, 'All equipment fetched successfully.', 200);
+}
+
+
+/**
+ * Returns a default image URL if the actual image is missing.
+ */
+private function getDefaultImageUrl()
+{
+    return asset('assets/uploads/no-image.png');
+}
 
 
     // project create
