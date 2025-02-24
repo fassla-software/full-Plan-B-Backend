@@ -66,7 +66,8 @@ return [
         ],
 
         'firebase' => [
-            'driver' => 'firebase',
+            'driver' => 'custom',
+            'via' => App\Services\FirebaseBroadcaster::class,
             'credentials' => env('FIREBASE_CREDENTIALS'),
         ],
 
