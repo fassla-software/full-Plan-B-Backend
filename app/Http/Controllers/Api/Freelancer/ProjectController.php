@@ -11,6 +11,7 @@ use App\Models\ProjectHistory;
 use App\Models\User;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -24,7 +25,7 @@ class ProjectController extends Controller
     use ApiResponseTrait;
 
     // project list
-        public function project_list()
+    public function project_list(Request $request)
     {
         $user_id = auth('sanctum')->user()->id;
 
@@ -35,18 +36,28 @@ class ProjectController extends Controller
             \App\Models\CraneRental::class,
             // Add other models here as needed
         ];
+        $perPage = $request->get('per_page', 10); // Default to 10 items per page
+        $page = $request->get('page', 1); // Get the current page number
 
         $allEquipment = collect();
 
         foreach ($equipmentModels as $model) {
-            // Fetch user-specific equipment from each model
-            $equipmentList = $model::where('user_id', $user_id)
+            // Fetch user-specific equipment from each model with eager-loaded subCategory
+            $equipmentList = $model::with('subCategory:id,image') // Load only ID and image fields
+            ->where('user_id', $user_id)
                 ->get()
                 ->map(function ($equipment) {
                     // Filter out null values from the equipment record
                     $filteredEquipment = collect($equipment)->filter(function ($value) {
                         return !is_null($value);
                     });
+
+                    // Transform the image inside sub_category directly
+                    if ($equipment->subCategory && $equipment->subCategory->image) {
+                        $equipment->subCategory->image = $this->getFullImageUrl($equipment->subCategory->image);
+                    } else {
+                        $equipment->subCategory->image = null;
+                    }
 
                     // If any non-null fields remain, include this equipment
                     return $filteredEquipment->isNotEmpty() ? $filteredEquipment : null;
@@ -57,8 +68,19 @@ class ProjectController extends Controller
             $allEquipment = $allEquipment->merge($equipmentList);
         }
 
-        return $this->successResponse($allEquipment->values(), 'All equipment fetched successfully.', 200);
+        $paginated = new LengthAwarePaginator(
+            $allEquipment->forPage($page, $perPage),
+            $allEquipment->count(),
+            $perPage,
+            $page,
+            ['path' => url()->current(), 'query' => $request->query()] // Maintain query string
+        );
+
+        return $this->paginatedResponse($paginated, 'All equipment fetched successfully.', 200);
     }
+
+
+
 
     // project create
     public function create_project(Request $request)
@@ -556,5 +578,14 @@ class ProjectController extends Controller
             'msg'=> __('User not found'),
         ]);
 
+    }
+
+    private function getFullImageUrl($imageId)
+    {
+        if (!$imageId) {
+            return null;
+        }
+        $imageDetails = get_attachment_image_by_id($imageId);
+        return $imageDetails['img_url'] ?? null;
     }
 }

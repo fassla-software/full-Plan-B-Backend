@@ -21,4 +21,18 @@ trait ApiResponseTrait
             'data' => null
         ], $status);
     }
+
+    protected function paginatedResponse($paginationData, $message = 'Success', $status = 200)
+    {
+        return response()->json(
+            array_merge(
+                [
+                    'status' => $status,
+                    'message' => $message
+                ],
+                $paginationData->toArray() // Convert pagination object to an array
+            ),
+            $status
+        );
+    }
 }

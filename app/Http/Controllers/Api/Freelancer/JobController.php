@@ -417,8 +417,8 @@ class JobController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return $this->successResponse($my_proposals, 'success', 200);
-
+        // Merge pagination data with custom status and message
+        return $this->paginatedResponse($my_proposals, 'All equipment fetched successfully.', 200);
     }
 
     public function my_offer()
