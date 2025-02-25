@@ -70,6 +70,7 @@
     <th>{{ __('User Name') }}</th>
     <th>{{ __('Image') }}</th>
     <th>{{ __('Category') }}</th>
+    <th>{{ __('Model') }}</th>
     <th>{{ __('Created At') }}</th>
     <th>{{ __('Actions') }}</th>
 </tr>
@@ -88,6 +89,7 @@
             @endif
         </td>
         <td>{{ $equipment['category_name'] ?? 'N/A' }}</td>
+        <td>{{ $equipment['model'] ?? 'N/A' }}</td>
         <td>{{ $equipment['created_at'] ?? 'N/A' }}</td>
         <td>
             <x-status.table.select-action :title="__('Select Action')" />

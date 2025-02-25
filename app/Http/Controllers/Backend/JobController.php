@@ -36,7 +36,7 @@ class JobController extends Controller
 
       foreach ($jobModels as $model) {
           // Eager load relationships: user, category, subCategory
-          $jobList = $model::with(['user:id,first_name,last_name', 'category:id,category', 'subCategory:id,image'])
+          $jobList = $model::with(['user:id,first_name,last_name', 'category:id,category', 'subCategory:id,sub_category,image'])
               ->whereNotNull('id')
               ->get()
               ->map(function ($job) {
@@ -51,6 +51,8 @@ class JobController extends Controller
 
                   // Add user name
                   $filteredJob['user_name'] = $job->user ? $job->user->first_name . ' ' . $job->user->last_name : 'N/A';
+
+                  $filteredJob['equipment_name'] = $job->subCategory ? $job->subCategory->sub_category : 'N/A';
 
                   // Add category name
                   $filteredJob['category_name'] = $job->category ? $job->category->category : 'N/A';
@@ -110,15 +112,18 @@ class JobController extends Controller
         $allJobs = collect();
 
         foreach ($jobModels as $model) {
-            $jobList = $model::with(['user:id,first_name,last_name', 'category:id,category', 'subCategory:id,image'])
+            $jobList = $model::with(['user:id,first_name,last_name', 'category:id,category', 'subCategory:id,sub_category,image'])
                 ->get()
                 ->map(function ($job) {
                     return [
                         'id' => $job->id,
-                        'name' => $job->name ?? 'N/A',
+//                        'name' => $job->name ?? 'N/A',
+                        'equipment_name' => $job->subCategory ? $job->subCategory->sub_category : 'N/A',
                         'user_name' => $job->user ? $job->user->first_name . ' ' . $job->user->last_name : 'N/A',
                         'category_name' => $job->category ? $job->category->category : 'N/A',
                         'created_at' => $job->created_at->format('Y-m-d H:i:s'),
+                        'max_arrival_date' => $job->max_arrival_date,
+                        'max_offer_deadline' => $job->max_offer_deadline,
                     ];
                 });
 

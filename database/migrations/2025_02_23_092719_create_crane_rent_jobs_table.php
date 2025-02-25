@@ -28,8 +28,8 @@ return new class extends Migration
             $table->string('day')->nullable();
             $table->string('month')->nullable();
             $table->float('search_range_around_worksite')->nullable();
-            $table->string('latest_arrival_time')->nullable();
-            $table->string('latest_offer_time')->nullable();
+            $table->string('max_arrival_date')->nullable();
+            $table->string('max_offer_deadline')->nullable();
             $table->text('additional_requirements')->nullable();
             $table->integer('number_of_loading_points')->nullable()->default(1);
             $table->string('load_image')->nullable();

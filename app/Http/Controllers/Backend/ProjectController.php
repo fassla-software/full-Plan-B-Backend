@@ -196,6 +196,7 @@ public function all_project(Request $request)
                         'name' => $equipment->name ?? 'N/A',
                         'user_name' => $equipment->user ? $equipment->user->first_name . ' ' . $equipment->user->last_name : 'N/A',
                         'category_name' => $equipment->category ? $equipment->category->category : 'N/A',
+                        'model' => $equipment->model,
                         'created_at' => $equipment->created_at->format('Y-m-d H:i:s'),
                     ];
                 });

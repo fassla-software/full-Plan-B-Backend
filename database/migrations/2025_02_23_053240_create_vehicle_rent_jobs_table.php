@@ -27,8 +27,8 @@ return new class extends Migration
             $table->integer('required_load_capacity')->nullable();
             $table->string('required_rental_duration')->nullable(); // Duration in days
             $table->decimal('search_radius')->nullable(); // Radius in kilometers
-            $table->string('latest_availability_time')->nullable();
-            $table->string('offer_deadline')->nullable();
+            $table->string('max_arrival_date')->nullable();
+            $table->string('max_offer_deadline')->nullable();
             $table->text('work_description')->nullable();
             $table->boolean('safety_compliant')->default(false);
             $table->boolean('environmental_compliant')->default(false);

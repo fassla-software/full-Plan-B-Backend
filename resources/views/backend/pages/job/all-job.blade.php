@@ -30,11 +30,14 @@
                                     <thead>
 <tr>
     <th>{{ __('ID') }}</th>
-    <th>{{ __('Name') }}</th>
+{{--    <th>{{ __('Name') }}</th>--}}
+    <th>{{ __('Equipment Name') }}</th>
     <th>{{ __('User Name') }}</th>
     <th>{{ __('Image') }}</th>
     <th>{{ __('Category') }}</th>
     <th>{{ __('Created At') }}</th>
+    <th>{{ __('Max Arrival Date') }}</th>
+    <th>{{ __('Max Offer Deadline') }}</th>
     <th>{{ __('Actions') }}</th>
 </tr>
 </thead>
@@ -42,17 +45,20 @@
 @foreach($paginated->items() as $job)
     <tr>
         <td>{{ $job['id'] }}</td>
-        <td>{{ $job['name'] ?? 'N/A' }}</td>
+{{--        <td>{{ $job['name'] ?? 'N/A' }}</td>--}}
+        <td>{{ $job['equipment_name'] ?? 'N/A' }}</td>
         <td>{{ $job['user_name'] ?? 'N/A' }}</td>
         <td>
             @if(!empty($job['sub_category_image']))
-                <img width="100" height="100" src="{{ $job['sub_category_image'] }}" alt="Job Image">
+                <img width="60" height="60" src="{{ $job['sub_category_image'] }}" alt="Job Image">
             @else
-                <img width="100" height="100" src="{{ asset('assets/uploads/no-image.png') }}" alt="No Image">
+                <img width="60" height="60" src="{{ asset('assets/uploads/no-image.png') }}" alt="No Image">
             @endif
         </td>
         <td>{{ $job['category_name'] ?? 'N/A' }}</td>
         <td>{{ $job['created_at'] ?? 'N/A' }}</td>
+        <td>{{ $job['max_arrival_date'] ?? 'N/A' }}</td>
+        <td>{{ $job['max_offer_deadline'] ?? 'N/A' }}</td>
         <td>
             <x-status.table.select-action :title="__('Select Action')" />
             <ul class="dropdown-menu status_dropdown__list">
