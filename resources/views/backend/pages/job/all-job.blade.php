@@ -13,7 +13,16 @@
                             <h4 class="customMarkup__single__title">{{ __('All Requests') }}</h4>
                             <x-search.search-in-table :id="'string_search'" />
                         </div>
+
+
                         <div class="customMarkup__single__inner mt-4">
+
+                            <div class="d-flex justify-content-end mb-3">
+                                <a href="{{ route('admin.job.export') }}" class="btn btn-success">
+                                    <i class="fa fa-download"></i> {{ __('Export to Excel') }}
+                                </a>
+                            </div>
+
                             <!-- Table Start -->
                             <div class="custom_table style-04 search_result">
                                 <x-validation.error />
@@ -51,8 +60,12 @@
                     <a href="{{ route('admin.job.details', $job['id']) }}" class="btn dropdown-item status_dropdown__list__link">{{ __('View Details') }}</a>
                 </li>
                 <li class="status_dropdown__item">
-                    <x-popup.delete-popup :title="__('Delete Job')" :url="route('admin.job.delete', $job['id'])"/>
+                    <button class="btn dropdown-item status_dropdown__list__link delete-job-button"
+                            data-id="{{ $job['id'] }}">
+                        {{ __('Delete Request') }}
+                    </button>
                 </li>
+
             </ul>
         </td>
     </tr>
@@ -74,6 +87,54 @@
             </div>
         </div>
     </div>
+@endsection
+
+@section('script')
+    <x-sweet-alert.sweet-alert2-js />
+
+    <script>
+        $(document).on('click', '.delete-job-button', function (e) {
+            e.preventDefault();
+            let jobId = $(this).data('id');
+            let deleteUrl = "{{ route('admin.job.delete', ':id') }}".replace(':id', jobId);
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this action!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: deleteUrl,
+                        type: 'POST',
+                        data: {
+                            _token: "{{ csrf_token() }}"
+                        },
+                        success: function (response) {
+                            if (response.status === 'success') {
+                                Swal.fire(
+                                    'Deleted!',
+                                    response.message,
+                                    'success'
+                                ).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire('Error!', response.message, 'error');
+                            }
+                        },
+                        error: function () {
+                            Swal.fire('Error!', 'There was an error deleting the job.', 'error');
+                        }
+                    });
+                }
+            });
+        });
+    </script>
 @endsection
 
 

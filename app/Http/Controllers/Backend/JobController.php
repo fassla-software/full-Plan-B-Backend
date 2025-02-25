@@ -17,6 +17,8 @@ use App\Models\VehicleRentalJob;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Mail;
+use App\Exports\JobsExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class JobController extends Controller
 {
@@ -97,6 +99,35 @@ class JobController extends Controller
         return $imageDetails['img_url'] ?? null;
     }
 
+    public function export_jobs(Request $request)
+    {
+        $jobModels = [
+            HeavyEquipmentJob::class,
+            VehicleRentalJob::class,
+            CraneRentalJob::class,
+        ];
+
+        $allJobs = collect();
+
+        foreach ($jobModels as $model) {
+            $jobList = $model::with(['user:id,first_name,last_name', 'category:id,category', 'subCategory:id,image'])
+                ->get()
+                ->map(function ($job) {
+                    return [
+                        'id' => $job->id,
+                        'name' => $job->name ?? 'N/A',
+                        'user_name' => $job->user ? $job->user->first_name . ' ' . $job->user->last_name : 'N/A',
+                        'category_name' => $job->category ? $job->category->category : 'N/A',
+                        'created_at' => $job->created_at->format('Y-m-d H:i:s'),
+                    ];
+                });
+
+            $allJobs = $allJobs->merge($jobList);
+        }
+
+        return Excel::download(new JobsExport($allJobs), 'all_requests.xlsx');
+    }
+
     // search job
     public function search_job(Request $request)
     {
@@ -120,17 +151,60 @@ class JobController extends Controller
     //  job details
     public function job_details($id=null)
     {
-        JobPost::findOrFail($id);
-        $job = JobPost::with(['job_category','job_history'])->whereHas('job_creator')->where('id',$id)->first();
+        // Define all job models
+        $jobModels = [
+            HeavyEquipmentJob::class,
+            VehicleRentalJob::class,
+            CraneRentalJob::class,
+        ];
 
-        if($job){
-            $user = User::with(['user_introduction','user_country','user_state','user_city'])->where('id',$job->user_id)->first();
-            $complete_jobs_count = Order::where('is_project_job','job')->where('status',3)->where('user_id',$job->user_id)->get();
-            AdminNotification::where('identity',$id)->update(['is_read'=>1]);
-            return isset($job) ? view('backend.pages.job.job-details',compact(['job','user','complete_jobs_count'])) : back();
-        }else{
-            return back();
+        $job = null;
+
+        // Loop through each model to find the job
+        foreach ($jobModels as $model) {
+            $job = $model::with(['user:id,first_name,last_name,email', 'category:id,category', 'subCategory:id,sub_category,image'])
+                ->where('id', $id)
+                ->first();
+
+            if ($job) {
+                break; // Stop once the job is found
+            }
         }
+
+        if (!$job) {
+            return back()->withErrors(['error' => 'Job not found']);
+        }
+
+        // Attach sub-category image
+        $job->sub_category_image = $job->subCategory && $job->subCategory->image
+            ? $this->getFullImageUrl($job->subCategory->image)
+            : $this->getDefaultImageUrl();
+
+        // Fetch user details
+        $user = User::with(['user_introduction', 'user_country', 'user_state', 'user_city'])
+            ->where('id', $job->user_id)
+            ->first();
+
+        // Count completed jobs
+        $completedJobsCount = Order::where('is_project_job', 'job')
+            ->where('status', 3)
+            ->where('user_id', $job->user_id)
+            ->count();
+
+        return view('backend.pages.job.job-details', compact('job', 'user', 'completedJobsCount'));
+
+
+//        JobPost::findOrFail($id);
+//        $job = JobPost::with(['job_category','job_history'])->whereHas('job_creator')->where('id',$id)->first();
+//
+//        if($job){
+//            $user = User::with(['user_introduction','user_country','user_state','user_city'])->where('id',$job->user_id)->first();
+//            $complete_jobs_count = Order::where('is_project_job','job')->where('status',3)->where('user_id',$job->user_id)->get();
+//            AdminNotification::where('identity',$id)->update(['is_read'=>1]);
+//            return isset($job) ? view('backend.pages.job.job-details',compact(['job','user','complete_jobs_count'])) : back();
+//        }else{
+//            return back();
+//        }
 
     }
 
@@ -205,14 +279,45 @@ class JobController extends Controller
     }
 
     // delete single job
-    public function delete_job($id)
+
+    public function delete_job(Request $request, $id)
     {
-        JobHistory::where('job_id',$id)->delete();
-        AdminNotification::where('identity',$id)->delete();
-        Bookmark::where('identity',$id)->where('is_project_job','job')->delete();
-        JobPost::find($id)->delete();
-        return redirect()->back()->with(toastr_error(__('Job Successfully Deleted.')));
+        // Define all job models
+        $jobModels = [
+            HeavyEquipmentJob::class,
+            VehicleRentalJob::class,
+            CraneRentalJob::class,
+        ];
+
+        $job = null;
+
+        // Loop through the models to find the job
+        foreach ($jobModels as $model) {
+            $job = $model::find($id);
+            if ($job) {
+                break; // Stop when job is found
+            }
+        }
+
+        if (!$job) {
+            return response()->json(['status' => 'error', 'message' => 'Job not found!'], 404);
+        }
+
+        // Delete the job
+        $job->delete();
+
+        return response()->json(['status' => 'success', 'message' => 'Job deleted successfully!']);
     }
+
+
+//    public function delete_job($id)
+//    {
+//        JobHistory::where('job_id',$id)->delete();
+//        AdminNotification::where('identity',$id)->delete();
+//        Bookmark::where('identity',$id)->where('is_project_job','job')->delete();
+//        JobPost::find($id)->delete();
+//        return redirect()->back()->with(toastr_error(__('Job Successfully Deleted.')));
+//    }
 
     //auto approval settings
     public function auto_approval_settings(Request $request)

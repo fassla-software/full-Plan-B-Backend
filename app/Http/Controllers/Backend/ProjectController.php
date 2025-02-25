@@ -17,6 +17,8 @@ use App\Models\VehicleRental;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Mail;
+use App\Exports\EquipmentExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProjectController extends Controller
 {
@@ -175,6 +177,35 @@ public function all_project(Request $request)
             return back();*/
     }
 
+    public function export_equipment(Request $request)
+    {
+        $equipmentModels = [
+            HeavyEquipment::class,
+            VehicleRental::class,
+            CraneRental::class,
+        ];
+
+        $allEquipments = collect();
+
+        foreach ($equipmentModels as $model) {
+            $equipmentList = $model::with(['user:id,first_name,last_name', 'category:id,category', 'subCategory:id,image'])
+                ->get()
+                ->map(function ($equipment) {
+                    return [
+                        'id' => $equipment->id,
+                        'name' => $equipment->name ?? 'N/A',
+                        'user_name' => $equipment->user ? $equipment->user->first_name . ' ' . $equipment->user->last_name : 'N/A',
+                        'category_name' => $equipment->category ? $equipment->category->category : 'N/A',
+                        'created_at' => $equipment->created_at->format('Y-m-d H:i:s'),
+                    ];
+                });
+
+            $allEquipments = $allEquipments->merge($equipmentList);
+        }
+
+        return Excel::download(new EquipmentExport($allEquipments), 'all_services.xlsx');
+    }
+
     //  project status change active-to-inactive-to-active
     public function change_status($id=null)
     {
@@ -253,17 +284,35 @@ public function all_project(Request $request)
     }
 
     // delete single project with attributes
-    public function delete_project($id)
+    public function delete_project(Request $request, $id)
     {
-        ProjectAttribute::where('create_project_id',$id)->delete();
-        ProjectHistory::where('project_id',$id)->delete();
-        Bookmark::where('identity',$id)->where('is_project_job','project')->delete();
-        Project::find($id)->delete();
+        // Define all equipment models
+        $equipmentModels = [
+            HeavyEquipment::class,
+            VehicleRental::class,
+            CraneRental::class,
+        ];
 
-        //security manage
-        if(moduleExists('SecurityManage')){
-            LogActivity::addToLog('Project delete by admin','Admin');
+        foreach ($equipmentModels as $model) {
+            $equipment = $model::find($id);
+
+            if ($equipment) {
+                $equipment->delete();
+                return response()->json(['success' => true, 'message' => 'Equipment deleted successfully!']);
+            }
         }
-        return redirect()->back()->with(toastr_error(__('Project Successfully Deleted with Attributes.')));
+
+        return response()->json(['success' => false, 'message' => 'Equipment not found!']);
+
+//        ProjectAttribute::where('create_project_id',$id)->delete();
+//        ProjectHistory::where('project_id',$id)->delete();
+//        Bookmark::where('identity',$id)->where('is_project_job','project')->delete();
+//        Project::find($id)->delete();
+//
+//        //security manage
+//        if(moduleExists('SecurityManage')){
+//            LogActivity::addToLog('Project delete by admin','Admin');
+//        }
+//        return redirect()->back()->with(toastr_error(__('Project Successfully Deleted with Attributes.')));
     }
 }

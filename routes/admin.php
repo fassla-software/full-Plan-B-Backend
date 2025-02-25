@@ -62,6 +62,9 @@ Route::group(['as'=>'admin.','prefix'=>'admin'],function(){
                 Route::get('details/{id}', 'project_details')->name('project.details')->permission('project-details');
                 Route::post('change-status/{id}', 'change_status')->name('project.status.change')->permission('project-status-change');
                 Route::post('delete/{id}','delete_project')->name('project.delete')->permission('project-delete');
+
+                Route::get('equipment/export', 'export_equipment')->name('equipment.export');
+
             });
         });
 
@@ -96,6 +99,9 @@ Route::group(['as'=>'admin.','prefix'=>'admin'],function(){
                 Route::post('change-status/{id}', 'change_status')->name('job.status.change')->permission('job-status-change');
                 Route::post('reject-job/{id}', 'reject_job')->name('job.reject');
                 Route::post('delete/{id}','delete_job')->name('job.delete')->permission('job-delete');
+
+                Route::get('export', 'export_jobs')->name('job.export');
+
             });
         });
 
