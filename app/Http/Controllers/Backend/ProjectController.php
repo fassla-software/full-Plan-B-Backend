@@ -21,64 +21,64 @@ use Illuminate\Support\Facades\Mail;
 class ProjectController extends Controller
 {
     // all projects
-    public function all_project(Request $request)
-    {
+public function all_project(Request $request)
+{
+    $equipmentModels = [
+        HeavyEquipment::class,
+        VehicleRental::class,
+        CraneRental::class,
+    ];
 
-        // Define all equipment models
-        $equipmentModels = [
-            HeavyEquipment::class,
-            VehicleRental::class,
-            CraneRental::class, // Add other models if needed
-        ];
+    $perPage = $request->get('per_page', 10);
+    $query = collect();
 
-        $perPage = $request->get('per_page', 10); // Default to 10 items per page
-        $page = $request->get('page', 1); // Get the current page number
+    foreach ($equipmentModels as $model) {
+        // Eager load relations: user, category, subCategory
+        $equipmentList = $model::with(['user:id,first_name,last_name', 'category:id,category', 'subCategory:id,image'])
+            ->whereNotNull('id')
+            ->get()
+            ->map(function ($equipment) {
+                $filteredEquipment = collect($equipment)->filter(function ($value) {
+                    return !is_null($value);
+                });
 
-        $allEquipment = collect();
+                // Attach sub-category image
+                $filteredEquipment['sub_category_image'] = $equipment->subCategory && $equipment->subCategory->image
+                    ? $this->getFullImageUrl($equipment->subCategory->image)
+                    : $this->getDefaultImageUrl();
 
-        foreach ($equipmentModels as $model) {
-            // Eager load the subCategory relation with the image field only
-            $equipmentList = $model::with('subCategory:id,image')
-                ->get()
-                ->map(function ($equipment) {
-                    // Filter out null values from the equipment record
-                    $filteredEquipment = collect($equipment)->filter(function ($value) {
-                        return !is_null($value);
-                    });
+                // Add user name
+                $filteredEquipment['user_name'] = $equipment->user ? $equipment->user->first_name . ' ' . $equipment->user->last_name  : 'N/A';
 
-                    // Attach the sub-category image if it exists
-                    if ($equipment->subCategory && $equipment->subCategory->image) {
-                        $filteredEquipment['sub_category_image'] = $this->getFullImageUrl($equipment->subCategory->image);
-                    } else {
-                        $filteredEquipment['sub_category_image'] = $this->getDefaultImageUrl();
-                    }
+                // Add category name
+                $filteredEquipment['category_name'] = $equipment->category ? $equipment->category->category : 'N/A';
 
-                    // Remove the `subCategory` relation from the response
-                    $filteredEquipment->forget('subCategory');
+                // Add created_at
+                $filteredEquipment['created_at'] = $equipment->created_at->format('Y-m-d H:i:s');
 
-                    // Only include non-empty equipment data
-                    return $filteredEquipment->isNotEmpty() ? $filteredEquipment : null;
-                })
-                ->filter();
+                // Remove the subCategory relation
+                $filteredEquipment->forget('subCategory');
 
-            // Merge all equipment into a single collection
-            $allEquipment = $allEquipment->merge($equipmentList);
-        }
+                return $filteredEquipment->isNotEmpty() ? $filteredEquipment : null;
+            })
+            ->filter();
 
-        // Paginate the combined equipment list
-        $paginated = new LengthAwarePaginator(
-            $allEquipment->forPage($page, $perPage),
-            $allEquipment->count(),
-            $perPage,
-            $page,
-            ['path' => url()->current(), 'query' => $request->query()]
-        );
-
-        //return $paginated;
-        return view('backend.pages.project.all-project',compact('paginated'));
-//        $all_projects = Project::whereHas('project_creator')->latest()->paginate(10);
-//        return view('backend.pages.project.all-project',compact('all_projects'));
+        $query = $query->merge($equipmentList);
     }
+
+    // Paginate the results
+    $page = $request->get('page', 1);
+    $paginated = new \Illuminate\Pagination\LengthAwarePaginator(
+        $query->forPage($page, $perPage),
+        $query->count(),
+        $perPage,
+        $page,
+        ['path' => url()->current(), 'query' => $request->query()]
+    );
+
+    return view('backend.pages.project.all-project', compact('paginated'));
+}
+
 
     /**
      * Returns a default image URL if the actual image is missing.
@@ -132,13 +132,47 @@ class ProjectController extends Controller
     //  project details
     public function project_details($id=null)
     {
-            $project = Project::with('project_history')->whereHas('project_creator')->where('id',$id)->first();
+          // Find the equipment across models
+    $equipmentModels = [
+        HeavyEquipment::class,
+        VehicleRental::class,
+        CraneRental::class,
+    ];
+
+    $equipment = null;
+
+    foreach ($equipmentModels as $model) {
+        $equipment = $model::with(['user', 'category', 'subCategory'])
+            ->where('id', $id)
+            ->first();
+
+        if ($equipment) break; // Stop looping if found
+    }
+
+    // Handle if no equipment found
+    if (!$equipment) {
+        return back()->withErrors(['error' => 'Equipment not found']);
+    }
+
+    // Load user details with relations
+    $user = User::with(['user_introduction', 'user_country', 'user_state', 'user_city'])
+        ->where('id', $equipment->user_id)
+        ->first();
+
+    // Attach sub-category image
+    $equipment->sub_category_image = $equipment->subCategory && $equipment->subCategory->image
+        ? $this->getFullImageUrl($equipment->subCategory->image)
+        : $this->getDefaultImageUrl();
+
+    return view('backend.pages.project.project-details', compact('equipment', 'user'));
+      
+            /*$project = Project::with('project_history')->whereHas('project_creator')->where('id',$id)->first();
             if($project){
                 $user = User::with('user_introduction','user_country','user_state','user_city')->where('id',$project->user_id)->first();
                 AdminNotification::where('identity',$id)->update(['is_read'=>1]);
                 return isset($project) ? view('backend.pages.project.project-details',compact(['project','user'])) : back();
             }
-            return back();
+            return back();*/
     }
 
     //  project status change active-to-inactive-to-active

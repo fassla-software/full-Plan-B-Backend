@@ -19,49 +19,53 @@
                                 <x-validation.error />
                                 <table class="DataTable_activation">
                                     <thead>
-                                    <tr>
-                                        <th>{{ __('ID') }}</th>
-                                        <th>{{ __('Name') }}</th>
-                                        <th>{{ __('Image') }}</th>
-                                        <th>{{ __('Location') }}</th>
-                                        <th>{{ __('Category ID') }}</th>
-                                        <th>{{ __('Status') }}</th>
-                                        <th>{{ __('Actions') }}</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    @foreach($paginated->items() as $equipment)
-                                        <tr>
-                                            <td>{{ $equipment['id'] }}</td>
-                                            <td>{{ $equipment['name'] ?? 'N/A' }}</td>
-                                            <td>
-                                                @if(!empty($equipment['sub_category_image']))
-                                                    <img width="100" height="100" src="{{ $equipment['sub_category_image'] }}" alt="Equipment Image">
-                                                @else
-                                                    <img width="100" height="100" src="{{ asset('assets/uploads/no-image.png') }}" alt="No Image">
-                                                @endif
-                                            </td>
-                                            <td>{{ $equipment['current_location'] ?? 'N/A' }}</td>
-                                            <td>{{ $equipment['category_id'] ?? 'N/A' }}</td>
-                                            <td>
-                                                <x-status.table.active-inactive :status="$equipment['status'] ?? 0"/>
-                                            </td>
-                                            <td>
-                                                <x-status.table.select-action :title="__('Select Action')"/>
-                                                <ul class="dropdown-menu status_dropdown__list">
-                                                    <li class="status_dropdown__item">
-                                                        <a href="{{ route('admin.project.details', $equipment['id']) }}" class="btn dropdown-item status_dropdown__list__link">{{ __('View Details') }}</a>
-                                                    </li>
-                                                    <li class="status_dropdown__item">
-                                                        <x-popup.delete-popup :title="__('Delete Equipment')" :url="route('admin.project.delete', $equipment['id'])"/>
-                                                    </li>
-                                                </ul>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                    </tbody>
+<tr>
+    <th>{{ __('ID') }}</th>
+    <th>{{ __('Name') }}</th>
+    <th>{{ __('User Name') }}</th>
+    <th>{{ __('Image') }}</th>
+    <th>{{ __('Category') }}</th>
+    <th>{{ __('Created At') }}</th>
+    <th>{{ __('Actions') }}</th>
+</tr>
+</thead>
+<tbody>
+@foreach($paginated->items() as $job)
+    <tr>
+        <td>{{ $job['id'] }}</td>
+        <td>{{ $job['name'] ?? 'N/A' }}</td>
+        <td>{{ $job['user_name'] ?? 'N/A' }}</td>
+        <td>
+            @if(!empty($job['sub_category_image']))
+                <img width="100" height="100" src="{{ $job['sub_category_image'] }}" alt="Job Image">
+            @else
+                <img width="100" height="100" src="{{ asset('assets/uploads/no-image.png') }}" alt="No Image">
+            @endif
+        </td>
+        <td>{{ $job['category_name'] ?? 'N/A' }}</td>
+        <td>{{ $job['created_at'] ?? 'N/A' }}</td>
+        <td>
+            <x-status.table.select-action :title="__('Select Action')" />
+            <ul class="dropdown-menu status_dropdown__list">
+                <li class="status_dropdown__item">
+                    <a href="{{ route('admin.job.details', $job['id']) }}" class="btn dropdown-item status_dropdown__list__link">{{ __('View Details') }}</a>
+                </li>
+                <li class="status_dropdown__item">
+                    <x-popup.delete-popup :title="__('Delete Job')" :url="route('admin.job.delete', $job['id'])"/>
+                </li>
+            </ul>
+        </td>
+    </tr>
+@endforeach
+</tbody>
                                 </table>
-                                <x-pagination.laravel-paginate :allData="$paginated"/>
+                                {{-- Table Pagination Links --}}
+                                @if ($paginated->hasPages())
+                                    <div class="pagination-wrapper">
+                                        {{ $paginated->links() }}
+                                    </div>
+                                @endif
+
                             </div>
                             <!-- Table End -->
                         </div>
@@ -72,11 +76,6 @@
     </div>
 @endsection
 
-@section('script')
-    <x-sweet-alert.sweet-alert2-js/>
-    <x-select2.select2-js/>
-    @include('backend.pages.project.project-js')
-@endsection
 
 {{--@extends('backend.layout.master')--}}
 {{--@section('title', __('All Jobs'))--}}

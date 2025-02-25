@@ -20,63 +20,65 @@ use Illuminate\Support\Facades\Mail;
 
 class JobController extends Controller
 {
-    public function all_job(Request $request)
-    {
+  public function all_job(Request $request)
+  {
+      // Define all job models
+      $jobModels = [
+          HeavyEquipmentJob::class,
+          VehicleRentalJob::class,
+          CraneRentalJob::class, // Add other models if needed
+      ];
 
-        // Define all equipment models
-        $equipmentModels = [
-            HeavyEquipmentJob::class,
-            VehicleRentalJob::class,
-            CraneRentalJob::class, // Add other models if needed
-        ];
+      $perPage = $request->get('per_page', 10);
+      $allJobs = collect();
 
-        $perPage = $request->get('per_page', 10); // Default to 10 items per page
-        $page = $request->get('page', 1); // Get the current page number
+      foreach ($jobModels as $model) {
+          // Eager load relationships: user, category, subCategory
+          $jobList = $model::with(['user:id,first_name,last_name', 'category:id,category', 'subCategory:id,image'])
+              ->whereNotNull('id')
+              ->get()
+              ->map(function ($job) {
+                  $filteredJob = collect($job)->filter(function ($value) {
+                      return !is_null($value);
+                  });
 
-        $allEquipment = collect();
+                  // Attach sub-category image
+                  $filteredJob['sub_category_image'] = $job->subCategory && $job->subCategory->image
+                      ? $this->getFullImageUrl($job->subCategory->image)
+                      : $this->getDefaultImageUrl();
 
-        foreach ($equipmentModels as $model) {
-            // Eager load the subCategory relation with the image field only
-            $equipmentList = $model::with('subCategory:id,image')
-                ->get()
-                ->map(function ($equipment) {
-                    // Filter out null values from the equipment record
-                    $filteredEquipment = collect($equipment)->filter(function ($value) {
-                        return !is_null($value);
-                    });
+                  // Add user name
+                  $filteredJob['user_name'] = $job->user ? $job->user->first_name . ' ' . $job->user->last_name : 'N/A';
 
-                    // Attach the sub-category image if it exists
-                    if ($equipment->subCategory && $equipment->subCategory->image) {
-                        $filteredEquipment['sub_category_image'] = $this->getFullImageUrl($equipment->subCategory->image);
-                    } else {
-                        $filteredEquipment['sub_category_image'] = $this->getDefaultImageUrl();
-                    }
+                  // Add category name
+                  $filteredJob['category_name'] = $job->category ? $job->category->category : 'N/A';
 
-                    // Remove the `subCategory` relation from the response
-                    $filteredEquipment->forget('subCategory');
+                  // Add created_at
+                  $filteredJob['created_at'] = $job->created_at->format('Y-m-d H:i:s');
 
-                    // Only include non-empty equipment data
-                    return $filteredEquipment->isNotEmpty() ? $filteredEquipment : null;
-                })
-                ->filter();
+                  // Remove subCategory relation from the response
+                  $filteredJob->forget('subCategory');
 
-            // Merge all equipment into a single collection
-            $allEquipment = $allEquipment->merge($equipmentList);
-        }
+                  return $filteredJob->isNotEmpty() ? $filteredJob : null;
+              })
+              ->filter();
 
-        // Paginate the combined equipment list
-        $paginated = new LengthAwarePaginator(
-            $allEquipment->forPage($page, $perPage),
-            $allEquipment->count(),
-            $perPage,
-            $page,
-            ['path' => url()->current(), 'query' => $request->query()]
-        );
-        return view('backend.pages.job.all-job',compact('paginated'));
-//        // all jobs
-//        $all_jobs = JobPost::whereHas('job_creator')->where('type','fixed')->latest()->paginate(10);
-//        return view('backend.pages.job.all-job',compact('all_jobs'));
-    }
+          $allJobs = $allJobs->merge($jobList);
+      }
+
+      // Paginate the jobs
+      $page = $request->get('page', 1);
+      $paginated = new \Illuminate\Pagination\LengthAwarePaginator(
+          $allJobs->forPage($page, $perPage),
+          $allJobs->count(),
+          $perPage,
+          $page,
+          ['path' => url()->current(), 'query' => $request->query()]
+      );
+
+      return view('backend.pages.job.all-job', compact('paginated'));
+  }
+
 
     /**
      * Returns a default image URL if the actual image is missing.

@@ -83,4 +83,9 @@ class HeavyEquipment extends Model
     {
         return $this->belongsTo(SubCategory::class, 'sub_category_id');
     }
+  
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }
