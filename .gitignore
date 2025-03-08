@@ -6,6 +6,7 @@
 /storage/*.key
 /storage/pail
 /vendor
+service-account.json
 .env
 .env.backup
 .env.production
