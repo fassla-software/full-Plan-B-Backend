@@ -45,8 +45,6 @@
                 <div class="customMarkup__single">
 
                     <div class="customMarkup__single__item">
-
-
                         <div class="customMarkup__single__item__flex">
                             <h4 class="customMarkup__single__title">{{ __('All Equipment') }}</h4>
                             <x-search.search-in-table :id="'string_search'" />

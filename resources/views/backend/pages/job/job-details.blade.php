@@ -14,7 +14,7 @@
                         <div class="project-preview">
                             <h4 class="customMarkup__single__title">{{ __('Request Details') }}</h4>
 
-                            <table class="table table-bordered">
+                            <table class="table table-bordered mt-3">
                                 <tr>
                                     <th>{{ __('ID') }}</th>
                                     <td>{{ $job->id }}</td>
@@ -36,6 +36,15 @@
                                     <td><x-status.table.active-inactive :status="$job->status ?? 0" /></td>
                                 </tr>
                                 <tr>
+                                    <th>{{ __('Max Arrival Date') }}</th>
+                                    <td>{{ $job->max_arrival_date ?? 'N/A' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>{{ __('Max Offer Deadline') }}</th>
+                                    <td>{{ $job->max_offer_deadline ?? 'N/A' }}</td>
+
+                                </tr>
+                                <tr>
                                     <th>{{ __('Created At') }}</th>
                                     <td>{{ $job->created_at->format('Y-m-d H:i:s') }}</td>
                                 </tr>
@@ -44,7 +53,7 @@
                             <!-- Sub Category Image -->
                             <div class="mt-4">
                                 <h4>{{ __('Sub Category Image') }}</h4>
-                                <img width="200" height="200"
+                                <img class="mt-3" width="150" height="150"
                                      src="{{ $job->subCategory && $job->sub_category_image ? asset('uploads/' . $job->subCategory->image) : asset('assets/uploads/no-image.png') }}"
                                      alt="{{ $job->subCategory?->sub_category }}">
                             </div>
@@ -56,7 +65,7 @@
                         <div class="project-preview">
                             <h4 class="customMarkup__single__title">{{ __('User Information') }}</h4>
 
-                            <table class="table table-bordered">
+                            <table class="table table-bordered mt-3">
                                 <tr>
                                     <th>{{ __('User Name') }}</th>
                                     <td>{{ $user->first_name }} {{ $user->last_name }}</td>

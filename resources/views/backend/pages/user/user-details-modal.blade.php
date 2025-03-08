@@ -27,6 +27,16 @@
                         <p class="userDetails__wrapper__item"><strong>{{ __('State: ') }}</strong><span class="state"></span></p>
                         
                         <p class="userDetails__wrapper__item"><strong>{{ __('City: ') }}</strong><span class="city"></span></p>
+                        <p class="userDetails__wrapper__item">
+                            <strong>{{ __('Total Requests: ') }}</strong> <span class="total_jobs"></span>
+                            <a href="#" id="view_requests_btn" class="btn btn-sm btn-primary">{{ __('Show') }}</a>
+                        </p>
+                        <p class="userDetails__wrapper__item">
+                            <strong>{{ __('Total Equipment: ') }}</strong> <span class="total_equipment"></span>
+                            <a href="#" id="view_equipment_btn" class="btn btn-sm btn-primary">{{ __('Show') }}</a>
+                        </p>
+
+
                     </div>
                 </div>
                 <div class="modal-footer">

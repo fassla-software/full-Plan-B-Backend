@@ -134,7 +134,67 @@ public function all_project(Request $request)
     //  project details
     public function project_details($id=null)
     {
-          // Find the equipment across models
+        $uniqueFields = [
+            'sub_category_id',
+            'user_id',
+            'category_id',
+            'size',
+            'name',
+            'model',
+            'year_of_manufacture',
+            'current_equipment_location',
+            'current_vehicle_location',
+            'current_location',
+            'data_certificate_image',
+            'driver_license_front_image',
+            'driver_license_back_image',
+            'additional_equipment_images',
+            'additional_vehicle_images',
+            'special_rental_conditions',
+            'comment',
+            'blade_width_near_digging_arm',
+            'add_bucket',
+            'sprinkler_system_type',
+            'tank_capacity',
+            'panda_width',
+            'has_bitumen_temp_gauge',
+            'has_bitumen_level_gauge',
+            'max_equipment_load',
+            'boom_length',
+            'load_at_max_boom_height',
+            'load_at_max_horizontal_boom_extension',
+            'tractor_license_front_image',
+            'tractor_license_back_image',
+            'engine_power',
+            'blade_width',
+            'blade_type',
+            'flatbed_license_front_image',
+            'flatbed_license_back_image',
+            'moves_on',
+            'scraper_width',
+            'vehicle_load',
+            'has_tank_discharge_pump',
+            'has_band_sprinkler_bar',
+            'has_discharge_pump_with_liters_meter',
+            'type',
+            'truck_load_capacity',
+            'load_at_max_arm_height',
+            'load_at_max_arm_distance',
+            'custom_conditions',
+            'load_data_documents',
+            'installation_time',
+            'base_area_required',
+            'maximum_height',
+            'maximum_load_capacity',
+            'insurance_documents',
+            'actual_load_at_max_distance',
+            'operator_qualification_documents',
+            'lat',
+            'long'
+        ];
+
+
+        // Find the equipment across models
     $equipmentModels = [
         HeavyEquipment::class,
         VehicleRental::class,
@@ -166,7 +226,7 @@ public function all_project(Request $request)
         ? $this->getFullImageUrl($equipment->subCategory->image)
         : $this->getDefaultImageUrl();
 
-    return view('backend.pages.project.project-details', compact('equipment', 'user'));
+    return view('backend.pages.project.project-details', compact('equipment', 'user', 'uniqueFields'));
       
             /*$project = Project::with('project_history')->whereHas('project_creator')->where('id',$id)->first();
             if($project){

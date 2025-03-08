@@ -159,4 +159,34 @@ class User extends Authenticatable
     {
         return $this->hasManyThrough(LiveChatMessage::class, LiveChat::class,'client_id','live_chat_id');
     }
+
+    public function heavyEquipment()
+    {
+        return $this->hasMany(HeavyEquipment::class,'user_id','id');
+    }
+
+    public function vehicleRental()
+    {
+        return $this->hasMany(VehicleRental::class,'user_id','id');
+    }
+
+    public function craneRental()
+    {
+        return $this->hasMany(CraneRental::class,'user_id','id');
+    }
+
+    public function heavyEquipmentJob()
+    {
+        return $this->hasMany(HeavyEquipmentJob::class, 'user_id');
+    }
+
+    public function vehicleRentalJob()
+    {
+        return $this->hasMany(VehicleRentalJob::class, 'user_id');
+    }
+
+    public function craneRentalJob()
+    {
+        return $this->hasMany(CraneRentalJob::class, 'user_id');
+    }
 }

@@ -23,7 +23,16 @@
                 let state_id = $(this).data('state_id');
                 let city = $(this).data('city');
                 let city_id = $(this).data('city_id');
+                let total_jobs = $(this).data('total_jobs');
+                let total_equipment = $(this).data('total_equipment');
                 user_type = user_type == '1' ? 'Client' : 'Freelancer';
+
+                $('#user_details .total_jobs').text(total_jobs);
+                $('#user_details .total_equipment').text(total_equipment);
+
+                // Update the "Show" buttons with the user's ID
+                $('#view_requests_btn').attr('href', '/admin' + '/user/' + user_id + '/requests');
+                $('#view_equipment_btn').attr('href', '/admin' + '/user/' + user_id + '/equipment');
 
                 $('#user_details .user_type').text(user_type);
                 $('#user_details .hourly_rate').text(hourly_rate);
@@ -31,6 +40,10 @@
                 $('#user_details .username').text(username);
                 $('#user_details .email').text(email);
                 $('#user_details .phone').text(phone);
+
+                $('#user_details .total_jobs').text(total_jobs);
+                $('#user_details .total_equipment').text(total_equipment);
+
                 country != '' ? $('#user_details .country').text(country) : $('#user_details .country').text('No country');
                 state != '' ? $('#user_details .state').text(state) : $('#user_details .state').text('No state');
                 city != '' ? $('#user_details .city').text(city) : $('#user_details .city').text('No city');

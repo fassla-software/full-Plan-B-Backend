@@ -57,7 +57,11 @@
                                data-state="{{ optional($user->user_state)->state }}"
                                data-state_id="{{ $user->state_id }}"
                                data-city="{{ optional($user->user_city)->city }}"
-                               data-city_id="{{ $user->city_id }}">
+                               data-city_id="{{ $user->city_id }}"
+                               data-total_jobs="{{ $user->total_jobs }}"
+                               data-total_equipment="{{ $user->total_equipment }}"
+                            >
+
                                 {{ __('View User Details') }}
                             </a>
                         </li>

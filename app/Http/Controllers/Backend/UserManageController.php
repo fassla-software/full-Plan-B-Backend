@@ -7,8 +7,12 @@ use App\Http\Controllers\Controller;
 use App\Mail\BasicMail;
 use App\Models\Bookmark;
 use App\Models\ClientNotification;
+use App\Models\CraneRental;
+use App\Models\CraneRentalJob;
 use App\Models\Feedback;
 use App\Models\FreelancerNotification;
+use App\Models\HeavyEquipment;
+use App\Models\HeavyEquipmentJob;
 use App\Models\IdentityVerification;
 use App\Models\IndividualCommissionSetting;
 use App\Models\JobHistory;
@@ -29,6 +33,8 @@ use App\Models\ProjectHistory;
 use App\Models\ProjectSubCategory;
 use App\Models\Report;
 use App\Models\User;
+use App\Models\VehicleRental;
+use App\Models\VehicleRentalJob;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -141,9 +147,78 @@ class UserManageController extends Controller
     //all freelancer
     public function all_freelancers()
     {
-        $all_users = User::with(['identity_verify'])->where('user_type',2)->latest()->paginate(10);
+        $all_users = User::with(['identity_verify'])
+            ->withCount([
+                'heavyEquipment',
+                'vehicleRental',
+                'craneRental',
+                'heavyEquipmentJob',
+                'vehicleRentalJob',
+                'craneRentalJob'
+            ])
+            ->where('user_type',2)->latest()->paginate(10);
+
+
+        // Loop through each user and sum up their job requests
+        foreach ($all_users as $user) {
+            $user->total_jobs =
+                $user->heavy_equipment_job_count +
+                $user->vehicle_rental_job_count +
+                $user->crane_rental_job_count;
+        }
+
+        foreach ($all_users as $user2) {
+            $user2->total_equipment =
+                $user2->heavy_equipment_count +
+                $user2->vehicle_rental_count +
+                $user2->crane_rental_count;
+        }
+
         return view('backend.pages.user.all-users',compact('all_users'));
     }
+
+    public function userRequests($id)
+    {
+        $user = User::findOrFail($id);
+
+        $requests = HeavyEquipmentJob::select('id', 'name', 'category_id','max_arrival_date', 'max_offer_deadline', 'created_at')
+            ->where('user_id', $id)
+            ->union(
+                VehicleRentalJob::select('id', 'name', 'category_id','max_arrival_date', 'max_offer_deadline', 'created_at')
+                    ->where('user_id', $id)
+            )
+            ->union(
+                CraneRentalJob::select('id', 'name', 'category_id','max_arrival_date', 'max_offer_deadline', 'created_at')
+                    ->where('user_id', $id)
+            )
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        return view('backend.pages.user.user-requests', compact('user', 'requests'));
+    }
+
+
+    public function userEquipment($id)
+    {
+        $user = User::findOrFail($id);
+
+        $equipment = HeavyEquipment::select('id', 'name', 'category_id', 'model', 'created_at')
+            ->where('user_id', $id)
+            ->union(
+                VehicleRental::select('id', 'name', 'category_id', 'model', 'created_at')
+                    ->where('user_id', $id)
+            )
+            ->union(
+                CraneRental::select('id', 'name', 'category_id', 'model', 'created_at')
+                    ->where('user_id', $id)
+            )
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        return view('backend.pages.user.user-equipment', compact('user', 'equipment'));
+    }
+
+
 
     // freelancer pagination
     function freelancer_pagination(Request $request)

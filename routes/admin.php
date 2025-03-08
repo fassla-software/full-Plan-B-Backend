@@ -191,6 +191,11 @@ Route::group(['as'=>'admin.','prefix'=>'admin'],function(){
         //user manage
         Route::group(['prefix' => 'user'],function(){
             Route::controller(UserManageController::class)->group(function () {
+
+                Route::get('/{id}/requests', 'userRequests')->name('user.requests');
+                Route::get('/{id}/equipment', 'userEquipment')->name('user.equipment');
+
+
                 Route::match(['get','post'],'add-user','add_user')->name('user.add');
 
                 Route::match(['get','post'],'send-email-to-all-registered-users','send_email_to_all_registered_users')->name('email.send.to.all.users');
