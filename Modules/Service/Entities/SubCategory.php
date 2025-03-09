@@ -13,8 +13,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class SubCategory extends Model
 {
     use HasFactory;
-    protected $fillable = ['sub_category','short_description','category_id','status','slug','meta_title','meta_description','image'];
-    protected $casts = ['status'=>'integer'];
+    protected $fillable = ['sub_category', 'short_description', 'category_id', 'status', 'slug', 'meta_title', 'meta_description', 'image'];
+    protected $casts = ['status' => 'integer'];
 
     protected static function newFactory()
     {
@@ -23,38 +23,41 @@ class SubCategory extends Model
 
     public static function all_sub_categories()
     {
-        return self::select(['id','sub_category','status','image'])->where('status',1)->get();
+        return self::select(['id', 'sub_category', 'status', 'image'])->where('status', 1)->get();
     }
 
     public function category()
     {
-        return $this->belongsTo(Category::class,'category_id');
+        return $this->belongsTo(Category::class, 'category_id');
     }
 
-    public function projects(){
-        return $this->belongsToMany(Project::class,'project_sub_categories')->withTimestamps();
+    public function projects()
+    {
+        return $this->belongsToMany(Project::class, 'project_sub_categories')->withTimestamps();
     }
 
-    public function jobs(){
-        return $this->belongsToMany(JobPost::class,'job_post_sub_categories')->withTimestamps();
+    public function jobs()
+    {
+        return $this->belongsToMany(JobPost::class, 'job_post_sub_categories')->withTimestamps();
     }
 
     public function skills()
     {
-        return $this->hasMany(Skill::class,'sub_category_id','id');
+        return $this->hasMany(Skill::class, 'sub_category_id', 'id');
     }
-  
-     public function sub_sub_categories()
+
+    public function sub_sub_categories()
     {
-        return $this->hasMany(SubSubCategory::class,'sub_category_id','id');
+        return $this->hasMany(SubSubCategory::class, 'sub_category_id', 'id');
     }
-  public function translations(): HasMany
+
+    public function translations(): HasMany
     {
         return $this->hasMany(SubCategoryTranslation::class);
     }
-  public function getTranslatedName($locale)
+
+    public function getTranslatedName($locale)
     {
         return optional($this->translations->where('locale', $locale)->first())->name ?? $this->sub_category;
     }
-
 }

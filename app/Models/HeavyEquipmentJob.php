@@ -2,10 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\HeavyEquipmentJob;
+use Modules\Service\Entities\Category;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Service\Entities\SubCategory;
-use Modules\Service\Entities\Category;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class HeavyEquipmentJob extends Model
 {

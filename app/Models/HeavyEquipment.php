@@ -24,7 +24,7 @@ class HeavyEquipment extends Model
      * @var array
      */
     protected $fillable = [
-      	'sub_category_id',
+        'sub_category_id',
         'user_id',
         'category_id',
         'size',
@@ -83,7 +83,7 @@ class HeavyEquipment extends Model
     {
         return $this->belongsTo(SubCategory::class, 'sub_category_id');
     }
-  
+
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');

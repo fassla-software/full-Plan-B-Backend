@@ -10,8 +10,8 @@ class Offer extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['freelancer_id','client_id','price','description','deadline','status','revision','revision_left','attachment'];
-    protected $casts = ['status'=>'integer'];
+    protected $fillable = ['freelancer_id', 'client_id', 'price', 'description', 'deadline', 'status', 'revision', 'revision_left', 'attachment'];
+    protected $casts = ['status' => 'integer'];
 
     protected static function newFactory()
     {
@@ -20,16 +20,16 @@ class Offer extends Model
 
     public function freelancer()
     {
-        return $this->belongsTo(User::class,'freelancer_id','id');
+        return $this->belongsTo(User::class, 'freelancer_id', 'id');
     }
 
     public function client()
     {
-        return $this->belongsTo(User::class,'client_id','id');
+        return $this->belongsTo(User::class, 'client_id', 'id');
     }
 
     public function milestones()
     {
-        return $this->hasMany(OfferMilestone::class,'offer_id','id');
+        return $this->hasMany(OfferMilestone::class, 'offer_id', 'id');
     }
 }

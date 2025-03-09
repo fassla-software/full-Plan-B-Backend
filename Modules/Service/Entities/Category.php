@@ -17,8 +17,8 @@ class Category extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['category','short_description','slug','meta_title','meta_description','status','image','selected_category'];
-    protected $casts = ['status'=>'integer'];
+    protected $fillable = ['category', 'short_description', 'slug', 'meta_title', 'meta_description', 'status', 'image', 'selected_category'];
+    protected $casts = ['status' => 'integer'];
 
     protected static function newFactory()
     {
@@ -27,46 +27,52 @@ class Category extends Model
 
     public static function all_categories()
     {
-        return self::select(['id','category','short_description','status','image'])->where('status',1)->get();
+        return self::select(['id', 'category', 'short_description', 'status', 'image'])->where('status', 1)->get();
     }
 
     public function skills()
     {
-        return $this->hasMany(Skill::class,'category_id');
+        return $this->hasMany(Skill::class, 'category_id');
     }
 
     public function sub_categories()
     {
-        return $this->hasMany(SubCategory::class,'category_id','id')->select(['id','category_id','sub_category','slug', 'image'])->where('status','1');
+        return $this->hasMany(SubCategory::class, 'category_id', 'id')->select(['id', 'category_id', 'sub_category', 'slug', 'image'])->where('status', '1');
     }
 
 
     public function projects()
     {
-        return $this->hasMany(Project::class,'category_id','id')->select(['id','category_id','slug'])->where(['project_on_off'=>'1','project_approve_request'=>1,'status'=>'1']);
+        return $this->hasMany(Project::class, 'category_id', 'id')->select(['id', 'category_id', 'slug'])->where(['project_on_off' => '1', 'project_approve_request' => 1, 'status' => '1']);
     }
 
     public function jobs()
     {
-        return $this->hasMany(JobPost::class,'category','id')->select(['id','category','slug'])->where(['on_off'=>'1','status'=>'1']);
+        return $this->hasMany(JobPost::class, 'category', 'id')->select(['id', 'category', 'slug'])->where(['on_off' => '1', 'status' => '1']);
     }
 
     public function blogs()
     {
-        return $this->hasMany(BlogPost::class,'category_id','id');
+        return $this->hasMany(BlogPost::class, 'category_id', 'id');
     }
+
+
+
 
     public function heavy_equipment()
     {
-        return $this->hasMany(HeavyEquipment::class,'category_id','id');
+        return $this->hasMany(HeavyEquipment::class, 'category_id', 'id');
     }
 
     public function vehicle_rent()
     {
-        return $this->hasMany(VehicleRental::class,'category_id','id');
+        return $this->hasMany(VehicleRental::class, 'category_id', 'id');
     }
 
-  	public function translations(): HasMany
+
+
+
+    public function translations(): HasMany
     {
         return $this->hasMany(CategoryTranslation::class);
     }
@@ -74,21 +80,21 @@ class Category extends Model
     {
         return optional($this->translations->where('locale', $locale)->first())->name ?? $this->category;
     }
-  
-  
-//    public function sub_categories()
-//    {
-//        // Get all related subcategory relationships dynamically
-//        $relations = ['heavy_equipment', 'vehicle_rent']; // Add future subcategory relations here
-//
-//        $subCategories = collect();
-//
-//        foreach ($relations as $relation) {
-//            if ($this->relationLoaded($relation)) {
-//                $subCategories = $subCategories->merge($this->$relation);
-//            }
-//        }
-//
-//        return $subCategories;
-//    }
+
+
+    //    public function sub_categories()
+    //    {
+    //        // Get all related subcategory relationships dynamically
+    //        $relations = ['heavy_equipment', 'vehicle_rent']; // Add future subcategory relations here
+    //
+    //        $subCategories = collect();
+    //
+    //        foreach ($relations as $relation) {
+    //            if ($this->relationLoaded($relation)) {
+    //                $subCategories = $subCategories->merge($this->$relation);
+    //            }
+    //        }
+    //
+    //        return $subCategories;
+    //    }
 }
