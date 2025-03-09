@@ -58,15 +58,14 @@ class RequestsManageController extends Controller
                 'sub_category_id' => $sub_category_id
             ])->count());
 
-        $countOfOffers = NewProposal::whereHas('request', function ($query) use ($userId, $sub_category_id, $categoryModel) {
-            $query->where('requestable_type', $categoryModel)
-                ->whereHasMorph('requestable', [$categoryModel], function ($q) use ($userId, $sub_category_id) {
-                    $q->where([
-                        'user_id' => $userId,
-                        'sub_category_id' => $sub_category_id
-                    ]);
-                });
-        })->count();
+        $countOfOffers = NewProposal::query()
+            ->whereHas('request', function ($query) use ($categoryModel, $userId, $sub_category_id) {
+                $query->where('requestable_type', $categoryModel)
+                    ->whereHas('requestable', function ($query) use ($userId, $sub_category_id) {
+                        $query->where('user_id', $userId)
+                            ->where('sub_category_id', $sub_category_id);
+                    });
+            })->count();
 
         return response()->json([
             'name' => $sub_category->getTranslatedName($locale),

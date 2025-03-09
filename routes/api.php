@@ -70,8 +70,9 @@ Route::group(['prefix' => 'v1', 'middleware' => 'setlang'], function () {
             Route::get('request-details/{jobType}/{sub_category_id}/{request_id}', 'getRequestDetails');
         });
 
+        // offers manage section
         Route::controller(\App\Http\Controllers\Api\Freelancer\OffersManageController::class)->group(function () {
-            //
+            Route::get('offers-of-equipment/{jobType}/{sub_category_id}/{offer_id?}', 'getOffers');
         });
 
         //language
