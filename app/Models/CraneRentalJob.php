@@ -63,8 +63,8 @@ class CraneRentalJob extends Model
     {
         return $this->morphOne(Request::class, 'requestable');
     }
-  
-      public function category()
+
+    public function category()
     {
         return $this->belongsTo(Category::class);
     }
@@ -73,7 +73,7 @@ class CraneRentalJob extends Model
     {
         return $this->belongsTo(SubCategory::class, 'sub_category_id');
     }
-  
+
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');

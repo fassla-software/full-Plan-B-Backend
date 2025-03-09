@@ -37,7 +37,6 @@ class NewProposalController extends Controller
         $requestEntry = \App\Models\Request::where('requestable_type', $modelClass)
             ->where('requestable_id', $jobId)
             ->first();
-
         if (!$requestEntry) {
             return response()->json([
                 'success' => false,
@@ -59,7 +58,6 @@ class NewProposalController extends Controller
         if ($recipientUser) {
             $recipientUser->notify(new NewProposalReceived($proposal));
         }
-
 
         return $this->successResponse($proposal, 'Proposal created successfully.', 201);
     }

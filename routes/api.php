@@ -63,14 +63,15 @@ Route::group(['prefix' => 'v1', 'middleware' => 'setlang'], function () {
             Route::get('category/all', 'category');
         });
 
-        //get requests number and offers numbers on equipmnet
-        Route::controller(\App\Http\Controllers\Api\Freelancer\CategoryManageController::class)->group(function () {
-            Route::get('requests-number-on-equipment/{category_id}/{sub_category_id}', 'getRequestsAndOffersNumber');
+        // requests manage section
+        Route::controller(\App\Http\Controllers\Api\Freelancer\RequestsManageController::class)->group(function () {
+            Route::get('requests-number-on-equipment/{jobType}/{sub_category_id}', 'getRequestsAndOffersNumber');
+            Route::get('requests-on-equipment/{jobType}/{sub_category_id}', 'getAllRequestsOfEquipment');
+            Route::get('request-details/{jobType}/{sub_category_id}/{request_id}', 'getRequestDetails');
         });
 
-        //get requests on equipment manage
-        Route::controller(\App\Http\Controllers\Api\Freelancer\CategoryManageController::class)->group(function () {
-            Route::get('requests-on-equipment/{category_id}/{sub_category_id}', 'getAllRequestsOfEquipment');
+        Route::controller(\App\Http\Controllers\Api\Freelancer\OffersManageController::class)->group(function () {
+            //
         });
 
         //language

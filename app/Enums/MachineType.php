@@ -20,7 +20,7 @@ enum MachineType: string
     case agriculturalTractor = 'agriculturalTractor'; // جرار زراعي
     case equipmentTransportFlatbed = 'equipmentTransportFlatbed'; // سطحة لنقل المعدات
 
-    // Vehicle Rental (تأجير السيارات)
+        // Vehicle Rental (تأجير السيارات)
     case vehicleRental = 'vehicleRental'; // تأجير السيارات
     case trailer = 'trailer'; // تريللا
     case oneEighthTonTruck = 'oneEighthTonTruck'; // سيارة نقل 1/8
@@ -32,7 +32,7 @@ enum MachineType: string
     case petroleumMaterialTanker = 'petroleumMaterialTanker'; // سيارة تانك نقل مواد بترولية
     case soilTipper = 'soilTipper';
 
-    // Cranes and Lifting Equipment Rental (تأجير الأوناش والرافعات)
+        // Cranes and Lifting Equipment Rental (تأجير الأوناش والرافعات)
     case craneRental = 'craneRental'; // تأجير الأوناش والرافعات
     case telescopicCrane = 'telescopicCrane'; // ونش تلسكوبي
     case truckMountedCrane = 'truckMountedCrane'; // شاحنة مزودة بونش
@@ -40,7 +40,7 @@ enum MachineType: string
     case forkliftCrane = 'forkliftCrane'; // ونش سلّة
     case furnitureMovingCrane = 'furnitureMovingCrane'; // ونش رفع الأثاث
 
-    // Accommodation and Living Services (خدمات الإعاشة)
+        // Accommodation and Living Services (خدمات الإعاشة)
     case accommodationServices = 'accommodationServices'; // خدمات الإعاشة
     case furnishedAccommodation = 'furnishedAccommodation'; // تأجير سكن مفروش للعمال والموظفين
     case mealCatering = 'mealCatering'; // توريد وجبات
@@ -50,7 +50,7 @@ enum MachineType: string
     case sewageDisposalSanitary = 'sewageDisposalSanitary'; // رفع مياه صرف صحي
     case sewageDisposalIndustrial = 'sewageDisposalIndustrial'; // رفع مياه صرف صناعي
 
-    // Generators and Tools Rental (تأجير المولدات والمعدات الخفيفة)
+        // Generators and Tools Rental (تأجير المولدات والمعدات الخفيفة)
     case generatorRental = 'generatorRental'; // تأجير المولدات والمعدات الخفيفة
     case electricGenerator = 'electricGenerator'; // مولد كهرباء
     case soilCompactor = 'soilCompactor'; // دكاك تربة
@@ -59,7 +59,7 @@ enum MachineType: string
     case airCompressor = 'airCompressor'; // ماكينة ضغط الهواء (كومبريسور)
     case buildingMaterialCrane = 'buildingMaterialCrane'; // ونش رفع مواد البناء
 
-    // Scaffolding and Construction Tools (أدوات سحب الكابلات)
+        // Scaffolding and Construction Tools (أدوات سحب الكابلات)
     case scaffoldingTools = 'scaffoldingTools'; // تأجير السقالات وأدوات البناء
     case roofPouringScaffolds = 'roofPouringScaffolds'; // شدات صب السقف
     case wallPanelScaffolds = 'wallPanelScaffolds'; // سقالات الحوائط والجدران
@@ -68,7 +68,7 @@ enum MachineType: string
     case cableCutters = 'cableCutters'; // مقص كابلات
     case hydraulicCrimpers = 'hydraulicCrimpers'; // مكبس أكواس
 
-    // Cable Tools and Miscellaneous (أدوات سحب الكابلات)
+        // Cable Tools and Miscellaneous (أدوات سحب الكابلات)
     case cableTools = 'cableTools'; // أدوات سحب الكابلات
     case cablePullingSockets = 'cablePullingSockets'; // سوستة سحب الكابلات داخل المواسير
     case cableRollers = 'cableRollers'; // درفيل
@@ -85,5 +85,4 @@ enum MachineType: string
         $values = array_map(fn($enum) => $enum->value, self::cases());
         return array_search($value, $values, true);
     }
-
 }

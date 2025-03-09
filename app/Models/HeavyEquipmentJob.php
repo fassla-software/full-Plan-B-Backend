@@ -27,13 +27,13 @@ class HeavyEquipmentJob extends Model
 
     protected $fillable = [
         'sub_category_id',
-      	'name',
+        'name',
         'user_id',
         'category_id',
         'work_site_location',
         'hour',
-      	'day',
-      	'month',
+        'day',
+        'month',
         'search_radius',
         'max_arrival_date',
         'max_offer_deadline',
@@ -62,16 +62,16 @@ class HeavyEquipmentJob extends Model
     {
         return $this->morphOne(Request::class, 'requestable');
     }
-      public function category()
+    public function category()
     {
         return $this->belongsTo(Category::class);
     }
-  
+
     public function subCategory()
     {
         return $this->belongsTo(SubCategory::class, 'sub_category_id');
     }
-  
+
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');

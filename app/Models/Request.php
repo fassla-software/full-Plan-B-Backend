@@ -9,7 +9,7 @@ class Request extends Model
 {
     use HasFactory;
     protected $fillable = ['user_id', 'requestable_type', 'requestable_id'];
-  
+
     public function requestable()
     {
         return $this->morphTo();
