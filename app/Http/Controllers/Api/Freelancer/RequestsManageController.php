@@ -4,22 +4,42 @@ namespace App\Http\Controllers\Api\Freelancer;
 
 use App\Enums\MachineType;
 use App\Models\NewProposal;
-use Illuminate\Http\Request;
+use Illuminate\Http\{JsonResponse, Request};
 use App\Http\Controllers\Controller;
+use Illuminate\Validation\Rules\Enum;
+use Illuminate\Support\Facades\Validator;
 use Modules\Service\Entities\SubCategory;
 
 class RequestsManageController extends Controller
 {
 
-    public function getAllRequestsOfEquipment(Request $request, $jobType, $sub_category_id)
+    public function getAllRequestsOfEquipment(Request $request, $jobType, $sub_category_id): JsonResponse
     {
-        $locale = $request->header('Accept-Language', 'en');
+        $validator = Validator::make([
+            'jobType' => $jobType,
+            'sub_category_id' => $sub_category_id,
+        ], [
+            'jobType' => ['required', new Enum(MachineType::class)],
+            'sub_category_id' => 'required|integer|exists:sub_categories,id',
+        ]);
 
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Invalid request parameters',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $locale = $request->header('Accept-Language', 'en');
         $sub_category = SubCategory::findOrFail($sub_category_id);
         $eqName = $sub_category->getTranslatedName($locale);
 
-        $userId = auth('sanctum')->user()->id;
-        $categoryModel = $this->getModelClassFromType($jobType);
+        $user = auth('sanctum')->user();
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $categoryModel = getModelClassFromType($jobType);
 
         $eqImage = $sub_category->image ? asset('storage/assets/uploads/sub-category/' . $sub_category->image) : null;
 
@@ -37,13 +57,9 @@ class RequestsManageController extends Controller
             ])
             ->with(['user:id,first_name,last_name'])
             ->where('sub_category_id', $sub_category_id)
-            ->where('user_id', $userId)
+            ->where('user_id', $user->id)
             ->get()
-            ->map(function ($item) use ($eqName, $eqImage) {
-                $item->name = $eqName;
-                $item->image = $eqImage;
-                return $item;
-            });
+            ->map(fn($item) => array_merge($item->toArray(), ['name' => $eqName, 'image' => $eqImage]));
 
         return response()->json([
             'category_slug' => $jobType,
@@ -54,29 +70,45 @@ class RequestsManageController extends Controller
         ]);
     }
 
-
-    public function getRequestsAndOffersNumber(Request $request, $jobType, $sub_category_id)
+    public function getRequestsAndOffersNumber(Request $request, $jobType, $sub_category_id): JsonResponse
     {
-        $userId = auth('sanctum')?->user()?->id;
+        $validator = Validator::make([
+            'jobType' => $jobType,
+            'sub_category_id' => $sub_category_id,
+        ], [
+            'jobType' => ['required', new Enum(MachineType::class)],
+            'sub_category_id' => 'required|integer|exists:sub_categories,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Invalid request parameters',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $user = auth('sanctum')->user();
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
         $locale = $request->header('Accept-Language', 'en');
 
-        $countOfRequests = 0;
-
-        $categoryModel = $this->getModelClassFromType($jobType);
+        $categoryModel = getModelClassFromType($jobType);
 
         $sub_category = SubCategory::findOrFail($sub_category_id);
 
         $countOfRequests = collect($categoryModel)
             ->sum(fn($model) => $model::where([
                 'sub_category_id' => $sub_category_id,
-                'user_id' => $userId,
+                'user_id' => $user->id,
             ])->count());
 
         $countOfOffers = NewProposal::query()
-            ->whereHas('request', function ($query) use ($categoryModel, $userId, $sub_category_id) {
+            ->whereHas('request', function ($query) use ($categoryModel, $user, $sub_category_id) {
                 $query->where('requestable_type', $categoryModel)
-                    ->whereHas('requestable', function ($query) use ($userId, $sub_category_id) {
-                        $query->where('user_id', $userId)
+                    ->whereHas('requestable', function ($query) use ($user, $sub_category_id) {
+                        $query->where('user_id', $user->id)
                             ->where('sub_category_id', $sub_category_id);
                     });
             })->count();
@@ -90,19 +122,38 @@ class RequestsManageController extends Controller
         ]);
     }
 
-    public function getRequestDetails(Request $request, $jobType, $sub_category_id, $request_id)
+    public function getRequestDetails(Request $request, $jobType, $sub_category_id, $request_id): JsonResponse
     {
+        $validator = Validator::make([
+            'jobType' => $jobType,
+            'sub_category_id' => $sub_category_id,
+        ], [
+            'jobType' => ['required', new Enum(MachineType::class)],
+            'sub_category_id' => 'required|integer|exists:sub_categories,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Invalid request parameters',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $user = auth('sanctum')->user();
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
         $locale = $request->header('Accept-Language', 'en');
         $sub_category = SubCategory::findOrFail($sub_category_id);
-        $userId = auth('sanctum')?->user()?->id;
 
-        $categoryModel = $this->getModelClassFromType($jobType);
+        $categoryModel = getModelClassFromType($jobType);
 
         $data = $categoryModel::query()
             ->with('user:id,first_name,last_name')
             ->where('id', $request_id)
             ->where('sub_category_id', $sub_category_id)
-            ->where('user_id', $userId)
+            ->where('user_id', $user->id)
             ->get();
 
         return response()->json([
@@ -111,17 +162,5 @@ class RequestsManageController extends Controller
             'name' => $sub_category->getTranslatedName($locale),
             'request' => $data
         ]);
-    }
-
-    private function getModelClassFromType($type)
-    {
-        $types = [
-            MachineType::heavyEquipment->value => \App\Models\HeavyEquipmentJob::class,
-            MachineType::vehicleRental->value => \App\Models\VehicleRentalJob::class,
-            MachineType::craneRental->value => \App\Models\CraneRentalJob::class,
-            // Add other sub-category models here
-        ];
-
-        return $types[$type] ?? null;
     }
 }
