@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Enums\MachineType;
+use App\Models\NewProposal;
 use App\Models\VehicleRental;
 use App\Models\CraneRentalJob;
 use App\Models\HeavyEquipment;
@@ -16,14 +17,19 @@ class CategoryResource extends JsonResource
         $locale = $request->header('Accept-Language', 'en');
         $userId = auth('sanctum')?->user()?->id;
 
-        $subCategories = $this->sub_categories ? $this->sub_categories->map(function ($sub_category) use ($locale, $userId) {
+        $translatedName = $this->getTranslatedName($locale);
+        $slugLabel = $this->getEnumLabel($this->getTranslatedName('en'));
+
+        $subCategories = $this->sub_categories ? $this->sub_categories->map(function ($sub_category) use ($locale, $userId, $slugLabel) {
+
             return [
                 "id" => $sub_category->id,
                 "name" => $sub_category->getTranslatedName($locale),
                 "label" => $this->getEnumLabel($sub_category->getTranslatedName('en')),
                 "image" => $this->getFullImageUrl($sub_category->image),
-                "equipments_count" => $this->getSubCategoryCountOfUser($sub_category->id, $userId, $this->id),
-                "requests_count" => $this->getRequestsOfEquipment($sub_category->id, $userId, $this->id),
+                "equipments_count" => $this->getSubCategoryCountOfUser($sub_category->id, $userId, $slugLabel),
+                "requests_count" => $this->getRequestsOfEquipment($sub_category->id, $userId, $slugLabel),
+                "offers_count" => $this->getOffersOffRequestsCount($sub_category->id, $userId, $slugLabel),
                 "sub_sub_categories" => $sub_category->sub_sub_categories->map(function ($sub_sub_category) use ($locale) {
                     return [
                         "id" => $sub_sub_category->id,
@@ -40,8 +46,8 @@ class CategoryResource extends JsonResource
 
         return [
             "id" => $this->id,
-            "name" => $this->getTranslatedName($locale),
-            "label" => $this->getEnumLabel($this->getTranslatedName('en')),
+            "name" => $translatedName,
+            "label" => $slugLabel,
             "image" => $this->getFullImageUrl($this->image),
             "total_equipments_count" => $totalUserCount,
             "total_requests_count" => $totalRequestsCount,
@@ -80,34 +86,50 @@ class CategoryResource extends JsonResource
     }
 
     // get requests count of subcategory count of user
-    private function getSubCategoryCountOfUser($sub_category, $userId, $categoryId)
+    private function getSubCategoryCountOfUser($sub_category, $userId, $slug)
     {
         if (!isset($userId)) return 0;
 
-        $count = 0;
-        foreach ([HeavyEquipment::class, VehicleRental::class] as $model) {
-            $count += $model::query()->where('user_id', $userId)
-                ->where('category_id', $categoryId)
-                ->where('sub_category_id', $sub_category)->count();
-        }
+        $categoryModel = $this->getModelClassFromType($slug);
 
-        return $count;
+        return isset($categoryModel) ? $categoryModel::query()->where('user_id', $userId)
+            ->where('sub_category_id', $sub_category)->count() : 0;
     }
 
     // get requests count of (user => every sub category (equepments))
-    private function getRequestsOfEquipment($sub_category, $userId, $categoryId)
+    private function getRequestsOfEquipment($sub_category, $userId, $slug)
     {
         if (!isset($userId)) return 0;
 
-        $count = 0;
-        foreach ([HeavyEquipmentJob::class, CraneRentalJob::class] as $model) {
-            $count += $model::query()->where('user_id', $userId)
-                ->where('category_id', $categoryId)
-                ->where('sub_category_id', $sub_category)->count();
-        }
+        $categoryModel = $this->getModelClassFromType($slug);
 
-        return $count;
+        return isset($categoryModel) ? $categoryModel::query()->where('user_id', $userId)
+            ->where('sub_category_id', $sub_category)->count() : 0;
     }
 
-    private function getOffersOffRequestsCount($sub_category, $userId) {}
+    private function getOffersOffRequestsCount($sub_category_id, $userId, $slug): int
+    {
+        $categoryModel = $this->getModelClassFromType($slug);
+
+        return NewProposal::query()
+            ->whereHas('request', function ($query) use ($categoryModel, $userId, $sub_category_id) {
+                $query->where('requestable_type', $categoryModel)
+                    ->whereHas('requestable', function ($query) use ($userId, $sub_category_id) {
+                        $query->where('user_id', $userId)
+                            ->where('sub_category_id', $sub_category_id);
+                    });
+            })->count();
+    }
+
+    private function getModelClassFromType($type)
+    {
+        $types = [
+            MachineType::heavyEquipment->value => \App\Models\HeavyEquipmentJob::class,
+            MachineType::vehicleRental->value => \App\Models\VehicleRentalJob::class,
+            MachineType::craneRental->value => \App\Models\CraneRentalJob::class,
+            // Add other sub-category models here
+        ];
+
+        return $types[$type] ?? null;
+    }
 }

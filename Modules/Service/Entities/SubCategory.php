@@ -2,6 +2,7 @@
 
 namespace Modules\Service\Entities;
 
+use App\Models\HeavyEquipment;
 use App\Models\JobPost;
 use App\Models\Project;
 use App\Models\Skill;

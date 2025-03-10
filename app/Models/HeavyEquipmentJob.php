@@ -7,6 +7,7 @@ use Modules\Service\Entities\Category;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Service\Entities\SubCategory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class HeavyEquipmentJob extends Model
 {
@@ -65,6 +66,11 @@ class HeavyEquipmentJob extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function heavy_equipment(): BelongsTo
+    {
+        return $this->belongsTo(HeavyEquipment::class, 'heavy_equipment_id');
     }
 
     public function subCategory()

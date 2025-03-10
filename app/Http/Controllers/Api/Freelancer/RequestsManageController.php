@@ -14,9 +14,14 @@ class RequestsManageController extends Controller
     public function getAllRequestsOfEquipment(Request $request, $jobType, $sub_category_id)
     {
         $locale = $request->header('Accept-Language', 'en');
-        $sub_category = SubCategory::findOrFail($sub_category_id);
 
+        $sub_category = SubCategory::findOrFail($sub_category_id);
+        $eqName = $sub_category->getTranslatedName($locale);
+
+        $userId = auth('sanctum')->user()->id;
         $categoryModel = $this->getModelClassFromType($jobType);
+
+        $eqImage = $sub_category->image ? asset('storage/assets/uploads/sub-category/' . $sub_category->image) : null;
 
         $records = $categoryModel::query()
             ->select([
@@ -32,15 +37,23 @@ class RequestsManageController extends Controller
             ])
             ->with(['user:id,first_name,last_name'])
             ->where('sub_category_id', $sub_category_id)
-            ->get();
+            ->where('user_id', $userId)
+            ->get()
+            ->map(function ($item) use ($eqName, $eqImage) {
+                $item->name = $eqName;
+                $item->image = $eqImage;
+                return $item;
+            });
 
         return response()->json([
             'category_slug' => $jobType,
             'sub_category_id' => $sub_category_id,
-            'name' => $sub_category->getTranslatedName($locale),
+            'name' => $eqName,
+            'image' => $eqImage,
             'requests' => $records
         ]);
     }
+
 
     public function getRequestsAndOffersNumber(Request $request, $jobType, $sub_category_id)
     {
@@ -55,7 +68,8 @@ class RequestsManageController extends Controller
 
         $countOfRequests = collect($categoryModel)
             ->sum(fn($model) => $model::where([
-                'sub_category_id' => $sub_category_id
+                'sub_category_id' => $sub_category_id,
+                'user_id' => $userId,
             ])->count());
 
         $countOfOffers = NewProposal::query()
@@ -80,6 +94,7 @@ class RequestsManageController extends Controller
     {
         $locale = $request->header('Accept-Language', 'en');
         $sub_category = SubCategory::findOrFail($sub_category_id);
+        $userId = auth('sanctum')?->user()?->id;
 
         $categoryModel = $this->getModelClassFromType($jobType);
 
@@ -87,6 +102,7 @@ class RequestsManageController extends Controller
             ->with('user:id,first_name,last_name')
             ->where('id', $request_id)
             ->where('sub_category_id', $sub_category_id)
+            ->where('user_id', $userId)
             ->get();
 
         return response()->json([

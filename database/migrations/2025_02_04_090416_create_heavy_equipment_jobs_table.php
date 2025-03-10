@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('heavy_equipment_jobs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('heavy_equipment_id')->constrained()->onDelete('cascade');
             $table->unsignedBigInteger('category_id')->nullable();
             $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
             $table->string('work_site_location')->nullable(); // Required work site location

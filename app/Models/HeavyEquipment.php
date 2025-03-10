@@ -2,10 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\HeavyEquipmentJob;
 use Modules\Service\Entities\Category;
+use Illuminate\Database\Eloquent\Model;
 use Modules\Service\Entities\SubCategory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class HeavyEquipment extends Model
 {
@@ -69,6 +70,7 @@ class HeavyEquipment extends Model
     protected $casts = [
         'has_bitumen_temp_gauge' => 'boolean',
         'has_bitumen_level_gauge' => 'boolean',
+        'additional_equipment_images' => 'array',
     ];
 
     /**
@@ -82,6 +84,11 @@ class HeavyEquipment extends Model
     public function subCategory()
     {
         return $this->belongsTo(SubCategory::class, 'sub_category_id');
+    }
+
+    public function heavy_equipment_jops()
+    {
+        return $this->hasMany(HeavyEquipmentJob::class, 'heavy_equipment_id');
     }
 
     public function user()
