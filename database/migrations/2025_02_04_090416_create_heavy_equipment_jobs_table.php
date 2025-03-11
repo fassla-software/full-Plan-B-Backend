@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('heavy_equipment_id')->constrained()->onDelete('cascade');
+            $table->boolean('isStopped')->default(0)->comment('1=the request is stopped receiving offers 0=request not stopped');
             $table->unsignedBigInteger('category_id')->nullable();
             $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
             $table->string('work_site_location')->nullable(); // Required work site location

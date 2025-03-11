@@ -60,7 +60,7 @@ class OffersManageController extends Controller
         ]);
     }
 
-    public function getContactOffOfferOwner(Request $request, $offer_id): JsonResponse
+    public function getContactOffOfferOwner(string $offer_id): JsonResponse
     {
         $validator = Validator::make([
             'offer_id' => $offer_id
@@ -94,7 +94,7 @@ class OffersManageController extends Controller
         ], 200);
     }
 
-    public function getEquipmentImages(Request $request, $jobType, $offer_id): JsonResponse
+    public function getEquipmentImages(Request $request, string $jobType, string $offer_id): JsonResponse
     {
         $validator = Validator::make([
             'jobType' => $jobType,
@@ -156,7 +156,7 @@ class OffersManageController extends Controller
         ]);
     }
 
-    public function getEquipmentDaitls(Request $request, $jobType, $offer_id): JsonResponse
+    public function getEquipmentDaitls(Request $request, string $jobType, string $offer_id): JsonResponse
     {
         $validator = Validator::make([
             'jobType' => $jobType,
@@ -199,5 +199,43 @@ class OffersManageController extends Controller
             'current_equipment_location' => $job->heavy_equipment->current_equipment_location,
             'other_terms' => $proposal->other_terms,
         ]);
+    }
+
+    public function stopReceivingOffers(Request $request, string $jobType, string $offer_id): JsonResponse
+    {
+        $validatedData = Validator::make(
+            compact('jobType', 'offer_id'),
+            [
+                'jobType'  => ['required', new Enum(MachineType::class)],
+                'offer_id' => 'nullable|string|exists:new_proposals,id',
+            ]
+        );
+
+        if ($validatedData->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors'  => $validatedData->errors()
+            ], 422);
+        }
+
+        $categoryModel = getModelClassFromType($jobType);
+
+        $proposal = NewProposal::with('request.requestable.heavy_equipment.subCategory')
+            ->find($offer_id);
+
+        if (!$proposal || !$proposal->request || $proposal->request->requestable_type !== $categoryModel) {
+            return response()->json(['message' => 'No HeavyEquipmentJob found for this proposal'], 404);
+        }
+
+        $job = $proposal->request->requestable;
+
+        if (!$job) {
+            return response()->json(['message' => 'No equipment details found for this proposal'], 404);
+        }
+
+        $job->update(['isStopped' => true]);
+
+        return response()->json(['message' => 'Offers stopped successfully']);
     }
 }

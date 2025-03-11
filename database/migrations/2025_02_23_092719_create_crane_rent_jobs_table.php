@@ -14,15 +14,12 @@ return new class extends Migration
         Schema::create('crane_rent_jobs', function (Blueprint $table) {
             $table->id();
             $table->string('name')->nullable();
-
             $table->unsignedBigInteger('sub_category_id')->nullable();
             $table->foreign('sub_category_id')->references('id')->on('sub_categories')->onDelete('cascade');
-
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-
+            $table->boolean('isStopped')->default(0)->comment('1=the request is stopped receiving offers 0=request not stopped');
             $table->unsignedBigInteger('category_id')->nullable();
             $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
-
             $table->string('worksite_location')->nullable();
             $table->string('hour')->nullable();
             $table->string('day')->nullable();

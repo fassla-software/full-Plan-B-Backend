@@ -1,33 +1,26 @@
 <?php
 
 //use App\Helpers\LanguageHelper;
-use App\Models\User;
-use App\Models\Order;
-use App\Models\Rating;
-use GuzzleHttp\Client;
-use App\Models\JobPost;
-use Google\Auth\OAuth2;
-use App\Models\Language;
-use App\Models\UserSkill;
+use App\Models\{
+    User,
+    Order,
+    Rating,
+    JobPost,
+    Language,
+    UserSkill,
+    MediaUpload,
+    StaticOption,
+    AdminNotification,
+    ClientNotification,
+    FreelancerNotification
+};
 use App\Enums\MachineType;
-use App\Models\MediaUpload;
 use Illuminate\Support\Str;
-use App\Models\StaticOption;
 use Kreait\Firebase\Factory;
 use App\Helper\LanguageHelper;
-use App\Models\UserNotification;
 use Modules\Pages\Entities\Page;
-use App\Models\AdminNotification;
-use App\Models\ClientNotification;
-use Google\Auth\CredentialsLoader;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Http;
-
-use App\Models\FreelancerNotification;
 use Illuminate\Support\Facades\Storage;
-use GuzzleHttp\Exception\RequestException;
 use Kreait\Firebase\Messaging\CloudMessage;
-use Kreait\Firebase\Messaging\Notification;
 
 function getModelClassFromType($type)
 {

@@ -77,6 +77,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'setlang'], function () {
             Route::get('contact-offer-owner/{offer_id}', 'getContactOffOfferOwner');
             Route::get('get-equipment-details/{jobType}/{offer_id}', 'getEquipmentDaitls');
             Route::get('get-equipment-images/{jobType}/{offer_id}', 'getEquipmentImages');
+            Route::put('stop-receiving-offers/{jobType}/{offer_id}', 'stopReceivingOffers');
         });
 
         //language

@@ -50,6 +50,7 @@ class HeavyEquipmentJob extends Model
         'additional_requirements',
         'lat',
         'long',
+        'isStopped',
     ];
 
     protected $casts = [
