@@ -34,6 +34,18 @@ function getModelClassFromType($type)
     return $types[$type] ?? null;
 }
 
+function getEquipmentModelFromType($type)
+{
+    $types = [
+        MachineType::heavyEquipment->value => \App\Models\HeavyEquipment::class,
+        MachineType::vehicleRental->value => \App\Models\VehicleRental::class,
+        MachineType::craneRental->value => \App\Models\CraneRental::class,
+        // Add other sub-category models here
+    ];
+
+    return $types[$type] ?? null;
+}
+
 function render_twitter_meta_image_by_attachment_id($id, $size = 'full')
 {
     if (empty($id)) return '';

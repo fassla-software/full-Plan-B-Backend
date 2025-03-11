@@ -54,11 +54,11 @@ class VehicleRentalJob extends Model
     {
         return $this->belongsTo(SubCategory::class, 'sub_category_id');
     }
-      public function category()
+    public function category()
     {
         return $this->belongsTo(Category::class);
     }
-  
+
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');

@@ -1,10 +1,10 @@
 <?php
 
-use App\Http\Controllers\Api\Freelancer\ImageUploadController;
-use App\Http\Controllers\Api\Freelancer\NewJobController;
-use App\Http\Controllers\Api\Freelancer\NewProposalController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\Freelancer\NewJobController;
+use App\Http\Controllers\Api\Freelancer\ImageUploadController;
+use App\Http\Controllers\Api\Freelancer\NewCategoryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,7 +16,8 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-use App\Http\Controllers\Api\Freelancer\NewCategoryController;
+use App\Http\Controllers\Api\Freelancer\NewProposalController;
+use App\Http\Controllers\Api\Freelancer\MyEquipmentsController;
 
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
@@ -77,7 +78,16 @@ Route::group(['prefix' => 'v1', 'middleware' => 'setlang'], function () {
             Route::get('contact-offer-owner/{offer_id}', 'getContactOffOfferOwner');
             Route::get('get-equipment-details/{jobType}/{offer_id}', 'getEquipmentDaitls');
             Route::get('get-equipment-images/{jobType}/{offer_id}', 'getEquipmentImages');
-            Route::put('stop-receiving-offers/{jobType}/{offer_id}', 'stopReceivingOffers');
+            Route::post('stop-receiving-offers/{jobType}/{offer_id}', 'stopReceivingOffers');
+        });
+
+        // equipment management
+        Route::controller(MyEquipmentsController::class)->group(function () {
+            Route::get('equipment/{categorySlug}/{id}', 'index');
+            Route::post('update-equipment/{categorySlug}/{id}', 'update');
+            Route::post('create-equipment/{categorySlug}', 'create');
+            Route::delete('delete-equipment/{categorySlug}/{id}', 'destroy');
+            Route::get('equipment-details/{categorySlug}/{id}', 'show');
         });
 
         //language

@@ -17,7 +17,7 @@ return new class extends Migration
 
             $table->unsignedBigInteger('sub_category_id')->nullable();
             $table->foreign('sub_category_id')->references('id')->on('sub_categories')->onDelete('cascade');
-
+            $table->boolean('isStopped')->default(0)->comment('1=the request is stopped receiving offers 0=request not stopped');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
 
             $table->unsignedBigInteger('category_id')->nullable();

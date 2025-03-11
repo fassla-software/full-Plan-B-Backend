@@ -150,11 +150,15 @@ class RequestsManageController extends Controller
         $categoryModel = getModelClassFromType($jobType);
 
         $data = $categoryModel::query()
-            ->with('user:id,first_name,last_name')
+            ->with('user:id,first_name,last_name,image')
             ->where('id', $request_id)
             ->where('sub_category_id', $sub_category_id)
             ->where('user_id', $user->id)
-            ->get();
+            ->first();
+
+        if ($data && $data->user && $data->user->image) {
+            $data->user->image = asset('storage/assets/uploads/users/' . $data->user->image);
+        }
 
         return response()->json([
             'category_slug' => $jobType,

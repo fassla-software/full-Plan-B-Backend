@@ -39,10 +39,15 @@ class OffersManageController extends Controller
         $categoryModel = getModelClassFromType($jobType);
 
         $sub_category = SubCategory::findOrFail($sub_category_id);
+        $eqName = $sub_category->getTranslatedName($request->header('Accept-Language', 'en'));
+        $eqImage = $sub_category->image ? asset('storage/assets/uploads/sub-category/' . $sub_category->image) : null;
 
         $offers = NewProposal::query()
-            ->with(['user:id,first_name,last_name'])
-            ->whereHas('request', function ($query) use ($categoryModel, $user, $sub_category_id) {
+            ->with([
+                'user:id,first_name,last_name',
+                'request:id,requestable_id,requestable_type',
+                'request.requestable:id,size,work_site_location,hour,day,month'
+            ])->whereHas('request', function ($query) use ($categoryModel, $user, $sub_category_id) {
                 $query->where('requestable_type', $categoryModel)
                     ->whereHas('requestable', function ($query) use ($user, $sub_category_id) {
                         $query->where('user_id', $user->id)
@@ -50,10 +55,12 @@ class OffersManageController extends Controller
                     });
             })
             ->when($offer_id, fn($q) => $q->where('id', $offer_id))
-            ->get();
+            ->paginate(12)
+            ->withQueryString();
 
         return response()->json([
-            'name' => $sub_category->getTranslatedName($request->header('Accept-Language', 'en')),
+            'name' => $eqName,
+            'image' => $eqImage,
             'sub_category_id' => $sub_category_id,
             'category_slug' => $jobType,
             'offers' => $offers
