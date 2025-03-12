@@ -42,7 +42,9 @@ class RequestsManageController extends Controller
 
         $equipmentModel = getEquipmentModelFromType($jobType);
 
-        $eqImage = $sub_category->image ? asset('storage/assets/uploads/sub-category/' . $sub_category->image) : null;
+        // $eqImage = $sub_category->image ? asset('storage/assets/uploads/sub-category/' . $sub_category->image) : null;
+        $eqImage = $this->getFullImageUrl($sub_category->image);
+
 
         $records = $equipmentModel::query()
             ->whereHas('equipment_jops')
@@ -189,5 +191,14 @@ class RequestsManageController extends Controller
                 'request' => $jobModel
             ]
         );
+    }
+
+    private function getFullImageUrl($imageId)
+    {
+        if (!$imageId) {
+            return null;
+        }
+        $imageDetails = get_attachment_image_by_id($imageId);
+        return $imageDetails['img_url'] ?? null;
     }
 }

@@ -75,8 +75,8 @@ Route::group(['prefix' => 'v1', 'middleware' => 'setlang'], function () {
         // offers manage section
         Route::controller(\App\Http\Controllers\Api\Freelancer\OffersManageController::class)->group(function () {
             Route::get('offers-number-on-subcategory/{jobType}/{sub_category_id}', 'getGroupOfOffers');
-            Route::get('offers-of-equipment/{jobType}/{sub_category_id}', 'getOffers');
-            Route::get('offers-of-equipment/{jobType}/{sub_category_id}/{offer_id}', 'getOfferDetails');
+            Route::get('offers-of-equipment/{jobType}/{sub_category_id}/{job_id}', 'getOffers');
+            Route::get('offer-details/{jobType}/{sub_category_id}/{offer_id}', 'getOfferDetails');
             Route::get('service-details/{jobType}/{sub_category_id}/{offer_id}', 'getDetailsOfService');
             Route::get('contact-offer-owner/{offer_id}', 'getContactOffOfferOwner');
             Route::get('get-equipment-details/{jobType}/{offer_id}', 'getEquipmentDaitls');

@@ -36,16 +36,17 @@ class OffersManageController extends Controller
         }
 
         $jobModel = getModelClassFromType($jobType);
-        $allRecords = collect();
         $locale = $request->header('Accept-Language', 'en');
+
+        $perPage = $request->input('per_page', 15);
 
         $records = $jobModel::query()
             ->with(['request.newProposals', 'subCategory', 'user:id,first_name,last_name'])
             ->where('user_id', $user->id)
             ->where('sub_category_id', $sub_category_id)
-            ->get();
+            ->paginate($perPage);
 
-        $records = $records->map(function ($record) use ($jobType, $locale) {
+        $formattedRecords = $records->map(function ($record) use ($jobType, $locale) {
             return [
                 'id' => $record->id,
                 'name' => $record->subCategory->getTranslatedName($locale),
@@ -56,24 +57,27 @@ class OffersManageController extends Controller
                 'month' => $record->month,
                 'CategorySlug' => $jobType,
                 'offers_count' => $record->request ? $record->request->newProposals->count() : 0,
-                // 'image' => $record->subCategory->image
-                //     ? asset('storage/assets/uploads/sub-category/' . $record->subCategory->image)
-                //     : null,
                 'image' => $this->getFullImageUrl($record->subCategory->image),
                 'user' => $record?->user,
             ];
         });
 
-        $allRecords = $allRecords->merge($records);
-
-        $perPage = $request->query('per_page', 10);
-        $currentPage = $request->query('page', 1);
-        $paginatedRecords = paginateCollection($allRecords, $perPage, $currentPage);
-
-        return response()->json($paginatedRecords);
+        return response()->json([
+            'data' => $formattedRecords,
+            'pagination' => [
+                'total' => $records->total(),
+                'per_page' => $records->perPage(),
+                'current_page' => $records->currentPage(),
+                'last_page' => $records->lastPage(),
+                'from' => $records->firstItem(),
+                'to' => $records->lastItem(),
+                'next_page_url' => $records->nextPageUrl(),
+                'prev_page_url' => $records->previousPageUrl(),
+            ]
+        ]);
     }
 
-    public function getOffers(Request $request, string $jobType, int $sub_category_id): JsonResponse
+    public function getOffers(Request $request, string $jobType, int $sub_category_id, int $job_id): JsonResponse
     {
         $validator = Validator::make([
             'jobType' => $jobType,
@@ -106,11 +110,10 @@ class OffersManageController extends Controller
                 'user:id,first_name,last_name',
                 'request:id,requestable_id,requestable_type',
                 'request.requestable:id,size,work_site_location,hour,day,month'
-            ])->whereHas('request', function ($query) use ($categoryModel, $user, $sub_category_id) {
+            ])->whereHas('request', function ($query) use ($categoryModel, $job_id) {
                 $query->where('requestable_type', $categoryModel)
-                    ->whereHas('requestable', function ($query) use ($user, $sub_category_id) {
-                        $query->where('user_id', $user->id)
-                            ->where('sub_category_id', $sub_category_id);
+                    ->whereHas('requestable', function ($query) use ($job_id) {
+                        $query->where('id', $job_id);
                     });
             })
             ->paginate(12)

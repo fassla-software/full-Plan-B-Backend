@@ -258,10 +258,10 @@ class MyEquipmentsController extends Controller
 
         foreach ($imageFields as $field) {
             if ($request->hasFile($field)) {
-                if ($equipment->$field) {
-                    Storage::delete('public/assets/uploads/equipments/' . $equipment->$field);
+                $filePath = storage_path('app/public/assets/uploads/equipments/' . $equipment->$field);
+                if (!empty($equipment->$field) && file_exists($filePath)) {
+                    unlink($filePath);
                 }
-
                 $path = $request->file($field)->store('assets/uploads/equipments', 'public');
                 $validatedData[$field] = basename($path);
             }
@@ -279,7 +279,7 @@ class MyEquipmentsController extends Controller
         $equipment->update($validatedData);
 
         return response()->json([
-            'message' => 'Equipment updated successfully', // Fixed success message
+            'message' => 'Equipment updated successfully',
             'equipment' => array_merge($equipment->toArray(), [
                 'data_certificate_image' => $equipment->data_certificate_image
                     ? asset('storage/assets/uploads/equipments/' . $equipment->data_certificate_image)
