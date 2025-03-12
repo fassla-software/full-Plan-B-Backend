@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\NewProposal;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Request extends Model
 {
@@ -13,5 +14,10 @@ class Request extends Model
     public function requestable()
     {
         return $this->morphTo();
+    }
+
+    public function newProposals()
+    {
+        return $this->hasMany(NewProposal::class, 'request_id');    
     }
 }

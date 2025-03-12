@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('current_location');
             $table->timestamp('offer_ends_at');
             $table->text('other_terms')->nullable();
+            $table->boolean('isSeen')->default(0)->comment('0=unseen,1=seen');
             $table->timestamps();
         });
     }

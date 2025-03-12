@@ -12,16 +12,72 @@ use Modules\Service\Entities\SubCategory;
 
 class OffersManageController extends Controller
 {
-    public function getOffers(Request $request, string $jobType, int $sub_category_id, ?string $offer_id = null): JsonResponse
+    public function getGroupOfOffers(Request $request, string $jobType, int $sub_category_id): JsonResponse
     {
         $validator = Validator::make([
             'jobType' => $jobType,
             'sub_category_id' => $sub_category_id,
-            'offer_id' => $offer_id
         ], [
             'jobType' => ['required', new Enum(MachineType::class)],
             'sub_category_id' => 'required|integer|exists:sub_categories,id',
-            'offer_id' => 'nullable|string|exists:new_proposals,id'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Invalid request parameters',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $user = auth('sanctum')->user();
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $jobModel = getModelClassFromType($jobType);
+        $allRecords = collect();
+        $locale = $request->header('Accept-Language', 'en');
+
+        $records = $jobModel::query()
+            ->with(['request.newProposals', 'subCategory'])
+            ->where('user_id', $user->id)
+            ->where('sub_category_id', $sub_category_id)
+            ->get();
+
+        $records = $records->map(function ($record) use ($jobType, $locale) {
+            return [
+                'id' => $record->id,
+                'name' => $record->subCategory->getTranslatedName($locale),
+                'size' => $record->size,
+                'work_site_location' => $record->work_site_location,
+                'hour' => $record->hour,
+                'weak' => $record->weak,
+                'month' => $record->month,
+                'CategorySlug' => $jobType,
+                'offers_count' => $record->request ? $record->request->newProposals->count() : 0,
+                'image' => $record->subCategory->image
+                    ? asset('storage/assets/uploads/sub-category/' . $record->subCategory->image)
+                    : null,
+            ];
+        });
+
+        $allRecords = $allRecords->merge($records);
+
+        $perPage = $request->query('per_page', 10);
+        $currentPage = $request->query('page', 1);
+        $paginatedRecords = paginateCollection($allRecords, $perPage, $currentPage);
+
+        return response()->json($paginatedRecords);
+    }
+
+    public function getOffers(Request $request, string $jobType, int $sub_category_id): JsonResponse
+    {
+        $validator = Validator::make([
+            'jobType' => $jobType,
+            'sub_category_id' => $sub_category_id,
+        ], [
+            'jobType' => ['required', new Enum(MachineType::class)],
+            'sub_category_id' => 'required|integer|exists:sub_categories,id',
         ]);
 
         if ($validator->fails()) {
@@ -54,7 +110,6 @@ class OffersManageController extends Controller
                             ->where('sub_category_id', $sub_category_id);
                     });
             })
-            ->when($offer_id, fn($q) => $q->where('id', $offer_id))
             ->paginate(12)
             ->withQueryString();
 
@@ -64,6 +119,60 @@ class OffersManageController extends Controller
             'sub_category_id' => $sub_category_id,
             'category_slug' => $jobType,
             'offers' => $offers
+        ]);
+    }
+
+    public function getOfferDetails(Request $request, string $jobType, int $sub_category_id, string $offer_id): JsonResponse
+    {
+        $validator = Validator::make([
+            'jobType' => $jobType,
+            'sub_category_id' => $sub_category_id,
+            'offer_id' => $offer_id
+        ], [
+            'jobType' => ['required', new Enum(MachineType::class)],
+            'sub_category_id' => 'required|integer|exists:sub_categories,id',
+            'offer_id' => 'required|string|exists:new_proposals,id'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Invalid request parameters',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $user = auth('sanctum')->user();
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $categoryModel = getModelClassFromType($jobType);
+
+        $sub_category = SubCategory::findOrFail($sub_category_id);
+        $eqName = $sub_category->getTranslatedName($request->header('Accept-Language', 'en'));
+        $eqImage = $sub_category->image ? asset('storage/assets/uploads/sub-category/' . $sub_category->image) : null;
+
+        $offer = NewProposal::query()
+            ->with([
+                'user:id,first_name,last_name',
+                'request:id,requestable_id,requestable_type',
+                'request.requestable:id,size,work_site_location,hour,day,month'
+            ])->whereHas('request', function ($query) use ($categoryModel, $user, $sub_category_id) {
+                $query->where('requestable_type', $categoryModel)
+                    ->whereHas('requestable', function ($query) use ($user, $sub_category_id) {
+                        $query->where('user_id', $user->id)
+                            ->where('sub_category_id', $sub_category_id);
+                    });
+            })
+            ->where('id', $offer_id)
+            ->first();
+
+        return response()->json([
+            'name' => $eqName,
+            'image' => $eqImage,
+            'sub_category_id' => $sub_category_id,
+            'category_slug' => $jobType,
+            'offer' => $offer
         ]);
     }
 

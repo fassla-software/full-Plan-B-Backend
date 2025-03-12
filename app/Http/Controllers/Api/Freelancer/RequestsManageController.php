@@ -12,7 +12,6 @@ use Modules\Service\Entities\SubCategory;
 
 class RequestsManageController extends Controller
 {
-
     public function getAllRequestsOfEquipment(Request $request, $jobType, $sub_category_id): JsonResponse
     {
         $validator = Validator::make([
@@ -58,8 +57,8 @@ class RequestsManageController extends Controller
             ->with(['user:id,first_name,last_name'])
             ->where('sub_category_id', $sub_category_id)
             ->where('user_id', $user->id)
-            ->get()
-            ->map(fn($item) => array_merge($item->toArray(), ['name' => $eqName, 'image' => $eqImage]));
+            ->paginate(12)
+            ->withQueryString();
 
         return response()->json([
             'category_slug' => $jobType,

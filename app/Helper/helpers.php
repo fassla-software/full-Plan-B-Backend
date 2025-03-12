@@ -22,7 +22,7 @@ use Modules\Pages\Entities\Page;
 use Illuminate\Support\Facades\Storage;
 use Kreait\Firebase\Messaging\CloudMessage;
 
-function getModelClassFromType($type)
+function getModelClassFromType(?string $type = null)
 {
     $types = [
         MachineType::heavyEquipment->value => \App\Models\HeavyEquipmentJob::class,
@@ -30,6 +30,8 @@ function getModelClassFromType($type)
         MachineType::craneRental->value => \App\Models\CraneRentalJob::class,
         // Add other sub-category models here
     ];
+
+    if (!isset($type)) return $types;
 
     return $types[$type] ?? null;
 }
@@ -44,6 +46,20 @@ function getEquipmentModelFromType($type)
     ];
 
     return $types[$type] ?? null;
+}
+
+function paginateCollection($collection, $perPage, $currentPage)
+{
+    $total = $collection->count();
+    $items = $collection->slice(($currentPage - 1) * $perPage, $perPage)->values();
+
+    return [
+        'data' => $items,
+        'current_page' => $currentPage,
+        'per_page' => $perPage,
+        'total' => $total,
+        'last_page' => ceil($total / $perPage),
+    ];
 }
 
 function render_twitter_meta_image_by_attachment_id($id, $size = 'full')

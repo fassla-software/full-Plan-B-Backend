@@ -73,7 +73,9 @@ Route::group(['prefix' => 'v1', 'middleware' => 'setlang'], function () {
 
         // offers manage section
         Route::controller(\App\Http\Controllers\Api\Freelancer\OffersManageController::class)->group(function () {
-            Route::get('offers-of-equipment/{jobType}/{sub_category_id}/{offer_id?}', 'getOffers');
+            Route::get('offers-number-on-subcategory/{jobType}/{sub_category_id}', 'getGroupOfOffers');
+            Route::get('offers-of-equipment/{jobType}/{sub_category_id}', 'getOffers');
+            Route::get('offers-of-equipment/{jobType}/{sub_category_id}/{offer_id}', 'getOfferDetails');
             Route::get('service-details/{jobType}/{sub_category_id}/{offer_id}', 'getDetailsOfService');
             Route::get('contact-offer-owner/{offer_id}', 'getContactOffOfferOwner');
             Route::get('get-equipment-details/{jobType}/{offer_id}', 'getEquipmentDaitls');
@@ -85,7 +87,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'setlang'], function () {
         Route::controller(MyEquipmentsController::class)->group(function () {
             Route::get('equipment/{categorySlug}/{id}', 'index');
             Route::post('update-equipment/{categorySlug}/{id}', 'update');
-            Route::post('create-equipment/{categorySlug}', 'create');
+            Route::post('create-equipment/{categorySlug}', 'store');
             Route::delete('delete-equipment/{categorySlug}/{id}', 'destroy');
             Route::get('equipment-details/{categorySlug}/{id}', 'show');
         });
