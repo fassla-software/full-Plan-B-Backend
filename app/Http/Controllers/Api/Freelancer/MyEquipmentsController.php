@@ -47,16 +47,20 @@ class MyEquipmentsController extends Controller
             ->with(['subCategory', 'user:id,first_name,last_name'])
             ->where('sub_category_id', $sub_category_id)
             ->where('user_id', $user->id)
-            ->get();
+            ->paginate(12)
+            ->withQueryString();
 
         $eqName = $sub_category->getTranslatedName($locale);
         $eqImage = $sub_category->image ? asset('storage/assets/uploads/sub-category/' . $sub_category->image) : null;
 
         return response()->json(
             [
-                'name' => $eqName,
-                'image' => $eqImage,
-                'myEquipments' => $myEquipments->map(fn($item) => array_merge($item->toArray(), ['image' => $eqImage])),
+                'success' => 'success',
+                'data' => [
+                    'name' => $eqName,
+                    'image' => $eqImage,
+                    'myEquipments' => $myEquipments,
+                ]
             ]
         );
     }

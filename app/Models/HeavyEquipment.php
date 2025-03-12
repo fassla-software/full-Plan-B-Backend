@@ -86,9 +86,9 @@ class HeavyEquipment extends Model
         return $this->belongsTo(SubCategory::class, 'sub_category_id');
     }
 
-    public function heavy_equipment_jops()
+    public function equipment_jops()
     {
-        return $this->hasMany(HeavyEquipmentJob::class, 'heavy_equipment_id');
+        return $this->hasMany(HeavyEquipmentJob::class, 'equipment_id');
     }
 
     public function user()

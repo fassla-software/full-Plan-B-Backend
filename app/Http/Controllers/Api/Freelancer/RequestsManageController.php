@@ -4,11 +4,12 @@ namespace App\Http\Controllers\Api\Freelancer;
 
 use App\Enums\MachineType;
 use App\Models\NewProposal;
-use Illuminate\Http\{JsonResponse, Request};
 use App\Http\Controllers\Controller;
 use Illuminate\Validation\Rules\Enum;
 use Illuminate\Support\Facades\Validator;
 use Modules\Service\Entities\SubCategory;
+use Illuminate\Http\{JsonResponse, Request};
+use App\Http\Requests\requests\UpdateRequestRequest;
 
 class RequestsManageController extends Controller
 {
@@ -29,6 +30,7 @@ class RequestsManageController extends Controller
             ], 422);
         }
 
+
         $locale = $request->header('Accept-Language', 'en');
         $sub_category = SubCategory::findOrFail($sub_category_id);
         $eqName = $sub_category->getTranslatedName($locale);
@@ -38,27 +40,23 @@ class RequestsManageController extends Controller
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
-        $categoryModel = getModelClassFromType($jobType);
+        $equipmentModel = getEquipmentModelFromType($jobType);
 
         $eqImage = $sub_category->image ? asset('storage/assets/uploads/sub-category/' . $sub_category->image) : null;
 
-        $records = $categoryModel::query()
-            ->select([
-                'id',
-                'sub_category_id',
-                'user_id',
-                'category_id',
-                'work_site_location',
-                'hour',
-                'day',
-                'month',
-                'size'
-            ])
-            ->with(['user:id,first_name,last_name'])
-            ->where('sub_category_id', $sub_category_id)
+        $records = $equipmentModel::query()
+            ->whereHas('equipment_jops')
+            ->with(['equipment_jops'])
             ->where('user_id', $user->id)
+            ->where('sub_category_id', $sub_category_id)
             ->paginate(12)
             ->withQueryString();
+
+        $records->setCollection(
+            $records->getCollection()->flatMap(function ($item) {
+                return $item->equipment_jops;
+            })
+        );
 
         return response()->json([
             'category_slug' => $jobType,
@@ -165,5 +163,31 @@ class RequestsManageController extends Controller
             'name' => $sub_category->getTranslatedName($locale),
             'request' => $data
         ]);
+    }
+
+    public function updateRequest(UpdateRequestRequest $request, string $jobType, int $id): JsonResponse
+    {
+        $validator = Validator::make([
+            'jobType' => $jobType,
+        ], [
+            'jobType' => ['required', new Enum(MachineType::class)],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Invalid request parameters',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $jobModel = getModelClassFromType($jobType)::findOrFail($id);
+        $jobModel->update($request->validated());
+
+        return response()->json(
+            [
+                'message' => 'Request updated successfully',
+                'request' => $jobModel
+            ]
+        );
     }
 }

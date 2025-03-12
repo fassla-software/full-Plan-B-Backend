@@ -17,6 +17,7 @@ class NewProposal extends Model
         'current_location',
         'offer_ends_at',
         'other_terms',
+        'isSeen',
     ];
 
     protected $casts = [

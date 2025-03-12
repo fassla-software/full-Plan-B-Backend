@@ -58,6 +58,7 @@ class CraneRentalJob extends Model
         'long',
         'search_radius',
         'isStopped',
+        'isSeen',
     ];
 
     public function request()

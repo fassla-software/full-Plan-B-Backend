@@ -43,6 +43,8 @@ class VehicleRentalJob extends Model
         'vehicle_type',
         'lat',
         'long',
+        'isStopped',
+        'isSeen',
     ];
 
     public function request()

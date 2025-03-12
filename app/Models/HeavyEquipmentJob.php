@@ -51,6 +51,7 @@ class HeavyEquipmentJob extends Model
         'lat',
         'long',
         'isStopped',
+        'isSeen',
     ];
 
     protected $casts = [

@@ -69,6 +69,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'setlang'], function () {
             Route::get('requests-number-on-equipment/{jobType}/{sub_category_id}', 'getRequestsAndOffersNumber');
             Route::get('requests-on-equipment/{jobType}/{sub_category_id}', 'getAllRequestsOfEquipment');
             Route::get('request-details/{jobType}/{sub_category_id}/{request_id}', 'getRequestDetails');
+            Route::post('update-request/{jobType}/{id}', 'updateRequest');
         });
 
         // offers manage section
@@ -81,6 +82,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'setlang'], function () {
             Route::get('get-equipment-details/{jobType}/{offer_id}', 'getEquipmentDaitls');
             Route::get('get-equipment-images/{jobType}/{offer_id}', 'getEquipmentImages');
             Route::post('stop-receiving-offers/{jobType}/{offer_id}', 'stopReceivingOffers');
+            Route::post('update-offer/{newProposal}', 'updateOffer');
         });
 
         // equipment management
@@ -248,9 +250,11 @@ Route::group(['prefix' => 'v1', 'middleware' => 'setlang'], function () {
         Route::controller(\App\Http\Controllers\Api\Client\CategoryManageController::class)->group(function () {
             Route::get('category/all', 'category');
         });
+
         Route::controller(\App\Http\Controllers\Api\Client\JobController::class)->group(function () {
             Route::get('skill/all', 'skill');
         });
+
         //language
         Route::controller(\App\Http\Controllers\Api\Client\LanguageController::class)->group(function () {
             Route::get('language/all', 'all_language');

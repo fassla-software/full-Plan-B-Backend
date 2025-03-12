@@ -4,11 +4,12 @@ namespace App\Http\Controllers\Api\Freelancer;
 
 use App\Enums\MachineType;
 use App\Models\NewProposal;
-use Illuminate\Http\{Request, JsonResponse};
 use App\Http\Controllers\Controller;
 use Illuminate\Validation\Rules\Enum;
 use Illuminate\Support\Facades\Validator;
 use Modules\Service\Entities\SubCategory;
+use Illuminate\Http\{Request, JsonResponse};
+use App\Http\Requests\offers\UpdateOfferRequest;
 
 class OffersManageController extends Controller
 {
@@ -39,7 +40,7 @@ class OffersManageController extends Controller
         $locale = $request->header('Accept-Language', 'en');
 
         $records = $jobModel::query()
-            ->with(['request.newProposals', 'subCategory'])
+            ->with(['request.newProposals', 'subCategory', 'user:id,first_name,last_name'])
             ->where('user_id', $user->id)
             ->where('sub_category_id', $sub_category_id)
             ->get();
@@ -55,9 +56,11 @@ class OffersManageController extends Controller
                 'month' => $record->month,
                 'CategorySlug' => $jobType,
                 'offers_count' => $record->request ? $record->request->newProposals->count() : 0,
-                'image' => $record->subCategory->image
-                    ? asset('storage/assets/uploads/sub-category/' . $record->subCategory->image)
-                    : null,
+                // 'image' => $record->subCategory->image
+                //     ? asset('storage/assets/uploads/sub-category/' . $record->subCategory->image)
+                //     : null,
+                'image' => $this->getFullImageUrl($record->subCategory->image),
+                'user' => $record?->user,
             ];
         });
 
@@ -353,5 +356,25 @@ class OffersManageController extends Controller
         $job->update(['isStopped' => true]);
 
         return response()->json(['message' => 'Offers stopped successfully']);
+    }
+
+    public function updateOffer(UpdateOfferRequest $request, NewProposal $newProposal): JsonResponse
+    {
+        $newProposal->update($request->validated());
+        return response()->json(
+            [
+                'message' => 'Offer updated successfully',
+                'offer' => $newProposal
+            ]
+        );
+    }
+
+    private function getFullImageUrl($imageId)
+    {
+        if (!$imageId) {
+            return null;
+        }
+        $imageDetails = get_attachment_image_by_id($imageId);
+        return $imageDetails['img_url'] ?? null;
     }
 }
