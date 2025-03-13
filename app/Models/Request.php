@@ -18,6 +18,6 @@ class Request extends Model
 
     public function newProposals()
     {
-        return $this->hasMany(NewProposal::class, 'request_id');    
+        return $this->hasMany(NewProposal::class, 'request_id');
     }
 }

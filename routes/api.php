@@ -83,6 +83,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'setlang'], function () {
             Route::get('get-equipment-images/{jobType}/{offer_id}', 'getEquipmentImages');
             Route::post('stop-receiving-offers/{jobType}/{offer_id}', 'stopReceivingOffers');
             Route::post('update-offer/{newProposal}', 'updateOffer');
+            Route::delete('delete-offer/{newProposal}', 'deleteOffer');
         });
 
         // equipment management

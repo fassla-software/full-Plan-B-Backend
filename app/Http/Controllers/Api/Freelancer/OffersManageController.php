@@ -372,12 +372,36 @@ class OffersManageController extends Controller
 
     public function updateOffer(UpdateOfferRequest $request, NewProposal $newProposal): JsonResponse
     {
+        if (!$newProposal) {
+            return response()->json(
+                ['error' => 'Offer not found'],
+                404
+            );
+        }
+
         $newProposal->update($request->validated());
+
         return response()->json(
             [
                 'message' => 'Offer updated successfully',
                 'offer' => $newProposal
             ]
+        );
+    }
+
+    public function deleteOffer(NewProposal $newProposal): JsonResponse
+    {
+        if (!$newProposal) {
+            return response()->json(
+                ['error' => 'Offer not found'],
+                404
+            );
+        }
+
+        $newProposal->delete();
+
+        return response()->json(
+            ['message' => 'Offer deleted successfully']
         );
     }
 

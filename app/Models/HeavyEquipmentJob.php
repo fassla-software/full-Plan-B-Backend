@@ -72,7 +72,7 @@ class HeavyEquipmentJob extends Model
 
     public function heavy_equipment(): BelongsTo
     {
-        return $this->belongsTo(HeavyEquipment::class, 'heavy_equipment_id');
+        return $this->belongsTo(HeavyEquipment::class, 'equipment_id');
     }
 
     public function subCategory()

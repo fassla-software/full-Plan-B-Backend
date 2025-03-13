@@ -360,6 +360,8 @@ class MyEquipmentsController extends Controller
             }
         }
 
+        $equipment->delete();
+
         return response()->json(
             [
                 'message' => 'Equipment deleted successfully',

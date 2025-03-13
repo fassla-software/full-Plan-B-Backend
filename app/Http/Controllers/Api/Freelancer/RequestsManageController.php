@@ -31,7 +31,6 @@ class RequestsManageController extends Controller
             ], 422);
         }
 
-
         $locale = $request->header('Accept-Language', 'en');
         $sub_category = SubCategory::findOrFail($sub_category_id);
         $eqName = $sub_category->getTranslatedName($locale);
@@ -162,7 +161,10 @@ class RequestsManageController extends Controller
             ]);
         }
 
-        if ($data) $data['remaining_time'] = $this->getRemainingTimeForRequestAvailability($data->max_offer_deadline);
+        if ($data) {
+            $data['remaining_time'] = $this->getRemainingTimeForRequestAvailability($data->max_offer_deadline);
+            $data['offer_id'] = $data?->request?->newProposals?->first()?->id;
+        }
 
         if ($data && $data->user && $data->user->image) {
             $data->user->image = asset('storage/assets/uploads/users/' . $data->user->image);
