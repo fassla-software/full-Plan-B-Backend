@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Freelancer;
 
+use DateTime;
 use App\Enums\MachineType;
 use App\Models\NewProposal;
 use App\Http\Controllers\Controller;
@@ -155,6 +156,14 @@ class RequestsManageController extends Controller
             ->where('user_id', $user->id)
             ->first();
 
+        if ($data && ($data->isSeen == 0)) {
+            $data->update([
+                'isSeen' => 1
+            ]);
+        }
+
+        if ($data) $data['remaining_time'] = $this->getRemainingTimeForRequestAvailability($data->max_offer_deadline);
+
         if ($data && $data->user && $data->user->image) {
             $data->user->image = asset('storage/assets/uploads/users/' . $data->user->image);
         }
@@ -200,5 +209,23 @@ class RequestsManageController extends Controller
         }
         $imageDetails = get_attachment_image_by_id($imageId);
         return $imageDetails['img_url'] ?? null;
+    }
+
+    private function getRemainingTimeForRequestAvailability($end_at)
+    {
+        $endDateTime = new DateTime($end_at . ' 23:59:59');
+        $currentDateTime = new DateTime();
+
+        if ($currentDateTime > $endDateTime) {
+            return "00:00:00";
+        }
+
+        $interval = $currentDateTime->diff($endDateTime);
+
+        $remainingHours = $interval->days * 24 + $interval->h;
+        $remainingMinutes = $interval->i;
+        $remainingSeconds = $interval->s;
+
+        return sprintf('%02d:%02d:%02d', $remainingHours, $remainingMinutes, $remainingSeconds);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Freelancer;
 
+use DateTime;
 use App\Enums\MachineType;
 use App\Models\NewProposal;
 use App\Http\Controllers\Controller;
@@ -172,6 +173,14 @@ class OffersManageController extends Controller
             })
             ->where('id', $offer_id)
             ->first();
+
+        if ($offer && ($offer->isSeen == 0)) {
+            $offer->update([
+                'isSeen' => 1
+            ]);
+        }
+
+        if ($offer) $offer['remaining_time'] = $this->getRemainingTimeForOfferAvailability($offer->offer_ends_at);
 
         return response()->json([
             'name' => $eqName,
@@ -379,5 +388,23 @@ class OffersManageController extends Controller
         }
         $imageDetails = get_attachment_image_by_id($imageId);
         return $imageDetails['img_url'] ?? null;
+    }
+
+    private function getRemainingTimeForOfferAvailability($end_at)
+    {
+        $endDateTime = new DateTime($end_at . ' 23:59:59');
+        $currentDateTime = new DateTime();
+
+        if ($currentDateTime > $endDateTime) {
+            return "00:00:00";
+        }
+
+        $interval = $currentDateTime->diff($endDateTime);
+
+        $remainingHours = $interval->days * 24 + $interval->h;
+        $remainingMinutes = $interval->i;
+        $remainingSeconds = $interval->s;
+
+        return sprintf('%02d:%02d:%02d', $remainingHours, $remainingMinutes, $remainingSeconds);
     }
 }
