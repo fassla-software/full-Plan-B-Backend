@@ -66,9 +66,9 @@ Route::group(['prefix' => 'v1', 'middleware' => 'setlang'], function () {
 
         // requests manage section
         Route::controller(\App\Http\Controllers\Api\Freelancer\RequestsManageController::class)->group(function () {
-            Route::get('requests-number-on-equipment/{jobType}/{sub_category_id}', 'getRequestsAndOffersNumber');
-            Route::get('requests-on-equipment/{jobType}/{sub_category_id}', 'getAllRequestsOfEquipment');
-            Route::get('request-details/{jobType}/{sub_category_id}/{request_id}', 'getRequestDetails');
+            Route::get('requests-number-on-equipment/{jobType}/{subCategory}', 'getRequestsAndOffersNumber');
+            Route::get('requests-on-equipment/{jobType}/{subCategory}', 'getAllRequestsOfEquipment');
+            Route::get('request-details/{jobType}/{subCategory}/{request_id}', 'getRequestDetails');
             Route::post('update-request/{jobType}/{id}', 'updateRequest');
         });
 
@@ -84,6 +84,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'setlang'], function () {
             Route::post('stop-receiving-offers/{jobType}/{offer_id}', 'stopReceivingOffers');
             Route::post('update-offer/{newProposal}', 'updateOffer');
             Route::delete('delete-offer/{newProposal}', 'deleteOffer');
+            Route::get('offer-rank/{jobType}/{job_id}/{newProposal}', 'getMyOfferRank');
         });
 
         // equipment management

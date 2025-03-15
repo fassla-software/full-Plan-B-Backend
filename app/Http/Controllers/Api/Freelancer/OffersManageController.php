@@ -405,6 +405,45 @@ class OffersManageController extends Controller
         );
     }
 
+    public function getMyOfferRank(string $jobType, int $job_id, NewProposal $newProposal): JsonResponse
+    {
+        if (!$newProposal) {
+            return response()->json(
+                ['error' => 'Offer not found'],
+                404
+            );
+        }
+
+        $validator = Validator::make([
+            'jobType' => $jobType,
+        ], [
+            'jobType' => ['required', new Enum(MachineType::class)],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Invalid request parameters',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $job = getModelClassFromType($jobType)::findOrFail($job_id);
+        $offersOfJob = $job?->request?->newProposals;
+
+        if (!$offersOfJob || $offersOfJob->isEmpty()) {
+            return response()->json(['message' => 'No offers found for this job'], 404);
+        }
+
+        $sortedOffers = $offersOfJob->sortBy('price')->values();
+
+        $rank = $sortedOffers->search(fn($offer) => $offer->id === $newProposal->id) + 1;
+
+        return response()->json([
+            'rank' => $rank,
+            'total_offers' => $sortedOffers->count(),
+        ]);
+    }
+
     private function getFullImageUrl($imageId)
     {
         if (!$imageId) {
