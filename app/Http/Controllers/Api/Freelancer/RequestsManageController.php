@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Api\Freelancer;
 
 use DateTime;
+use Carbon\Carbon;
 use App\Enums\MachineType;
 use App\Models\NewProposal;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Modules\Service\Entities\SubCategory;
 use Illuminate\Http\{JsonResponse, Request};
@@ -30,12 +32,32 @@ class RequestsManageController extends Controller
         $locale = $request->header('Accept-Language', 'en');
         $eqName = $subCategory->getTranslatedName($locale);
         $eqImage = $this->getFullImageUrl($subCategory->image);
-
         $jobModel = getModelClassFromType($jobType);
+
+        $userEquipments = getEquipmentModelFromType($jobType)::select(['id', 'lat', 'long'])
+            ->where('user_id', $user->id)
+            ->where('sub_category_id', $subCategory->id)
+            ->whereNotNull('lat')
+            ->whereNotNull('long')
+            ->get();
+
+        $distanceConditions = $userEquipments->map(function ($equipment) {
+            return DB::raw('
+                    (6371 * acos(cos(radians(' . $equipment->lat . ')) * cos(radians(lat)) * 
+                    cos(radians(long) - radians(' . $equipment->long . ')) + sin(radians(' . $equipment->lat . ')) * 
+                    sin(radians(lat)))) <= search_radius
+                ');
+        })->toArray();
 
         $records = $jobModel::with(['user:id,first_name,last_name'])
             ->where('sub_category_id', $subCategory->id)
             ->where('user_id', '<>', $user->id)
+            ->whereDate('max_offer_deadline', '>=', Carbon::today())
+            ->where(function ($query) use ($distanceConditions) {
+                foreach ($distanceConditions as $condition) {
+                    $query->orWhereRaw($condition);
+                }
+            })
             ->paginate(12);
 
         return response()->json([

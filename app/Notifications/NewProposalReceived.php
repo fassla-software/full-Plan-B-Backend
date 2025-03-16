@@ -47,4 +47,3 @@ class NewProposalReceived extends Notification implements ShouldBroadcast
         ];
     }
 }
-
