@@ -9,5 +9,5 @@ class FreelancerNotification extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['identity','freelancer_id','type','message','is_read'];
+    protected $fillable = ['identity', 'freelancer_id', 'type', 'message', 'is_read'];
 }

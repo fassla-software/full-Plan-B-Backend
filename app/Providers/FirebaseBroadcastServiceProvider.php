@@ -10,7 +10,7 @@ use Kreait\Firebase\Contract\Messaging;
 class FirebaseBroadcastServiceProvider extends ServiceProvider
 {
     /**
-     * Register services.
+     * Register services.   
      */
     public function register(): void
     {

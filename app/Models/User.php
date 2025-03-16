@@ -16,6 +16,7 @@ use Modules\CountryManage\Entities\State;
 use Modules\Wallet\Entities\Wallet;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
@@ -188,5 +189,10 @@ class User extends Authenticatable
     public function craneRentalJob()
     {
         return $this->hasMany(CraneRentalJob::class, 'user_id');
+    }
+
+    public function commas(): HasOne
+    {
+        return $this->hasOne(Comma::class, 'user_id');
     }
 }
