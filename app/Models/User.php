@@ -191,7 +191,7 @@ class User extends Authenticatable
         return $this->hasMany(CraneRentalJob::class, 'user_id');
     }
 
-    public function commas(): HasOne
+    public function fassalat(): HasOne
     {
         return $this->hasOne(Comma::class, 'user_id');
     }

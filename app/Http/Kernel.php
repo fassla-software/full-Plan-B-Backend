@@ -41,11 +41,11 @@ class Kernel extends HttpKernel
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\CheckUserOnlineStatus::class,
             \App\Http\Middleware\DriverConfigMiddleware::class,
-			//Demo::class
+            //Demo::class
         ],
 
         'api' => [
-             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             'throttle:api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\DriverConfigMiddleware::class,
@@ -82,5 +82,6 @@ class Kernel extends HttpKernel
         'permission' => \Spatie\Permission\Middlewares\PermissionMiddleware::class,
         'preventprojecturl' => \App\Http\Middleware\PreventProjectUrlAccess::class,
         'preventjoburl' => \App\Http\Middleware\PreventJobUrlAccess::class,
+        'has.commas.or.trial' => \App\Http\Middleware\HasCommasOrTrial::class,
     ];
 }
