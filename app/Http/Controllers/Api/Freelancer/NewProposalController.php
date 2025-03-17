@@ -59,7 +59,11 @@ class NewProposalController extends Controller
             $recipientUser->notify(new NewProposalReceived($proposal));
         }
 
-        return $this->successResponse($proposal, 'Proposal created successfully.', 201);
+        return response()->json([
+            'message' => 'Proposal created successfully.',
+            'category_slug' => $jobType,
+            'offer' => $proposal
+        ]);
     }
 
     /**

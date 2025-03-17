@@ -23,7 +23,7 @@ class StoreNewProposalRequest extends FormRequest
     {
         return [
             'price' => 'required|string|min:0',
-            'per' => 'required|in:day,month,hour',
+            'per' => 'required|in:day,week,year,month,hour',
             'current_location' => 'required|string|max:255',
             'offer_ends_at' => 'required|string',
             'other_terms' => 'nullable|string',

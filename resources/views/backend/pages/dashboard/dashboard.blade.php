@@ -14,7 +14,7 @@
                                 </div>
                             </div>
                         </a>
-                        <a href="{{ route('admin.order.all') }}" class="dashboard__promo__col promo_child">
+                        <a href="{{ route('admin.offers.index') }}" class="dashboard__promo__col promo_child">
                             <div class="single_promo">
                                 <div class="single_promo__contents">
                                     <span class="single_promo__subtitle"> {{ __('Total Offers') }} </span>

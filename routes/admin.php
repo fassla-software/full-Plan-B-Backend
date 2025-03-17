@@ -1,34 +1,35 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Backend\AccountSettingsController;
-use App\Http\Controllers\Backend\AdditionalSettingsController;
-use App\Http\Controllers\Backend\AdminNotificationController;
-use App\Http\Controllers\Backend\AdminPasswordResetController;
-use App\Http\Controllers\Backend\CommasControllers;
-use App\Http\Controllers\Backend\DashboardController;
-use App\Http\Controllers\Backend\ExperienceLevelController;
-use App\Http\Controllers\Backend\FeedbackController;
-use App\Http\Controllers\Backend\InvoiceController;
-use App\Http\Controllers\Backend\JobHistoryController;
-use App\Http\Controllers\Backend\LanguageController;
-use App\Http\Controllers\Backend\LengthController;
-use App\Http\Controllers\Backend\LoginRegisterController;
-use App\Http\Controllers\Backend\OrderController;
-use App\Http\Controllers\Backend\PageBuilderController;
-use App\Http\Controllers\Backend\ProjectController;
-use App\Http\Controllers\Backend\ProjectHistoryController;
 use App\Http\Controllers\Backend\JobController;
-use App\Http\Controllers\Backend\SkillController;
-use App\Http\Controllers\Backend\FormBuilderController;
 use App\Http\Controllers\Backend\MenuController;
-use App\Http\Controllers\Backend\SuspendActiveController;
-use App\Http\Controllers\Backend\TransactionController;
+use App\Http\Controllers\Backend\OrderController;
+use App\Http\Controllers\Backend\SkillController;
+use App\Http\Controllers\Backend\LengthController;
+use App\Http\Controllers\Backend\OffersController;
+use App\Http\Controllers\Backend\CommasControllers;
+use App\Http\Controllers\Backend\InvoiceController;
+use App\Http\Controllers\Backend\ProjectController;
+use App\Http\Controllers\Backend\FeedbackController;
+use App\Http\Controllers\Backend\LanguageController;
+use App\Http\Controllers\Backend\DashboardController;
+use App\Http\Controllers\Backend\JobHistoryController;
 use App\Http\Controllers\Backend\UserManageController;
 use App\Http\Controllers\Backend\UserReportController;
-use App\Http\Controllers\Backend\WidgetBuilderController;
 use App\Http\Controllers\Common\MediaUploadController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Backend\FormBuilderController;
+use App\Http\Controllers\Backend\PageBuilderController;
+use App\Http\Controllers\Backend\TransactionController;
+use App\Http\Controllers\Backend\LoginRegisterController;
+use App\Http\Controllers\Backend\SuspendActiveController;
+use App\Http\Controllers\Backend\WidgetBuilderController;
+use App\Http\Controllers\Backend\ProjectHistoryController;
+use App\Http\Controllers\Backend\AccountSettingsController;
+use App\Http\Controllers\Backend\ExperienceLevelController;
+use App\Http\Controllers\Backend\AdminNotificationController;
+use App\Http\Controllers\Backend\AdditionalSettingsController;
+use App\Http\Controllers\Backend\AdminPasswordResetController;
 use Modules\RolePermission\Http\Controllers\AdminManageController;
 
 Route::group(['as' => 'admin.', 'prefix' => 'admin'], function () {
@@ -50,6 +51,16 @@ Route::group(['as' => 'admin.', 'prefix' => 'admin'], function () {
         // dashboard
         Route::controller(DashboardController::class)->group(function () {
             Route::get('dashboard', 'dashboard')->name('dashboard');
+        });
+
+        // offers
+        Route::controller(OffersController::class)->group(function () {
+            Route::get('offers', 'index')->name('offers.index');
+            Route::get('offers/paginate/data/offers', 'offers_pagination')->name('offers.paginate.data');
+            Route::get('offers/search/offers', 'search_offers')->name('offers.search');
+
+            Route::post('offers/edit-offer-info', 'edit_info')->name('offer.info.edit')->permission('user-details-update');
+            Route::delete('offers/delete/{id}', 'delete_offer')->name('offers.delete');
         });
 
         // project

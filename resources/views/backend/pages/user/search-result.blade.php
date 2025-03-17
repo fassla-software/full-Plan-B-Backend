@@ -11,6 +11,7 @@
             <th>{{ __('Name') }}</th>
             <th>{{ __('Email') }}</th>
             <th>{{ __('Phone') }}</th>
+            <th>{{ __('Commas') }}</th>
             <th>{{ __('Account Status') }}</th>
             <th>{{ __('Identity Verify') }}</th>
             <th>{{ __('Action') }}</th>
@@ -25,6 +26,8 @@
                     <td>{{ $user->first_name . ' ' . $user->last_name }}</td>
                     <td>{{ $user->email }}</td>
                     <td>{{ $user->phone }} </td>
+                    <td>{{ $user->fassalat?->commas ?? 0 }} <span class="text-success">+
+                            {{ $user->fassalat?->remaining_commas ?? 0 }}</span> </td>
                     @if ($user->is_suspend == 1)
                         <td> <x-status.table.account-status :status="$user->is_suspend" /> </td>
                     @else

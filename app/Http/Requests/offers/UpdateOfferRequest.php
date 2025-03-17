@@ -23,7 +23,7 @@ class UpdateOfferRequest extends FormRequest
     {
         return [
             'price'            => ['nullable', 'numeric', 'min:0'],
-            'per'              => ['nullable', 'string', 'in:day,month,hour,week'],
+            'per'              => ['nullable', 'string', 'in:day,month,hour,week,year'],
             'current_location' => ['nullable', 'string', 'max:255'],
             'offer_ends_at'    => ['nullable', 'date', 'after_or_equal:today'],
             'other_terms'      => ['nullable', 'string'],

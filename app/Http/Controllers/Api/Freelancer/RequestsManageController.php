@@ -125,8 +125,8 @@ class RequestsManageController extends Controller
         }
 
         $data['remaining_time'] = $this->getRemainingTimeForRequestAvailability($data->max_offer_deadline);
-        $data['offer_id'] = $data->request?->newProposals
-            ->where('user_id', $user->id)->first()?->id;
+        $data['offer'] = $data->request?->newProposals
+            ->where('user_id', $user->id)->first();
 
         if ($data->user && $data->user->image) {
             $data->user->image = asset('storage/assets/uploads/users/' . $data->user->image);

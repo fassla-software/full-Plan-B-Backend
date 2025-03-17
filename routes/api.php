@@ -201,12 +201,20 @@ Route::group(['prefix' => 'v1', 'middleware' => 'setlang'], function () {
             Route::controller(\App\Http\Controllers\Api\Freelancer\PaymentListController::class)->group(function () {
                 Route::get('gateway/list', 'gateway_list');
             });
+
+
+
+
             //subscription list
             Route::controller(\App\Http\Controllers\Api\Freelancer\SubscriptionController::class)->group(function () {
                 Route::get('subscription/history/list', 'all_subscription');
                 Route::post('subscription/buy', 'buy_subscription');
                 Route::post('subscription/buy/update-payment', 'payment_update');
             });
+
+
+
+
             //promotion list
             Route::controller(\App\Http\Controllers\Api\Freelancer\BuyPromotePackageController::class)->group(function () {
                 Route::get('promotion/package/list', 'package_list');
