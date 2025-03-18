@@ -21,6 +21,8 @@ use App\Helper\LanguageHelper;
 use Modules\Pages\Entities\Page;
 use Illuminate\Support\Facades\Storage;
 use Kreait\Firebase\Messaging\CloudMessage;
+use Modules\Subscription\Entities\UserSubscription;
+use Carbon\Carbon;
 
 function getModelClassFromType(?string $type = null)
 {
@@ -60,6 +62,24 @@ function paginateCollection($collection, $perPage, $currentPage)
         'total' => $total,
         'last_page' => ceil($total / $perPage),
     ];
+}
+
+function checkSubsicriptionAvailability(int $neededCommas, ?int $user = null): bool
+{
+    if (!isset($user)) $user = auth()->user()->id;
+    $total_limit = UserSubscription::where('user_id', $user->id)
+        ->where('payment_status', 'complete')
+        ->whereDate('expire_date', '>', Carbon::now())
+        ->sum('limit');
+
+    $createdAt = Carbon::parse($user->created_at);
+    $isInTrialPeriod = $createdAt->diffInDays(Carbon::now()) < 30;
+
+    if ($total_limit > $neededCommas || $isInTrialPeriod) {
+        return true;
+    }
+
+    return false;
 }
 
 function render_twitter_meta_image_by_attachment_id($id, $size = 'full')

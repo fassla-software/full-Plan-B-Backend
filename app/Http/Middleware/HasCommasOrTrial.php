@@ -6,6 +6,7 @@ use Closure;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Modules\Subscription\Entities\UserSubscription;
 
 class HasCommasOrTrial
 {
@@ -19,17 +20,20 @@ class HasCommasOrTrial
         $user = auth()->user();
         if (!$user) {
             return response()->json([
-                'message' => 'Unauthorized. Please log in.'
+                'message' => 'Unauthorized'
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        $userCommas = $user->fassalat;
-        $hasCommas = $userCommas && ($userCommas->remaining_commas > 0 || $userCommas->commas > 0);
+        $total_limit = UserSubscription::where('user_id', $user->id)
+            ->where('payment_status', 'complete')
+            ->whereDate('expire_date', '>', Carbon::now())
+            ->sum('limit');
 
         $createdAt = Carbon::parse($user->created_at);
-        $isInTrialPeriod = $createdAt->diffInDays(Carbon::now()) < 15;
+        $isInTrialPeriod = $createdAt->diffInDays(Carbon::now()) < 30;
 
-        if ($hasCommas || $isInTrialPeriod) {
+        // 0 for intail version
+        if ($total_limit > 0 || $isInTrialPeriod) {
             return $next($request);
         }
 

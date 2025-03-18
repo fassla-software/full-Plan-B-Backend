@@ -9,8 +9,8 @@ class Subscription extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['subscription_type_id','title','logo','price','limit','status'];
-    protected $casts = ['status'=>'integer'];
+    protected $fillable = ['subscription_type_id', 'title', 'logo', 'price', 'limit', 'status'];
+    protected $casts = ['status' => 'integer'];
 
     protected static function newFactory()
     {
@@ -19,16 +19,16 @@ class Subscription extends Model
 
     public function features()
     {
-        return $this->hasMany(SubscriptionFeature::class,'subscription_id','id');
+        return $this->hasMany(SubscriptionFeature::class, 'subscription_id', 'id');
     }
 
     public function subscription_type()
     {
-        return $this->belongsTo(SubscriptionType::class,'subscription_type_id','id');
+        return $this->belongsTo(SubscriptionType::class, 'subscription_type_id', 'id');
     }
 
     public function user_subscriptions()
     {
-        return $this->hasMany(UserSubscription::class,'subscription_id','id');
+        return $this->hasMany(UserSubscription::class, 'subscription_id', 'id');
     }
 }

@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\BasicMail;
 use App\Models\AdminNotification;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -104,6 +105,7 @@ class SubscriptionController extends Controller
     }
 
     //buy subscription
+    // check if he passed 90% from its fasslas
     public function buy_subscription(Request $request)
     {
         $request->validate([
@@ -112,6 +114,7 @@ class SubscriptionController extends Controller
         ]);
 
         $all_gateway = payment_gateway_list_for_api();
+
         if (!in_array($request->selected_payment_gateway, $all_gateway)) {
             return response()->json(['msg' => __('Please select a valid payment gateway')])->setStatusCode(422);
         }
@@ -121,10 +124,26 @@ class SubscriptionController extends Controller
                 'manual_payment_image' => 'required|mimes:jpg,jpeg,png,pdf'
             ]);
         }
-
         //get auth user
         $user = auth('sanctum')->user();
-        $user_id = $user->id;
+
+        $latest_subscription = $user->subscriptions()
+            ->where('expire_date', '>', Carbon::now())
+            ->latest()
+            ->first();
+
+        // check validation of usage 90% 
+        $remaining_limits = 0;
+        if ($latest_subscription) {
+            if ($latest_subscription->limit > ($latest_subscription->subscription->limit - (($latest_subscription->subscription->limit * 90) / 100))) {
+                return response()->json([
+                    'message' => __('You can\'t make new subscription now, You did not consume 90% from you limits')
+                ])->setStatusCode(422);
+            } else {
+                $remaining_limits = $latest_subscription->limit;
+            }
+        }
+
         $subscription_details = Subscription::with('subscription_type:id,validity')
             ->select(['id', 'subscription_type_id', 'price', 'limit'])
             ->where('id', $request->subscription_id)
@@ -162,7 +181,7 @@ class SubscriptionController extends Controller
                             'user_id' => $user->id,
                             'subscription_id' => $subscription_details->id,
                             'price' => $total,
-                            'limit' => $limit,
+                            'limit' => $limit + $remaining_limits,
                             'expire_date' => $expire_date,
                             'payment_gateway' => $request->selected_payment_gateway,
                             'manual_payment_payment' => $manual_payment_image,
@@ -189,7 +208,7 @@ class SubscriptionController extends Controller
                         'user_id' => $user->id,
                         'subscription_id' => $subscription_details->id,
                         'price' => $total,
-                        'limit' => $limit,
+                        'limit' => $limit + $remaining_limits,
                         'expire_date' => $expire_date,
                         'payment_gateway' => $request->selected_payment_gateway,
                         'payment_status' => $payment_status,
@@ -212,7 +231,7 @@ class SubscriptionController extends Controller
                     'user_id' => $user->id,
                     'subscription_id' => $subscription_details->id,
                     'price' => $total,
-                    'limit' => $limit,
+                    'limit' => $limit + $remaining_limits,
                     'expire_date' => $expire_date,
                     'payment_gateway' => $request->selected_payment_gateway,
                     'payment_status' => $payment_status,
@@ -232,6 +251,35 @@ class SubscriptionController extends Controller
         return response()->json([
             'msg' => __('Subscription not found!'),
         ])->setStatusCode(422);
+    }
+
+    public function get_current_subscription_details(): JsonResponse
+    {
+        $user = auth('sanctum')->user();
+        $crrent_subscription = $user->subscriptions()
+            ->where('expire_date', '>', Carbon::now())
+            ->latest()
+            ->first();
+
+        if (!isset($crrent_subscription)) return response()->json(null);
+
+        $used = $crrent_subscription->limit > $crrent_subscription->subscription->limit ?
+            0 :
+            $crrent_subscription->subscription->limit - $crrent_subscription->limit;
+
+        $remaining_limits_from_last_subscription = $crrent_subscription->limit > $crrent_subscription->subscription->limit ?
+            $crrent_subscription->limit - $crrent_subscription->subscription->limit : 0;
+
+        return response()->json(
+            [
+                'user_id' => $user->id,
+                'total_available_limits' => $crrent_subscription->limit,
+                'remaining_limits_from_last_subscription' => $remaining_limits_from_last_subscription,
+                'used' => $used,
+                'expire_date' => $crrent_subscription->expire_date,
+                'subscription_type' => $crrent_subscription->subscription,
+            ]
+        );
     }
 
     //payment update

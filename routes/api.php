@@ -202,18 +202,13 @@ Route::group(['prefix' => 'v1', 'middleware' => 'setlang'], function () {
                 Route::get('gateway/list', 'gateway_list');
             });
 
-
-
-
             //subscription list
             Route::controller(\App\Http\Controllers\Api\Freelancer\SubscriptionController::class)->group(function () {
                 Route::get('subscription/history/list', 'all_subscription');
                 Route::post('subscription/buy', 'buy_subscription');
                 Route::post('subscription/buy/update-payment', 'payment_update');
+                Route::get('my-subscription-details', 'get_current_subscription_details');
             });
-
-
-
 
             //promotion list
             Route::controller(\App\Http\Controllers\Api\Freelancer\BuyPromotePackageController::class)->group(function () {

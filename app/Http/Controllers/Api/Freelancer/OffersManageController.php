@@ -38,11 +38,12 @@ class OffersManageController extends Controller
 
         $jobModel = getModelClassFromType($jobType);
         $locale = $request->header('Accept-Language', 'en');
+        $sub_category = SubCategory::findOrFail($sub_category_id);
 
         $perPage = $request->input('per_page', 15);
 
         $records = $jobModel::query()
-            ->with(['request.newProposals', 'subCategory', 'user:id,first_name,last_name'])
+            ->with(['request.newProposals', 'subCategory', 'user:id,first_name,last_name,image'])
             ->where('user_id', $user->id)
             ->where('sub_category_id', $sub_category_id)
             ->paginate($perPage);
@@ -59,11 +60,18 @@ class OffersManageController extends Controller
                 'CategorySlug' => $jobType,
                 'offers_count' => $record->request ? $record->request->newProposals->count() : 0,
                 'image' => $this->getFullImageUrl($record->subCategory->image),
-                'user' => $record?->user,
+                'user' => $record->user ? array_merge(
+                    $record->user->toArray(),
+                    ['image' => $record->user->image ? asset('assets/uploads/profile/' . $record->user->image)
+                        : asset('assets/uploads/profile/1735570464-6772b42011d2d.png')]
+                ) : null,
             ];
-        });
+        })->sortByDesc('offers_count')->values();
 
         return response()->json([
+            'category_slug' => $jobType,
+            'sub_category_slug' => $sub_category->getTranslatedName($locale),
+            'sub_category_id' => $sub_category_id,
             'data' => $formattedRecords,
             'pagination' => [
                 'total' => $records->total(),
@@ -108,7 +116,7 @@ class OffersManageController extends Controller
 
         $offers = NewProposal::query()
             ->with([
-                'user:id,first_name,last_name',
+                'user:id,first_name,last_name,image',
                 'request:id,requestable_id,requestable_type',
                 'request.requestable:id,size,work_site_location,hour,day,month'
             ])->whereHas('request', function ($query) use ($categoryModel, $job_id) {
@@ -155,24 +163,30 @@ class OffersManageController extends Controller
 
         $categoryModel = getModelClassFromType($jobType);
 
+
         $sub_category = SubCategory::findOrFail($sub_category_id);
+
         $eqName = $sub_category->getTranslatedName($request->header('Accept-Language', 'en'));
-        $eqImage = $sub_category->image ? asset('storage/assets/uploads/sub-category/' . $sub_category->image) : null;
+
+        // $eqImage = $sub_category->image ? asset('storage/assets/uploads/sub-category/' . $sub_category->image) : null;
+
+        $eqImage = $this->getFullImageUrl($sub_category->image);
+
 
         $offer = NewProposal::query()
             ->with([
-                'user:id,first_name,last_name',
+                'user:id,first_name,last_name,image',
                 'request:id,requestable_id,requestable_type',
                 'request.requestable:id,size,work_site_location,hour,day,month'
-            ])->whereHas('request', function ($query) use ($categoryModel, $user, $sub_category_id) {
-                $query->where('requestable_type', $categoryModel)
-                    ->whereHas('requestable', function ($query) use ($user, $sub_category_id) {
-                        $query->where('user_id', $user->id)
-                            ->where('sub_category_id', $sub_category_id);
-                    });
-            })
+            ])
             ->where('id', $offer_id)
             ->first();
+
+        if ($offer && $offer->user) {
+            $offer->user->image = $offer->user->image
+                ? asset('assets/uploads/profile/' . $offer->user->image)
+                : asset('assets/uploads/profile/1735570464-6772b42011d2d.png');
+        }
 
         if ($offer && ($offer->isSeen == 0)) {
             $offer->update([
@@ -332,13 +346,12 @@ class OffersManageController extends Controller
         ]);
     }
 
-    public function stopReceivingOffers(Request $request, string $jobType, string $offer_id): JsonResponse
+    public function stopReceivingOffers(Request $request, string $jobType, string $request_id): JsonResponse
     {
         $validatedData = Validator::make(
-            compact('jobType', 'offer_id'),
+            compact('jobType'),
             [
                 'jobType'  => ['required', new Enum(MachineType::class)],
-                'offer_id' => 'nullable|string|exists:new_proposals,id',
             ]
         );
 
@@ -350,20 +363,7 @@ class OffersManageController extends Controller
             ], 422);
         }
 
-        $categoryModel = getModelClassFromType($jobType);
-
-        $proposal = NewProposal::with('request.requestable.heavy_equipment.subCategory')
-            ->find($offer_id);
-
-        if (!$proposal || !$proposal->request || $proposal->request->requestable_type !== $categoryModel) {
-            return response()->json(['message' => 'No HeavyEquipmentJob found for this proposal'], 404);
-        }
-
-        $job = $proposal->request->requestable;
-
-        if (!$job) {
-            return response()->json(['message' => 'No equipment details found for this proposal'], 404);
-        }
+        $job = getModelClassFromType($jobType)::findOrFail($request_id);
 
         $job->update(['isStopped' => true]);
 
@@ -455,7 +455,7 @@ class OffersManageController extends Controller
 
     private function getRemainingTimeForOfferAvailability($end_at)
     {
-        $endDateTime = new DateTime($end_at . ' 23:59:59');
+        $endDateTime = new DateTime($end_at);
         $currentDateTime = new DateTime();
 
         if ($currentDateTime > $endDateTime) {
