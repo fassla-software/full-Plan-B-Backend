@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api\Freelancer;
 
-use App\Helper\PaymentGatewayRequestHelper;
 use App\Http\Controllers\Controller;
 use App\Mail\BasicMail;
 use App\Models\AdminNotification;
@@ -10,7 +9,6 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Intervention\Image\Facades\Image;
 use Modules\Subscription\Entities\Subscription;
@@ -181,7 +179,8 @@ class SubscriptionController extends Controller
                             'user_id' => $user->id,
                             'subscription_id' => $subscription_details->id,
                             'price' => $total,
-                            'limit' => $limit + $remaining_limits,
+                            'limit' => $limit,
+                            'remining_limit' => $remaining_limits,
                             'expire_date' => $expire_date,
                             'payment_gateway' => $request->selected_payment_gateway,
                             'manual_payment_payment' => $manual_payment_image,
@@ -208,7 +207,8 @@ class SubscriptionController extends Controller
                         'user_id' => $user->id,
                         'subscription_id' => $subscription_details->id,
                         'price' => $total,
-                        'limit' => $limit + $remaining_limits,
+                        'limit' => $limit,
+                        'remining_limit' => $remaining_limits,
                         'expire_date' => $expire_date,
                         'payment_gateway' => $request->selected_payment_gateway,
                         'payment_status' => $payment_status,
@@ -231,7 +231,8 @@ class SubscriptionController extends Controller
                     'user_id' => $user->id,
                     'subscription_id' => $subscription_details->id,
                     'price' => $total,
-                    'limit' => $limit + $remaining_limits,
+                    'limit' => $limit,
+                    'remining_limit' => $remaining_limits,
                     'expire_date' => $expire_date,
                     'payment_gateway' => $request->selected_payment_gateway,
                     'payment_status' => $payment_status,
@@ -263,21 +264,27 @@ class SubscriptionController extends Controller
 
         if (!isset($crrent_subscription)) return response()->json(null);
 
-        $used = $crrent_subscription->limit > $crrent_subscription->subscription->limit ?
-            0 :
-            $crrent_subscription->subscription->limit - $crrent_subscription->limit;
-
-        $remaining_limits_from_last_subscription = $crrent_subscription->limit > $crrent_subscription->subscription->limit ?
-            $crrent_subscription->limit - $crrent_subscription->subscription->limit : 0;
+        $used = ($crrent_subscription->limit - $crrent_subscription->remining_limit) - $crrent_subscription->subscription->limit;
+        $shifted_used = ($crrent_subscription->limit - $crrent_subscription->subscription->limit) - $crrent_subscription->remining_limit;
 
         return response()->json(
             [
                 'user_id' => $user->id,
-                'total_available_limits' => $crrent_subscription->limit,
-                'remaining_limits_from_last_subscription' => $remaining_limits_from_last_subscription,
-                'used' => $used,
+                'package' => [
+                    'package_name' => $crrent_subscription->subscription->title,
+                    'package_limit' => $crrent_subscription->subscription->limit,
+                    'package_used' => $used,
+                    'package_remaining' => ($crrent_subscription->limit - $crrent_subscription->remining_limit),
+                    'used_percentage' => floor(($used / $crrent_subscription->subscription->limit) * 100),
+                ],
+                'shifted_limit' => [
+                    'total_shifted' => $crrent_subscription->remining_limit,
+                    'used_shifted' => $shifted_used,
+                ],
+                'total' => [
+                    'total_limit' => $crrent_subscription->limit,
+                ],
                 'expire_date' => $crrent_subscription->expire_date,
-                'subscription_type' => $crrent_subscription->subscription,
             ]
         );
     }
@@ -331,7 +338,6 @@ class SubscriptionController extends Controller
             'msg' => __('Deposit Status Updated Successfully')
         ]);
     }
-
 
     //send email
     private function sendEmail($name, $last_subscription_id, $email)

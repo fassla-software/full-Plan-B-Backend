@@ -5,46 +5,44 @@ namespace App\Http\Controllers\Backend;
 use App\Helper\LogActivity;
 use App\Http\Controllers\Controller;
 use App\Mail\BasicMail;
-use App\Models\Bookmark;
-use App\Models\ClientNotification;
-use App\Models\Comma;
-use App\Models\CraneRental;
-use App\Models\CraneRentalJob;
-use App\Models\Feedback;
-use App\Models\FreelancerNotification;
-use App\Models\HeavyEquipment;
-use App\Models\HeavyEquipmentJob;
-use App\Models\IdentityVerification;
-use App\Models\IndividualCommissionSetting;
-use App\Models\JobHistory;
-use App\Models\JobPost;
-use App\Models\JobPostSkill;
-use App\Models\JobPostSubCategory;
-use App\Models\JobProposal;
-use App\Models\Order;
-use App\Models\OrderDeclineHistory;
-use App\Models\OrderDeclineWalletHistory;
-use App\Models\OrderMilestone;
-use App\Models\OrderRequestRevision;
-use App\Models\OrderSubmitHistory;
-use App\Models\Portfolio;
-use App\Models\Project;
-use App\Models\ProjectAttribute;
-use App\Models\ProjectHistory;
-use App\Models\ProjectSubCategory;
-use App\Models\Report;
-use App\Models\User;
-use App\Models\VehicleRental;
-use App\Models\VehicleRentalJob;
+use App\Models\{
+    Bookmark,
+    ClientNotification,
+    HeavyEquipment,
+    HeavyEquipmentJob,
+    Comma,
+    CraneRental,
+    CraneRentalJob,
+    Feedback,
+    FreelancerNotification,
+    IdentityVerification,
+    IndividualCommissionSetting,
+    JobHistory,
+    JobPost,
+    JobPostSkill,
+    JobPostSubCategory,
+    JobProposal,
+    Order,
+    OrderDeclineHistory,
+    OrderDeclineWalletHistory,
+    OrderMilestone,
+    OrderRequestRevision,
+    OrderSubmitHistory,
+    Portfolio,
+    Project,
+    ProjectAttribute,
+    ProjectHistory,
+    ProjectSubCategory,
+    Report,
+    User,
+    VehicleRental,
+    VehicleRentalJob
+};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Modules\Chat\Entities\LiveChat;
-use Modules\Chat\Entities\LiveChatMessage;
-use Modules\Chat\Entities\Offer;
-use Modules\Chat\Entities\OfferMilestone;
-use Modules\SupportTicket\Entities\ChatMessage;
-use Modules\SupportTicket\Entities\Ticket;
+use Modules\Chat\Entities\{LiveChat, LiveChatMessage, Offer, OfferMilestone};
+use Modules\SupportTicket\Entities\{ChatMessage, Ticket};
 use Modules\Wallet\Entities\Wallet;
 
 class UserManageController extends Controller
@@ -196,7 +194,6 @@ class UserManageController extends Controller
 
         return view('backend.pages.user.user-requests', compact('user', 'requests'));
     }
-
 
     public function userEquipment($id)
     {

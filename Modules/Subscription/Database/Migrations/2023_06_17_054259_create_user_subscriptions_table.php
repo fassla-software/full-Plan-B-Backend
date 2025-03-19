@@ -19,6 +19,7 @@ return new class extends Migration
             $table->bigInteger('subscription_id');
             $table->double('price')->default(0);
             $table->bigInteger('limit')->default(0);
+            $table->bigInteger('remining_limit')->default(0);
             $table->timestamp('expire_date')->nullable();
             $table->string('payment_gateway')->nullable();
             $table->string('payment_status')->nullable();
