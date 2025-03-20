@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Api\Freelancer;
 
 use App\Enums\MachineType;
-use Illuminate\Http\{Request, JsonResponse};
+use Illuminate\Http\{Request, JsonResponse, Response};
 use App\Http\Requests\equipments\{UpdateEquipmentRequest, StoreEquipmentRequest};
 use App\Http\Controllers\Controller;
 use Illuminate\Validation\Rules\Enum;
+
 use Illuminate\Support\Facades\{Validator};
 use Modules\Service\Entities\SubCategory;
 
@@ -50,6 +51,22 @@ class MyEquipmentsController extends Controller
             ->paginate(12)
             ->withQueryString();
 
+        $myEquipments->getCollection()->transform(function ($equipment) {
+            $decodedImages = json_decode($equipment->additional_equipment_images);
+
+            $equipment->data_certificate_image = $equipment->data_certificate_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->data_certificate_image) : null;
+            $equipment->driver_license_front_image =  $equipment->driver_license_front_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->driver_license_front_image) : null;
+            $equipment->driver_license_back_image =  $equipment->driver_license_back_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->driver_license_back_image) : null;
+            $equipment->tractor_license_front_image =  $equipment->tractor_license_front_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->tractor_license_front_image) : null;
+            $equipment->tractor_license_back_image =  $equipment->tractor_license_back_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->tractor_license_back_image) : null;
+            $equipment->flatbed_license_front_image =  $equipment->flatbed_license_front_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->flatbed_license_front_image) : null;
+            $equipment->flatbed_license_back_image =  $equipment->flatbed_license_back_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->flatbed_license_back_image) : null;
+            $equipment->additional_equipment_images = $equipment->additional_equipment_images
+                ? array_map(fn($image) =>  $image ? asset('storage/assets/uploads/sub-category-images/' . $image) : null, $decodedImages ?? [])
+                : [];
+            return $equipment;
+        });
+
         $eqName = $sub_category->getTranslatedName($locale);
         $eqImage = $this->getFullImageUrl($sub_category->image);
 
@@ -92,47 +109,23 @@ class MyEquipmentsController extends Controller
         $validatedData = $request->validated();
         $validatedData['user_id'] = $user->id;
 
-        // $imageFields = [
-        //     'data_certificate_image',
-        //     'driver_license_front_image',
-        //     'driver_license_back_image',
-        //     'tractor_license_front_image',
-        //     'tractor_license_back_image',
-        //     'flatbed_license_front_image',
-        //     'flatbed_license_back_image',
-        // ];
-
-        // foreach ($imageFields as $field) {
-        //     if ($request->hasFile($field)) {
-        //         $path = $request->file($field)->store('assets/uploads/equipments', 'public');
-        //         $validatedData[$field] = basename($path);
-        //     }
-        // }
-
-        // if ($request->hasFile('additional_equipment_images')) {
-        //     $uploadedImages = [];
-        //     foreach ($request->file('additional_equipment_images') as $image) {
-        //         $path = $image->store('assets/uploads/equipments', 'public');
-        //         $uploadedImages[] = basename($path);
-        //     }
-        //     $validatedData['additional_equipment_images'] = json_encode($uploadedImages);
-        // }
-
         $equipment = $equipmentModel::create($validatedData);
+        $decodedImages = json_decode($equipment->additional_equipment_images);
 
         return response()->json([
             'message' => 'Equipment created successfully',
             'equipment' => array_merge($equipment->toArray(), [
-                'data_certificate_image' => $this->getFullImageUrl($equipment->data_certificate_image),
-                'driver_license_front_image' => $this->getFullImageUrl($equipment->driver_license_front_image),
-                'driver_license_back_image' => $this->getFullImageUrl($equipment->driver_license_back_image),
-                'tractor_license_front_image' => $this->getFullImageUrl($equipment->tractor_license_front_image),
-                'tractor_license_back_image' => $this->getFullImageUrl($equipment->tractor_license_back_image),
-                'flatbed_license_front_image' => $this->getFullImageUrl($equipment->flatbed_license_front_image),
-                'flatbed_license_back_image' => $this->getFullImageUrl($equipment->flatbed_license_back_image),
-                'additional_equipment_images' => $equipment->additional_equipment_images
-                    ? array_map(fn($image) => $this->getFullImageUrl($image), json_decode($equipment->additional_equipment_images, true) ?? [])
-                    : [],
+                'data_certificate_image' => $equipment->data_certificate_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->data_certificate_image) : null,
+                'driver_license_front_image' => $equipment->driver_license_front_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->driver_license_front_image) : null,
+                'driver_license_back_image' => $equipment->driver_license_back_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->driver_license_back_image) : null,
+                'tractor_license_front_image' => $equipment->tractor_license_front_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->tractor_license_front_image) : null,
+                'tractor_license_back_image' => $equipment->tractor_license_back_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->tractor_license_back_image) : null,
+                'flatbed_license_front_image' => $equipment->flatbed_license_front_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->flatbed_license_front_image) : null,
+                'flatbed_license_back_image' => $equipment->flatbed_license_back_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->flatbed_license_back_image) : null,
+                'additional_equipment_images' => array_map(
+                    fn($image) => $image ? asset('storage/assets/uploads/sub-category-images/' . $image) : null,
+                    $decodedImages ?? []
+                ),
             ]),
         ]);
     }
@@ -164,19 +157,22 @@ class MyEquipmentsController extends Controller
 
         $equipmentModel = getEquipmentModelFromType($categorySlug);
 
-        $equipment = $equipmentModel::findOrFail($id);
+        $equipment = $equipmentModel::find($id);
+        if (!$equipment) return response()->json(['message' => 'Equipment not found'], Response::HTTP_NOT_FOUND);
+
+        $decodedImages = json_decode($equipment->additional_equipment_images);
 
         return response()->json([
             'equipment' => array_merge($equipment->toArray(), [
-                'data_certificate_image' => $this->getFullImageUrl($equipment->data_certificate_image),
-                'driver_license_front_image' => $this->getFullImageUrl($equipment->driver_license_front_image),
-                'driver_license_back_image' => $this->getFullImageUrl($equipment->driver_license_back_image),
-                'tractor_license_front_image' => $this->getFullImageUrl($equipment->tractor_license_front_image),
-                'tractor_license_back_image' => $this->getFullImageUrl($equipment->tractor_license_back_image),
-                'flatbed_license_front_image' => $this->getFullImageUrl($equipment->flatbed_license_front_image),
-                'flatbed_license_back_image' => $this->getFullImageUrl($equipment->flatbed_license_back_image),
+                'data_certificate_image' => $equipment->data_certificate_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->data_certificate_image) : null,
+                'driver_license_front_image' => $equipment->driver_license_front_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->driver_license_front_image) : null,
+                'driver_license_back_image' => $equipment->driver_license_back_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->driver_license_back_image) : null,
+                'tractor_license_front_image' => $equipment->tractor_license_front_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->tractor_license_front_image) : null,
+                'tractor_license_back_image' => $equipment->tractor_license_back_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->tractor_license_back_image) : null,
+                'flatbed_license_front_image' => $equipment->flatbed_license_front_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->flatbed_license_front_image) : null,
+                'flatbed_license_back_image' => $equipment->flatbed_license_back_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->flatbed_license_back_image) : null,
                 'additional_equipment_images' => $equipment->additional_equipment_images
-                    ? array_map(fn($image) => $this->getFullImageUrl($image), json_decode($equipment->additional_equipment_images, true) ?? [])
+                    ? array_map(fn($image) => $image ? asset('storage/assets/uploads/sub-category-images/' . $image) : null, $decodedImages ?? [])
                     : [],
             ]),
         ]);
@@ -204,51 +200,24 @@ class MyEquipmentsController extends Controller
         $equipment = $equipmentModel::findOrFail($id);
         $validatedData = $request->validated();
 
-        // $imageFields = [
-        //     'data_certificate_image',
-        //     'driver_license_front_image',
-        //     'driver_license_back_image',
-        //     'tractor_license_front_image',
-        //     'tractor_license_back_image',
-        //     'flatbed_license_front_image',
-        //     'flatbed_license_back_image',
-        // ];
-
-        // foreach ($imageFields as $field) {
-        //     if ($request->hasFile($field)) {
-        //         $filePath = storage_path('app/public/assets/uploads/equipments/' . $equipment->$field);
-        //         if (!empty($equipment->$field) && file_exists($filePath)) {
-        //             unlink($filePath);
-        //         }
-        //         $path = $request->file($field)->store('assets/uploads/equipments', 'public');
-        //         $validatedData[$field] = basename($path);
-        //     }
-        // }
-
-        // if ($request->hasFile('additional_equipment_images')) {
-        //     $uploadedImages = [];
-        //     foreach ($request->file('additional_equipment_images') as $image) {
-        //         $path = $image->store('assets/uploads/equipments', 'public');
-        //         $uploadedImages[] = basename($path);
-        //     }
-        //     $validatedData['additional_equipment_images'] = json_encode($uploadedImages);
-        // }
-
         $equipment->update($validatedData);
+
+        $decodedImages = json_decode($equipment->additional_equipment_images);
 
         return response()->json([
             'message' => 'Equipment updated successfully',
             'equipment' => array_merge($equipment->toArray(), [
-                'data_certificate_image' => $this->getFullImageUrl($equipment->data_certificate_image),
-                'driver_license_front_image' => $this->getFullImageUrl($equipment->driver_license_front_image),
-                'driver_license_back_image' => $this->getFullImageUrl($equipment->driver_license_back_image),
-                'tractor_license_front_image' => $this->getFullImageUrl($equipment->tractor_license_front_image),
-                'tractor_license_back_image' => $this->getFullImageUrl($equipment->tractor_license_back_image),
-                'flatbed_license_front_image' => $this->getFullImageUrl($equipment->flatbed_license_front_image),
-                'flatbed_license_back_image' => $this->getFullImageUrl($equipment->flatbed_license_back_image),
-                'additional_equipment_images' => $equipment->additional_equipment_images
-                    ? array_map(fn($image) => $this->getFullImageUrl($image), json_decode($equipment->additional_equipment_images, true) ?? [])
-                    : [],
+                'data_certificate_image' => $equipment->data_certificate_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->data_certificate_image) : null,
+                'driver_license_front_image' => $equipment->driver_license_front_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->driver_license_front_image) : null,
+                'driver_license_back_image' => $equipment->driver_license_back_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->driver_license_back_image) : null,
+                'tractor_license_front_image' => $equipment->tractor_license_front_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->tractor_license_front_image) : null,
+                'tractor_license_back_image' => $equipment->tractor_license_back_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->tractor_license_back_image) : null,
+                'flatbed_license_front_image' => $equipment->flatbed_license_front_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->flatbed_license_front_image) : null,
+                'flatbed_license_back_image' => $equipment->flatbed_license_back_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->flatbed_license_back_image) : null,
+                'additional_equipment_images' => array_map(
+                    fn($image) => $image ? asset('storage/assets/uploads/sub-category-images/' . $image) : null,
+                    $decodedImages ?? []
+                ),
             ]),
         ]);
     }
@@ -273,7 +242,8 @@ class MyEquipmentsController extends Controller
 
         $equipmentModel = getEquipmentModelFromType($categorySlug);
 
-        $equipment = $equipmentModel::findOrFail($id);
+        $equipment = $equipmentModel::find($id);
+        if (!$equipment) return response()->json(['message' => 'Equipment not found'], Response::HTTP_NOT_FOUND);
 
         $equipment->delete();
 
@@ -289,6 +259,7 @@ class MyEquipmentsController extends Controller
         if (!$imageId) {
             return null;
         }
+
         $imageDetails = get_attachment_image_by_id($imageId);
         return $imageDetails['img_url'] ?? null;
     }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\OperationCost;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Backend\JobController;
@@ -27,6 +28,7 @@ use App\Http\Controllers\Backend\WidgetBuilderController;
 use App\Http\Controllers\Backend\ProjectHistoryController;
 use App\Http\Controllers\Backend\AccountSettingsController;
 use App\Http\Controllers\Backend\ExperienceLevelController;
+use App\Http\Controllers\Backend\OperationsCostsController;
 use App\Http\Controllers\Backend\AdminNotificationController;
 use App\Http\Controllers\Backend\AdditionalSettingsController;
 use App\Http\Controllers\Backend\AdminPasswordResetController;
@@ -62,6 +64,20 @@ Route::group(['as' => 'admin.', 'prefix' => 'admin'], function () {
             Route::post('offers/edit-offer-info', 'edit_info')->name('offer.info.edit')->permission('user-details-update');
             Route::delete('offers/delete/{id}', 'delete_offer')->name('offers.delete');
         });
+
+
+
+
+        // operations costs
+        Route::controller(OperationsCostsController::class)->group(function () {
+            Route::get('operation-costs', 'index')->name('operation-costs');
+            Route::get('operation-costs/paginate/data/operation-costs', 'operations_pagination')->name('operation-costs.paginate.data');
+            Route::get('operation-costs/search/operation-costs', 'search_operations')->name('operation-costs.search');
+
+            Route::post('operation-costs/edit-offer-info', 'edit_info')->name('operation-costs.info.edit');
+        });
+
+
 
         // project
         Route::controller(ProjectController::class)->group(function () {

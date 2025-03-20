@@ -4,16 +4,12 @@ namespace App\Http\Controllers\Api\Freelancer;
 
 use App\Http\Controllers\Controller;
 use App\Mail\BasicMail;
-use App\Models\AdminNotification;
-use App\Models\User;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Models\{AdminNotification, User};
+use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Intervention\Image\Facades\Image;
-use Modules\Subscription\Entities\Subscription;
-use Modules\Subscription\Entities\SubscriptionType;
-use Modules\Subscription\Entities\UserSubscription;
+use Modules\Subscription\Entities\{Subscription, SubscriptionType, UserSubscription};
 use Modules\Wallet\Entities\Wallet;
 
 class SubscriptionController extends Controller
@@ -79,9 +75,9 @@ class SubscriptionController extends Controller
         ]);
     }
 
-
     //below routes for auth user
     //freelancer subscription history list
+    // i should remove the total lemit from here
     public function all_subscription()
     {
         $user_id = auth('sanctum')->user()->id;
@@ -94,7 +90,8 @@ class SubscriptionController extends Controller
         $total_limit = UserSubscription::where('user_id', $user_id)
             ->where('payment_status', 'complete')
             ->whereDate('expire_date', '>', Carbon::now())
-            ->sum('limit');
+            ->latest()
+            ->first()->limit;
 
         return response()->json([
             'all_subscriptions' => $all_subscriptions,
@@ -258,7 +255,8 @@ class SubscriptionController extends Controller
     {
         $user = auth('sanctum')->user();
         $crrent_subscription = $user->subscriptions()
-            ->where('expire_date', '>', Carbon::now())
+            ->where('payment_status', 'complete')
+            ->whereDate('expire_date', '>', Carbon::now())
             ->latest()
             ->first();
 
@@ -269,22 +267,25 @@ class SubscriptionController extends Controller
 
         return response()->json(
             [
-                'user_id' => $user->id,
-                'package' => [
-                    'package_name' => $crrent_subscription->subscription->title,
-                    'package_limit' => $crrent_subscription->subscription->limit,
-                    'package_used' => $used,
-                    'package_remaining' => ($crrent_subscription->limit - $crrent_subscription->remining_limit),
-                    'used_percentage' => floor(($used / $crrent_subscription->subscription->limit) * 100),
+                'message' => 'success',
+                'data' => [
+                    'user_id' => $user->id,
+                    'package' => [
+                        'package_name' => $crrent_subscription->subscription->title,
+                        'package_limit' => $crrent_subscription->subscription->limit,
+                        'package_used' => $used,
+                        'package_remaining' => ($crrent_subscription->limit - $crrent_subscription->remining_limit),
+                        'used_percentage' => floor(($used / $crrent_subscription->subscription->limit) * 100),
+                    ],
+                    'shifted_limit' => [
+                        'total_shifted' => $crrent_subscription->remining_limit,
+                        'used_shifted' => $shifted_used,
+                    ],
+                    'total' => [
+                        'total_limit' => $crrent_subscription->limit,
+                    ],
+                    'expire_date' => $crrent_subscription->expire_date,
                 ],
-                'shifted_limit' => [
-                    'total_shifted' => $crrent_subscription->remining_limit,
-                    'used_shifted' => $shifted_used,
-                ],
-                'total' => [
-                    'total_limit' => $crrent_subscription->limit,
-                ],
-                'expire_date' => $crrent_subscription->expire_date,
             ]
         );
     }

@@ -146,7 +146,7 @@ class UserManageController extends Controller
     //all freelancer
     public function all_freelancers()
     {
-        $all_users = User::with(['identity_verify', 'fassalat'])
+        $all_users = User::with(['identity_verify', 'subscriptions'])
             ->withCount([
                 'heavyEquipment',
                 'vehicleRental',
@@ -163,8 +163,14 @@ class UserManageController extends Controller
                 $user->vehicle_rental_job_count +
                 $user->crane_rental_job_count;
 
-            $user->commas = $user->fassalat ? $user->fassalat->commas : 0;
-            $user->remaining_commas = $user->fassalat ? $user->fassalat->remaining_commas : 0;
+            $subscription = $user->subscriptions()
+                ->where('payment_status', 'complete')
+                ->whereDate('expire_date', '>', \Carbon\Carbon::now())
+                ->orderBy('expire_date', 'desc')
+                ->first();
+
+            $user->commas = $subscription ? $subscription->limit : 0;
+            $user->remaining_commas = $subscription ? $subscription->remining_limit : 0;
 
             $user->total_equipment =
                 $user->heavy_equipment_count +

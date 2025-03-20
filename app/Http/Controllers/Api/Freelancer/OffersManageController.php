@@ -14,6 +14,7 @@ use App\Http\Requests\offers\UpdateOfferRequest;
 
 class OffersManageController extends Controller
 {
+    // get all your requests and number of offers on it
     public function getGroupOfOffers(Request $request, string $jobType, int $sub_category_id): JsonResponse
     {
         $validator = Validator::make([
@@ -58,6 +59,7 @@ class OffersManageController extends Controller
                 'weak' => $record->weak,
                 'month' => $record->month,
                 'CategorySlug' => $jobType,
+                'offers_is_stoped' => $record->isStopped,
                 'offers_count' => $record->request ? $record->request->newProposals->count() : 0,
                 'image' => $this->getFullImageUrl($record->subCategory->image),
                 'user' => $record->user ? array_merge(
@@ -86,6 +88,7 @@ class OffersManageController extends Controller
         ]);
     }
 
+    // get offers on your request
     public function getOffers(Request $request, string $jobType, int $sub_category_id, int $job_id): JsonResponse
     {
         $validator = Validator::make([
@@ -137,6 +140,7 @@ class OffersManageController extends Controller
         ]);
     }
 
+    // get offer details
     public function getOfferDetails(Request $request, string $jobType, int $sub_category_id, string $offer_id): JsonResponse
     {
         $validator = Validator::make([
@@ -160,9 +164,6 @@ class OffersManageController extends Controller
         if (!$user) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
-
-        $categoryModel = getModelClassFromType($jobType);
-
 
         $sub_category = SubCategory::findOrFail($sub_category_id);
 
@@ -205,6 +206,7 @@ class OffersManageController extends Controller
         ]);
     }
 
+    // get details of offer owner
     public function getContactOffOfferOwner(string $offer_id): JsonResponse
     {
         $validator = Validator::make([
@@ -239,6 +241,7 @@ class OffersManageController extends Controller
         ], 200);
     }
 
+    // updated needed
     public function getEquipmentImages(Request $request, string $jobType, string $offer_id): JsonResponse
     {
         $validator = Validator::make([
@@ -301,6 +304,7 @@ class OffersManageController extends Controller
         ]);
     }
 
+    // update nedeed
     public function getEquipmentDaitls(Request $request, string $jobType, string $offer_id): JsonResponse
     {
         $validator = Validator::make([
@@ -346,6 +350,7 @@ class OffersManageController extends Controller
         ]);
     }
 
+    // stop recieving offer on request
     public function stopReceivingOffers(Request $request, string $jobType, string $request_id): JsonResponse
     {
         $validatedData = Validator::make(
@@ -370,6 +375,7 @@ class OffersManageController extends Controller
         return response()->json(['message' => 'Offers stopped successfully']);
     }
 
+    // update offer
     public function updateOffer(UpdateOfferRequest $request, NewProposal $newProposal): JsonResponse
     {
         if (!$newProposal) {
@@ -389,6 +395,7 @@ class OffersManageController extends Controller
         );
     }
 
+    // delete offer
     public function deleteOffer(NewProposal $newProposal): JsonResponse
     {
         if (!$newProposal) {
@@ -405,6 +412,7 @@ class OffersManageController extends Controller
         );
     }
 
+    // get offer rank
     public function getMyOfferRank(string $jobType, int $job_id, NewProposal $newProposal): JsonResponse
     {
         if (!$newProposal) {

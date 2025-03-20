@@ -15,10 +15,10 @@
                     <p class="userDetails__wrapper__item"><strong>{{ __('User Type: ') }}</strong> <span
                             class="user_type"></span></p>
 
-                    <p class="userDetails__wrapper__item"><strong>{{ __('Commas: ') }}</strong> <span
+                    <p class="userDetails__wrapper__item"><strong>{{ __('Total Commas: ') }}</strong> <span
                             class="commas"></span></p>
 
-                    <p class="userDetails__wrapper__item"><strong>{{ __('Remaining Commas: ') }}</strong> <span
+                    <p class="userDetails__wrapper__item"><strong>{{ __('Shifted Commas: ') }}</strong> <span
                             class="remaining_commas"></span></p>
 
                     <p class="userDetails__wrapper__item"><strong>{{ __('Full Name: ') }}</strong><span

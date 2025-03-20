@@ -413,6 +413,25 @@
                 </ul>
             </li>
 
+
+
+
+            <li
+                class="dashboard__bottom__list__item has-children @if (request()->is('admin/operation-costs*')) active open show @endif">
+                <a href="javascript:void(0)"> <i class="fa-solid fa-list"></i>{{ __('Operations Manage') }}
+                </a>
+                <ul class="submenu">
+                    <li class="dashboard__bottom__list__item @if (request()->routeIs(['admin.operation-costs'])) selected @endif">
+                        <a href="{{ route('admin.operation-costs') }}"> {{ __('Operation Costs') }} </a>
+                    </li>
+                </ul>
+            </li>
+
+
+
+
+
+
             @can('transaction-manage')
                 <li
                     class="dashboard__bottom__list__item has-children @if (request()->is('admin/transaction*')) active open show @endif">
