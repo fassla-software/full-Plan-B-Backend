@@ -270,37 +270,50 @@ class OffersManageController extends Controller
             return response()->json(['message' => 'No HeavyEquipmentJob found for this proposal'], 404);
         }
 
-        $equipment = $proposal->request->requestable->heavy_equipment;
+        $proposal = NewProposal::with(['request.requestable.subCategory', 'user'])
+            ->findOrFail($offer_id);
 
-        if (!$equipment) {
-            return response()->json(['message' => 'No equipment found for this proposal'], 404);
+        if (!$proposal->request || $proposal->request->requestable_type !== $categoryModel) {
+            return response()->json(['message' => 'No HeavyEquipmentJob found for this proposal'], 404);
         }
+
+        $user_id = $proposal->user_id;
+
+        $equipmentModel = getEquipmentModelFromType($jobType);
+
+        $equipment = $equipmentModel::where('user_id', $user_id)
+            ->where('sub_category_id', $proposal->request->requestable->subCategory->id)->first();
+
+        if (!$equipment) return response()->json(['message' => 'there is no equipment']);
 
         $additionalImages = collect($equipment->additional_equipment_images ?? [])
             ->map(fn($image) => asset('storage/assets/uploads/equipments/' . $image))
             ->all();
 
         return response()->json([
-            'name' => $equipment->subCategory?->getTranslatedName($locale),
-            'data_certificate_image' => $equipment->data_certificate_image
-                ? asset('storage/assets/uploads/equipments/' . $equipment->data_certificate_image)
-                : null,
-            'driver_license_front_image' => $equipment->driver_license_front_image
-                ? asset('storage/assets/uploads/equipments/' . $equipment->driver_license_front_image)
-                : null,
-            'driver_license_back_image' => $equipment->driver_license_back_image
-                ? asset('storage/assets/uploads/equipments/' . $equipment->driver_license_back_image)
-                : null,
-            'tractor_license_front_image' => $equipment->tractor_license_front_image
-                ? asset('storage/assets/uploads/equipments/' . $equipment->tractor_license_front_image)
-                : null,
-            'tractor_license_back_image' => $equipment->tractor_license_back_image
-                ? asset('storage/assets/uploads/equipments/' . $equipment->tractor_license_back_image)
-                : null,
-            'flatbed_license_front_image' => $equipment->flatbed_license_front_image
-                ? asset('storage/assets/uploads/equipments/' . $equipment->flatbed_license_front_image)
-                : null,
-            'additional_equipment_images' => $additionalImages,
+            'message' => 'success',
+            'data' => [
+                'name' => $equipment->subCategory?->getTranslatedName($locale),
+                'data_certificate_image' => $equipment->data_certificate_image
+                    ? asset('storage/assets/uploads/equipments/' . $equipment->data_certificate_image)
+                    : null,
+                'driver_license_front_image' => $equipment->driver_license_front_image
+                    ? asset('storage/assets/uploads/equipments/' . $equipment->driver_license_front_image)
+                    : null,
+                'driver_license_back_image' => $equipment->driver_license_back_image
+                    ? asset('storage/assets/uploads/equipments/' . $equipment->driver_license_back_image)
+                    : null,
+                'tractor_license_front_image' => $equipment->tractor_license_front_image
+                    ? asset('storage/assets/uploads/equipments/' . $equipment->tractor_license_front_image)
+                    : null,
+                'tractor_license_back_image' => $equipment->tractor_license_back_image
+                    ? asset('storage/assets/uploads/equipments/' . $equipment->tractor_license_back_image)
+                    : null,
+                'flatbed_license_front_image' => $equipment->flatbed_license_front_image
+                    ? asset('storage/assets/uploads/equipments/' . $equipment->flatbed_license_front_image)
+                    : null,
+                'additional_equipment_images' => $additionalImages,
+            ]
         ]);
     }
 
@@ -326,7 +339,7 @@ class OffersManageController extends Controller
 
         $categoryModel = getModelClassFromType($jobType);
 
-        $proposal = NewProposal::with('request.requestable.heavy_equipment.subCategory')
+        $proposal = NewProposal::with(['request.requestable.subCategory', 'user'])
             ->findOrFail($offer_id);
 
         if (!$proposal->request || $proposal->request->requestable_type !== $categoryModel) {
@@ -335,18 +348,22 @@ class OffersManageController extends Controller
 
         $job = $proposal->request->requestable;
 
-        if (!$job || !$job->heavy_equipment) {
-            return response()->json(['message' => 'No equipment details found for this proposal'], 404);
-        }
+        $user_id = $proposal->user_id;
+
+        $equipmentModel = getEquipmentModelFromType($jobType);
+
+        $equipment = $equipmentModel::where('user_id', $user_id)
+            ->where('sub_category_id', $proposal->request->requestable->subCategory->id)->first();
+
+        if (!$equipment) return response()->json(['message' => 'there is no equipment']);
 
         return response()->json([
-            'name' => $job->subCategory?->getTranslatedName($locale),
-            'size' => $job->size,
-            'model' => $job->heavy_equipment->model,
-            'year_of_manufacture' => $job->heavy_equipment->year_of_manufacture,
-            'moves_on' => $job->heavy_equipment->moves_on,
-            'current_equipment_location' => $job->heavy_equipment->current_equipment_location,
-            'other_terms' => $proposal->other_terms,
+            'message' => 'success',
+            'data' => [
+                'equipment' => $equipment,
+                'name' => $job->subCategory?->getTranslatedName($locale),
+                'other_terms' => $proposal->other_terms,
+            ]
         ]);
     }
 

@@ -43,10 +43,10 @@ class RequestsManageController extends Controller
 
         $distanceConditions = $userEquipments->map(function ($equipment) {
             return DB::raw('
-                    (6371 * acos(cos(radians(' . $equipment->lat . ')) * cos(radians(lat)) * 
-                    cos(radians(long) - radians(' . $equipment->long . ')) + sin(radians(' . $equipment->lat . ')) * 
-                    sin(radians(lat)))) <= search_radius
-                ');
+            (6371 * acos(cos(radians(' . $equipment->lat . ')) * cos(radians(lat)) * 
+            cos(radians(`long`) - radians(' . $equipment->long . ')) + sin(radians(' . $equipment->lat . ')) * 
+            sin(radians(lat)))) <= search_radius
+        ');
         })->toArray();
 
         $records = $jobModel::with(['user:id,first_name,last_name'])
@@ -84,8 +84,29 @@ class RequestsManageController extends Controller
         $locale = $request->header('Accept-Language', 'en');
         $categoryModel = getModelClassFromType($jobType);
 
+        $userEquipments = getEquipmentModelFromType($jobType)::select(['id', 'lat', 'long'])
+            ->where('user_id', $user->id)
+            ->where('sub_category_id', $subCategory->id)
+            ->whereNotNull('lat')
+            ->whereNotNull('long')
+            ->get();
+
+        $distanceConditions = $userEquipments->map(function ($equipment) {
+            return DB::raw('
+            (6371 * acos(cos(radians(' . $equipment->lat . ')) * cos(radians(lat)) * 
+            cos(radians(`long`) - radians(' . $equipment->long . ')) + sin(radians(' . $equipment->lat . ')) * 
+            sin(radians(lat)))) <= search_radius
+        ');
+        })->toArray();
+
         $countOfRequests = $categoryModel::where('sub_category_id', $subCategory->id)
-            ->where('user_id', '<>', $user->id)->count();
+            ->where('user_id', '<>', $user->id)
+            ->whereDate('max_offer_deadline', '>=', Carbon::today())
+            ->where(function ($query) use ($distanceConditions) {
+                foreach ($distanceConditions as $condition) {
+                    $query->orWhereRaw($condition);
+                }
+            })->count();
 
         $countOfOffers = NewProposal::whereHas('request.requestable', function ($query) use ($categoryModel, $user, $subCategory) {
             $query->where('user_id', $user->id)

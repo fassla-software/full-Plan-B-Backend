@@ -77,6 +77,11 @@ class User extends Authenticatable
         );
     }
 
+    public function consumes(): HasMany
+    {
+        return $this->hasMany(CommaConsume::class, 'user_id');
+    }
+
     public function user_country()
     {
         return $this->belongsTo(Country::class, 'country_id')->select('id', 'country', 'status');

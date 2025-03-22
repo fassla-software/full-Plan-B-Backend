@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers\Api\Freelancer;
 
-use App\Http\Controllers\Controller;
 use App\Mail\BasicMail;
-use App\Models\{AdminNotification, User};
-use Illuminate\Http\{JsonResponse, Request};
+use App\Enums\OperationType;
+use App\Models\CommaConsume;
+use App\Models\OperationCost;
 use Illuminate\Support\Carbon;
+use Modules\Wallet\Entities\Wallet;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Mail;
 use Intervention\Image\Facades\Image;
+use App\Models\{AdminNotification, User};
+use Illuminate\Http\{JsonResponse, Request, Response};
 use Modules\Subscription\Entities\{Subscription, SubscriptionType, UserSubscription};
-use Modules\Wallet\Entities\Wallet;
 
 class SubscriptionController extends Controller
 {
@@ -288,6 +291,45 @@ class SubscriptionController extends Controller
                 ],
             ]
         );
+    }
+
+    public function get_consume_percentage(): JsonResponse
+    {
+        $user = auth('sanctum')->user();
+
+        $userSubscription = $user->subscriptions()
+            ->where('payment_status', 'complete')
+            ->whereDate('expire_date', '>', Carbon::now())
+            ->latest()
+            ->first();
+
+        if (!$userSubscription) return response()->json(['message' => 'no subscription found', 'data' => null], Response::HTTP_NOT_FOUND);
+
+        $commaConsumes = CommaConsume::where('user_subscription_id', $userSubscription->id)
+            ->with('operation_cost')
+            ->get();
+
+        $totalConsumedLimit = $commaConsumes->sum('consumed_limit');
+
+        $operationPercentages = array_fill_keys(
+            array_map(fn($case) => $case->name, OperationType::cases()),
+            0
+        );
+
+        if ($totalConsumedLimit > 0) {
+            foreach ($commaConsumes as $commaConsume) {
+                $operationTypeValue = $commaConsume->operation_cost->operation_type;
+
+                $operationTypeName = OperationType::from($operationTypeValue)->name;
+                $operationPercentages[$operationTypeName] += $commaConsume->consumed_limit;
+            }
+
+            foreach ($operationPercentages as $operationType => &$consumed) {
+                $consumed = round(($consumed / $totalConsumedLimit) * 100, 2);
+            }
+        }
+
+        return response()->json(['message' => 'success', 'data' => $operationPercentages]);
     }
 
     //payment update

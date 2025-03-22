@@ -29,15 +29,19 @@ class NewJobController extends Controller
                 // Add other sub-category request classes here
             ];
 
+
             if (!isset($requests[$subCategory])) {
                 return response()->json(['error' => 'Sub-category not found'], 404);
             }
+
 
             $booleanFields = [
                 'safety_compliant',
                 'environmental_compliant',
                 'has_night_lighting',
             ];
+
+
 
             foreach ($booleanFields as $field) {
                 if (isset($request[$field]) && is_string($request[$field])) {

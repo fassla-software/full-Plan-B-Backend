@@ -22,13 +22,13 @@ class HeavyEquipmentJobRequest extends FormRequest
     public function rules(): array
     {
         return [
-          	'sub_category_id'=> 'nullable|exists:sub_categories,id',
+            'sub_category_id' => 'nullable|exists:sub_categories,id',
             'name' => 'nullable|string',
             'category_id' => 'nullable|exists:categories,id',
             'work_site_location' => 'nullable|string',
             'hour' => 'nullable|string',
-          	'day' => 'nullable|string',
-          	'month' => 'nullable|string',
+            'day' => 'nullable|string',
+            'month' => 'nullable|string',
             'search_radius' => 'nullable',
             'max_arrival_date' => 'nullable|date',
             'max_offer_deadline' => 'nullable|date',

@@ -208,6 +208,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'setlang'], function () {
                 Route::post('subscription/buy', 'buy_subscription');
                 Route::post('subscription/buy/update-payment', 'payment_update');
                 Route::get('my-subscription-details', 'get_current_subscription_details');
+                Route::get('my-consume-percentage', 'get_consume_percentage');
             });
 
             //promotion list
