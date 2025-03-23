@@ -16,8 +16,8 @@ use App\Http\Controllers\Api\Freelancer\NewCategoryController;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-use App\Http\Controllers\Api\Freelancer\NewProposalController;
 use App\Http\Controllers\Api\Freelancer\MyEquipmentsController;
+use App\Http\Controllers\Api\Freelancer\OffersManageController;
 
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
@@ -30,7 +30,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'setlang'], function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('categories', [NewCategoryController::class, 'getCategories']);
         Route::post('category/{subCategory}/{subSubCategory}', [NewCategoryController::class, 'storeData']);
-        Route::post('/proposal/{jobType}/{jobId}', [NewProposalController::class, 'store']);
+        Route::post('/proposal/{jobType}/{jobId}', [OffersManageController::class, 'addOffer']);
     });
 
     Route::post('image/upload', [ImageUploadController::class, 'handleEquipmentImages']);
@@ -73,7 +73,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'setlang'], function () {
         });
 
         // offers manage section
-        Route::controller(\App\Http\Controllers\Api\Freelancer\OffersManageController::class)->group(function () {
+        Route::controller(OffersManageController::class)->group(function () {
             Route::get('offers-number-on-subcategory/{jobType}/{sub_category_id}', 'getGroupOfOffers');
             Route::get('offers-of-equipment/{jobType}/{sub_category_id}/{job_id}', 'getOffers');
             Route::get('offer-details/{jobType}/{sub_category_id}/{offer_id}', 'getOfferDetails');

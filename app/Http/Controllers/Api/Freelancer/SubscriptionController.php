@@ -4,14 +4,12 @@ namespace App\Http\Controllers\Api\Freelancer;
 
 use App\Mail\BasicMail;
 use App\Enums\OperationType;
-use App\Models\CommaConsume;
-use App\Models\OperationCost;
 use Illuminate\Support\Carbon;
 use Modules\Wallet\Entities\Wallet;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Mail;
 use Intervention\Image\Facades\Image;
-use App\Models\{AdminNotification, User};
+use App\Models\{AdminNotification, User, CommaConsume};
 use Illuminate\Http\{JsonResponse, Request, Response};
 use Modules\Subscription\Entities\{Subscription, SubscriptionType, UserSubscription};
 
@@ -257,11 +255,7 @@ class SubscriptionController extends Controller
     public function get_current_subscription_details(): JsonResponse
     {
         $user = auth('sanctum')->user();
-        $crrent_subscription = $user->subscriptions()
-            ->where('payment_status', 'complete')
-            ->whereDate('expire_date', '>', Carbon::now())
-            ->latest()
-            ->first();
+        $crrent_subscription = getCurrentUserSubsicription($user);
 
         if (!isset($crrent_subscription)) return response()->json(null);
 
@@ -297,15 +291,11 @@ class SubscriptionController extends Controller
     {
         $user = auth('sanctum')->user();
 
-        $userSubscription = $user->subscriptions()
-            ->where('payment_status', 'complete')
-            ->whereDate('expire_date', '>', Carbon::now())
-            ->latest()
-            ->first();
+        $crrent_subscription = getCurrentUserSubsicription($user);
 
-        if (!$userSubscription) return response()->json(['message' => 'no subscription found', 'data' => null], Response::HTTP_NOT_FOUND);
+        if (!$crrent_subscription) return response()->json(['message' => 'no subscription found', 'data' => null], Response::HTTP_NOT_FOUND);
 
-        $commaConsumes = CommaConsume::where('user_subscription_id', $userSubscription->id)
+        $commaConsumes = CommaConsume::where('user_subscription_id', $crrent_subscription->id)
             ->with('operation_cost')
             ->get();
 

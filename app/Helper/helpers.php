@@ -24,6 +24,23 @@ use Kreait\Firebase\Messaging\CloudMessage;
 use Modules\Subscription\Entities\UserSubscription;
 use Carbon\Carbon;
 
+function minusUserAvailableLimit(UserSubscription $UserSubscription, int $cost)
+{
+    $updatedLimit = $UserSubscription->limit - $cost;
+    $UserSubscription->update([
+        'limit' => $updatedLimit,
+    ]);
+};
+
+function getCurrentUserSubsicription(User $user)
+{
+    return $user->subscriptions()
+        ->where('payment_status', 'complete')
+        ->whereDate('expire_date', '>', Carbon::now())
+        ->latest()
+        ->first();
+};
+
 function getModelClassFromType(?string $type = null)
 {
     $types = [

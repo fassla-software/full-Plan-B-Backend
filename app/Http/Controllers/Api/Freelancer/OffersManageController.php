@@ -4,16 +4,62 @@ namespace App\Http\Controllers\Api\Freelancer;
 
 use DateTime;
 use App\Enums\MachineType;
-use App\Models\NewProposal;
+use App\Models\{NewProposal, User};
 use App\Http\Controllers\Controller;
 use Illuminate\Validation\Rules\Enum;
 use Illuminate\Support\Facades\Validator;
 use Modules\Service\Entities\SubCategory;
+use App\Notifications\NewProposalReceived;
 use Illuminate\Http\{Request, JsonResponse};
+use App\Http\Requests\StoreNewProposalRequest;
 use App\Http\Requests\offers\UpdateOfferRequest;
 
 class OffersManageController extends Controller
 {
+
+    // add offer
+    public function addOffer(StoreNewProposalRequest $request, $jobType, $jobId)
+    {
+        $validatedData = $request->validated();
+
+        $modelClass = getModelClassFromType($jobType);
+
+        if (!$modelClass) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid job type provided.',
+            ], 400);
+        }
+
+        $requestEntry = \App\Models\Request::where('requestable_type', $modelClass)
+            ->where('requestable_id', $jobId)
+            ->first();
+
+        if (!$requestEntry) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No matching request found for the provided job type.',
+            ], 400);
+        }
+
+        $validatedData['request_id'] = $requestEntry->id;
+        $validatedData['user_id'] = auth('sanctum')->user()->id;
+
+        $proposal = NewProposal::create($validatedData);
+
+        $recipientUser = User::find($requestEntry->user_id);
+
+        if ($recipientUser) {
+            $recipientUser->notify(new NewProposalReceived($proposal));
+        }
+
+        return response()->json([
+            'message' => 'Proposal created successfully.',
+            'category_slug' => $jobType,
+            'offer' => $proposal
+        ]);
+    }
+
     // get all your requests and number of offers on it
     public function getGroupOfOffers(Request $request, string $jobType, int $sub_category_id): JsonResponse
     {
