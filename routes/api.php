@@ -2,9 +2,9 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Backend\UserManageController;
 use App\Http\Controllers\Api\Freelancer\NewJobController;
 use App\Http\Controllers\Api\Freelancer\ImageUploadController;
-use App\Http\Controllers\Api\Freelancer\NewCategoryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\Freelancer\NewCategoryController;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+use App\Http\Controllers\Api\Freelancer\NewCategoryController;
 use App\Http\Controllers\Api\Freelancer\MyEquipmentsController;
 use App\Http\Controllers\Api\Freelancer\OffersManageController;
 
@@ -31,6 +32,8 @@ Route::group(['prefix' => 'v1', 'middleware' => 'setlang'], function () {
         Route::get('categories', [NewCategoryController::class, 'getCategories']);
         Route::post('category/{subCategory}/{subSubCategory}', [NewCategoryController::class, 'storeData']);
         Route::post('/proposal/{jobType}/{jobId}', [OffersManageController::class, 'addOffer']);
+
+        Route::post('/update-device-token', [UserManageController::class, 'updateDeviceToken']);
     });
 
     Route::post('image/upload', [ImageUploadController::class, 'handleEquipmentImages']);

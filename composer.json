@@ -15,6 +15,7 @@
         "intervention/image": "^2.7",
         "kkomelin/laravel-translatable-string-exporter": "^1.21",
         "kreait/laravel-firebase": "^5.9",
+        "laravel-notification-channels/fcm": "^4.5",
         "laravel/framework": "^10.0",
         "laravel/sanctum": "^3.3",
         "laravel/socialite": "^5.12",

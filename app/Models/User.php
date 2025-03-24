@@ -43,7 +43,8 @@ class User extends Authenticatable
         'facebook_id',
         'apple_id',
         'load_from',
-        'is_synced'
+        'is_synced',
+        'firebase_device_token',
     ];
 
     protected $hidden = [
@@ -61,6 +62,11 @@ class User extends Authenticatable
         'is_suspend' => 'integer',
         'google_2fa_enable_disable_disable' => 'integer',
     ];
+
+    public function routeNotificationForFcm($notification)
+    {
+        return $this->firebase_device_token;
+    }
 
     //get user full name
     public function getFullnameAttribute()

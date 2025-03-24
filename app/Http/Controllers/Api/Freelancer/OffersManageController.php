@@ -7,6 +7,7 @@ use App\Enums\MachineType;
 use App\Models\{NewProposal, User};
 use App\Http\Controllers\Controller;
 use Illuminate\Validation\Rules\Enum;
+use App\Notifications\FcmNotification;
 use Illuminate\Support\Facades\Validator;
 use Modules\Service\Entities\SubCategory;
 use App\Notifications\NewProposalReceived;
@@ -49,8 +50,14 @@ class OffersManageController extends Controller
 
         $recipientUser = User::find($requestEntry->user_id);
 
+        $notificationData = [
+            'title' => 'Hello!',
+            'body' => 'This is a test notification.',
+            'data' => ['key' => 'value'],
+        ];
+
         if ($recipientUser) {
-            $recipientUser->notify(new NewProposalReceived($proposal));
+            $recipientUser->notify(new FcmNotification($notificationData));
         }
 
         return response()->json([

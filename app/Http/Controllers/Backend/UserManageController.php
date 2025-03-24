@@ -38,6 +38,7 @@ use App\Models\{
     VehicleRental,
     VehicleRentalJob
 };
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -91,6 +92,30 @@ class UserManageController extends Controller
             return back()->with(toastr_success(__('User Successfully Created')));
         }
         return view('backend.pages.user.new-user.add-new-user');
+    }
+
+    public function updateDeviceToken(Request $request): JsonResponse
+    {
+        $validatedData = $request->validate([
+            'device_token' => 'required|string',
+        ]);
+
+        $user = auth('sanctum')->user();
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated.',
+            ], 401);
+        }
+
+        $user->update([
+            'firebase_device_token' => $validatedData['device_token']
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Device token updated successfully.',
+        ]);
     }
 
     public function send_email_to_all_registered_users(Request $request)
@@ -220,8 +245,6 @@ class UserManageController extends Controller
 
         return view('backend.pages.user.user-equipment', compact('user', 'equipment'));
     }
-
-
 
     // freelancer pagination
     function freelancer_pagination(Request $request)
