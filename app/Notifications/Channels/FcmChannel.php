@@ -16,10 +16,14 @@ class FcmChannel
     public function send($notifiable, Notification $notification)
     {
         $fcmNotification = $notification->toFcm($notifiable);
+
         $response = $this->fcmClient->sendMessage(
             $notifiable->routeNotificationFor('fcm'),
             $fcmNotification
         );
+
+        dd($response);
+
         return $response;
     }
 }

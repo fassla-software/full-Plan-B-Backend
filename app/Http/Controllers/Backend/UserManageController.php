@@ -101,6 +101,7 @@ class UserManageController extends Controller
         ]);
 
         $user = auth('sanctum')->user();
+
         if (!$user) {
             return response()->json([
                 'success' => false,

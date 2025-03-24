@@ -25,7 +25,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-
 Route::group(['prefix' => 'v1', 'middleware' => 'setlang'], function () {
 
     Route::middleware('auth:sanctum')->group(function () {

@@ -22,7 +22,6 @@ class FcmClient
 
     public function sendMessage($token, $notification)
     {
-        // Fetch the OAuth 2.0 access token
         try {
             $tokenResponse = $this->googleClient->fetchAccessTokenWithAssertion();
             \Log::info('Access Token Response:', $tokenResponse);
@@ -35,8 +34,8 @@ class FcmClient
             \Log::error('Error fetching access token: ' . $e->getMessage());
             return ['error' => 'Could not fetch access token'];
         }
-        $fcmUrl = 'https://fcm.googleapis.com/v1/projects/newflutterpushnotifications/messages:send';
 
+        $fcmUrl = 'https://fcm.googleapis.com/v1/projects/plan-b-4ae7c/messages:send';
 
         $payload = [
             'message' => [

@@ -15,7 +15,7 @@ class HasCommasOrTrial
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next, int $param): Response
     {
         $user = auth()->user();
         if (!$user) {
@@ -24,21 +24,18 @@ class HasCommasOrTrial
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        $total_limit = UserSubscription::where('user_id', $user->id)
-            ->where('payment_status', 'complete')
-            ->whereDate('expire_date', '>', Carbon::now())
-            ->sum('limit');
+        $total_limit = getCurrentUserSubsicription($user)->limit;
 
         $createdAt = Carbon::parse($user->created_at);
         $isInTrialPeriod = $createdAt->diffInDays(Carbon::now()) < 30;
 
         // 0 for intail version
-        if ($total_limit > 0 || $isInTrialPeriod) {
+        if ($total_limit >= $param || $isInTrialPeriod) {
             return $next($request);
         }
 
         return response()->json([
-            'message' => 'Access denied. Your free trial has ended, or you have no remaining commas.',
+            'message' => 'Access denied. Your free trial has ended, or you have no remaining commas to do this operation',
             'requires_payment' => true
         ], Response::HTTP_PAYMENT_REQUIRED);
 

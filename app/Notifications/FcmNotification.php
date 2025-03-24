@@ -2,11 +2,11 @@
 
 namespace App\Notifications;
 
-use App\Services\Firebase\FcmClient;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
+use App\Services\Firebase\FcmClient;
+use App\Notifications\Channels\FcmChannel;
 use Illuminate\Notifications\Notification;
-use NotificationChannels\Fcm\FcmChannel;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\Notification as FirebaseNotification;
 
