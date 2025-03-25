@@ -36,8 +36,6 @@ class VehicleRentRequest extends FormRequest
             'comment' => 'nullable|string|max:500',
             'lat' => 'nullable',
             'long' => 'nullable',
-
-            // Conditional required fields based on vehicle type
             'has_tank_discharge_pump' => 'required_if:equipment_type,potableWaterTanker|boolean',
             'has_band_sprinkler_bar' => 'required_if:equipment_type,constructionWaterTanker|boolean',
             'has_discharge_pump_with_liters_meter' => 'required_if:equipment_type,petroleumMaterialTanker|boolean',
