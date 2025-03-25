@@ -12,7 +12,7 @@ class HasCommasOrTrial
 {
     public function handle(Request $request, Closure $next, int $cost): Response
     {
-        $user = auth()->user();
+        $user = auth('sanctum')->user();
         if (!$user) {
             return response()->json([
                 'message' => 'Unauthorized'

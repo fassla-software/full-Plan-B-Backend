@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api\Freelancer;
 use DateTime;
 use App\Enums\MachineType;
 use App\Enums\OperationType;
+use Illuminate\Validation\Rule;
 use App\Services\FirebaseService;
+use App\Models\{NewProposal, User};
 use App\Http\Controllers\Controller;
 use Illuminate\Validation\Rules\Enum;
 use App\Notifications\FcmNotification;
@@ -16,7 +18,6 @@ use Illuminate\Http\{Request, JsonResponse};
 use Illuminate\Support\Facades\Notification;
 use App\Http\Requests\StoreNewProposalRequest;
 use App\Http\Requests\offers\UpdateOfferRequest;
-use App\Models\{NewProposal, User};
 
 class OffersManageController extends Controller
 {
@@ -50,6 +51,20 @@ class OffersManageController extends Controller
 
         $user = auth('sanctum')->user();
         $validatedData['user_id'] = $user->id;
+
+        $requestValidator = Validator::make($validatedData, [
+            'request_id' => [
+                Rule::unique('new_proposals')->where(function ($query) use ($user) {
+                    return $query->where('user_id', $user->id);
+                }),
+            ],
+        ], [
+            'request_id.unique' => 'This offer has already been submitted by this user.',
+        ]);
+
+        if ($requestValidator->fails()) {
+            return response()->json($requestValidator->errors(), 422);
+        }
 
         $currentSubscripiton = getCurrentUserSubsicription($user);
         if ($currentSubscripiton) {
