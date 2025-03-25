@@ -10,7 +10,7 @@ use Modules\Subscription\Entities\UserSubscription;
 
 class HasCommasOrTrial
 {
-    public function handle(Request $request, Closure $next, int $param): Response
+    public function handle(Request $request, Closure $next, int $cost): Response
     {
         $user = auth()->user();
         if (!$user) {
@@ -25,7 +25,7 @@ class HasCommasOrTrial
 
         $isInTrialPeriod = $createdAt->diffInDays(Carbon::now()) < 30;
 
-        if ($total_limit >= $param || $isInTrialPeriod) {
+        if ($total_limit >= $cost || $isInTrialPeriod) {
             return $next($request);
         }
 

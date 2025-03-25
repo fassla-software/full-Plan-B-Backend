@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\OperationType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Backend\UserManageController;
@@ -20,7 +21,7 @@ use App\Http\Controllers\Api\Freelancer\NewCategoryController;
 use App\Http\Controllers\Api\Freelancer\MyEquipmentsController;
 use App\Http\Controllers\Api\Freelancer\OffersManageController;
 use App\Http\Controllers\Api\Freelancer\RequestsManageController;
-
+use App\Models\OperationCost;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -31,14 +32,17 @@ Route::group(['prefix' => 'v1', 'middleware' => 'setlang'], function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('categories', [NewCategoryController::class, 'getCategories']);
         Route::post('category/{subCategory}/{subSubCategory}', [NewCategoryController::class, 'storeData']);
-        Route::post('/proposal/{jobType}/{jobId}', [OffersManageController::class, 'addOffer']);
+
+        Route::post('/proposal/{jobType}/{jobId}', [OffersManageController::class, 'addOffer'])
+            ->middleware('has.commas.or.trial:' . OperationCost::where('operation_type', OperationType::makeOffer)->first()?->cost ?? 0);
 
         Route::post('/update-device-token', [UserManageController::class, 'updateDeviceToken']);
     });
 
     Route::post('image/upload', [ImageUploadController::class, 'handleEquipmentImages']);
 
-    Route::post('job/{subCategory}/{subSubCategory}', [RequestsManageController::class, 'addRequest']);
+    Route::post('job/{subCategory}/{subSubCategory}', [RequestsManageController::class, 'addRequest'])
+        ->middleware('has.commas.or.trial:' . OperationCost::where('operation_type', OperationType::makeRequest)->first()?->cost ?? 0);
 
     //freelancer route start
     Route::group(['prefix' => 'freelancer'], function () {
@@ -72,7 +76,8 @@ Route::group(['prefix' => 'v1', 'middleware' => 'setlang'], function () {
             Route::get('requests-number-on-equipment/{jobType}/{subCategory}', 'getRequestsAndOffersNumber');
             Route::get('requests-on-equipment/{jobType}/{subCategory}', 'getAllRequestsOfEquipment');
             Route::get('request-details/{jobType}/{subCategory}/{request_id}', 'getRequestDetails');
-            Route::post('update-request/{jobType}/{id}', 'updateRequest');
+            Route::post('update-request/{jobType}/{id}', 'updateRequest')
+                ->middleware('has.commas.or.trial:' . OperationCost::where('operation_type', OperationType::updateRequest)->first()?->cost ?? 0);
         });
 
         // offers manage section
@@ -85,8 +90,12 @@ Route::group(['prefix' => 'v1', 'middleware' => 'setlang'], function () {
             Route::get('get-equipment-details/{jobType}/{offer_id}', 'getEquipmentDaitls');
             Route::get('get-equipment-images/{jobType}/{offer_id}', 'getEquipmentImages');
             Route::post('stop-receiving-offers/{jobType}/{offer_id}', 'stopReceivingOffers');
-            Route::post('update-offer/{newProposal}', 'updateOffer');
-            Route::delete('delete-offer/{newProposal}', 'deleteOffer');
+            Route::post('update-offer/{newProposal}', 'updateOffer')
+                ->middleware('has.commas.or.trial:' . OperationCost::where('operation_type', OperationType::updateOffer)->first()?->cost ?? 0);
+
+            Route::delete('delete-offer/{newProposal}', 'deleteOffer')
+                ->middleware('has.commas.or.trial:' . OperationCost::where('operation_type', OperationType::deleteOffer)->first()?->cost ?? 0);
+
             Route::get('offer-rank/{jobType}/{job_id}/{newProposal}', 'getMyOfferRank');
         });
 
