@@ -22,7 +22,7 @@ use App\Http\Requests\offers\UpdateOfferRequest;
 class OffersManageController extends Controller
 {
     // add offer
-    public function addOffer(StoreNewProposalRequest $request, $jobType, $jobId)
+    public function addOffer(StoreNewProposalRequest $request, $jobType, $jobId): JsonResponse
     {
         $validatedData = $request->validated();
 
