@@ -10,11 +10,6 @@ use Modules\Subscription\Entities\UserSubscription;
 
 class HasCommasOrTrial
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     */
     public function handle(Request $request, Closure $next, int $param): Response
     {
         $user = auth()->user();
@@ -24,12 +19,12 @@ class HasCommasOrTrial
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        $total_limit = getCurrentUserSubsicription($user)->limit;
+        $total_limit = getCurrentUserSubsicription($user)?->limit ?? 0;
 
         $createdAt = Carbon::parse($user->created_at);
+
         $isInTrialPeriod = $createdAt->diffInDays(Carbon::now()) < 30;
 
-        // 0 for intail version
         if ($total_limit >= $param || $isInTrialPeriod) {
             return $next($request);
         }

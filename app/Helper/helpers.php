@@ -12,6 +12,7 @@ use App\Models\{
     StaticOption,
     AdminNotification,
     ClientNotification,
+    CommaConsume,
     FreelancerNotification
 };
 use App\Enums\MachineType;
@@ -23,13 +24,27 @@ use Illuminate\Support\Facades\Storage;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Modules\Subscription\Entities\UserSubscription;
 use Carbon\Carbon;
+use App\Models\OperationCost;
 
-function minusUserAvailableLimit(UserSubscription $UserSubscription, int $cost)
+function minusUserAvailableLimit($UserSubscription, $operationType)
 {
-    $updatedLimit = $UserSubscription->limit - $cost;
-    $UserSubscription->update([
-        'limit' => $updatedLimit,
-    ]);
+    if ($UserSubscription) {
+
+        $operation = OperationCost::where('operation_type', $operationType)->first();
+
+        $updatedLimit = $UserSubscription->limit - $operation?->cost ?? 0;
+        $UserSubscription->update([
+            'limit' => $updatedLimit,
+        ]);
+
+        CommaConsume::create([
+            'user_id' => $UserSubscription->user_id,
+            'user_subscription_id' => $UserSubscription->id,
+            'operation_cost_id' => $operation?->id ?? 0,
+            'consumed_limit' => $operation?->cost ?? 0,
+            'remaining_limit' => $updatedLimit,
+        ]);
+    }
 };
 
 function getCurrentUserSubsicription(User $user)

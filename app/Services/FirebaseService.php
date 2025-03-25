@@ -5,6 +5,7 @@ namespace App\Services;
 use Kreait\Firebase\Factory;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\Notification;
+use Kreait\Firebase\Exception\Messaging\NotFound;
 
 class FirebaseService
 {
@@ -24,5 +25,9 @@ class FirebaseService
             ->withNotification(Notification::create($title, $body));
 
         return $this->messaging->send($message);
+        // Skip the error or log it for future debugging
+        error_log("Error: " . $e->getMessage());
+        // Optionally return a response indicating the issue was skipped
+        return null; // or return some default response
     }
 }

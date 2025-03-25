@@ -123,13 +123,11 @@ class SubscriptionController extends Controller
         //get auth user
         $user = auth('sanctum')->user();
 
-        $latest_subscription = $user->subscriptions()
-            ->where('expire_date', '>', Carbon::now())
-            ->latest()
-            ->first();
+        $latest_subscription = getCurrentUserSubsicription($user);
 
         // check validation of usage 90% 
         $remaining_limits = 0;
+
         if ($latest_subscription) {
             if ($latest_subscription->limit > ($latest_subscription->subscription->limit - (($latest_subscription->subscription->limit * 90) / 100))) {
                 return response()->json([
@@ -255,36 +253,41 @@ class SubscriptionController extends Controller
     public function get_current_subscription_details(): JsonResponse
     {
         $user = auth('sanctum')->user();
-        $crrent_subscription = getCurrentUserSubsicription($user);
+        $current_subscription = getCurrentUserSubsicription($user);
 
-        if (!isset($crrent_subscription)) return response()->json(null);
+        if (!isset($current_subscription)) return response()->json(null);
 
-        $used = ($crrent_subscription->limit - $crrent_subscription->remining_limit) - $crrent_subscription->subscription->limit;
-        $shifted_used = ($crrent_subscription->limit - $crrent_subscription->subscription->limit) - $crrent_subscription->remining_limit;
+        $package_limit = $current_subscription->subscription->limit;
+        $total_limit = $current_subscription->limit;
+        $shifted_limit = $current_subscription->remining_limit;
+        $total_used = ($package_limit + $shifted_limit) - $total_limit;
 
-        return response()->json(
-            [
-                'message' => 'success',
-                'data' => [
-                    'user_id' => $user->id,
-                    'package' => [
-                        'package_name' => $crrent_subscription->subscription->title,
-                        'package_limit' => $crrent_subscription->subscription->limit,
-                        'package_used' => $used,
-                        'package_remaining' => ($crrent_subscription->limit - $crrent_subscription->remining_limit),
-                        'used_percentage' => floor(($used / $crrent_subscription->subscription->limit) * 100),
-                    ],
-                    'shifted_limit' => [
-                        'total_shifted' => $crrent_subscription->remining_limit,
-                        'used_shifted' => $shifted_used,
-                    ],
-                    'total' => [
-                        'total_limit' => $crrent_subscription->limit,
-                    ],
-                    'expire_date' => $crrent_subscription->expire_date,
+        $used_shifted = min($total_used, $shifted_limit);
+        $used_package = max($total_used - $used_shifted, 0);
+        $package_remaining = $package_limit - $used_package;
+        $used_percentage = floor(($used_package / $package_limit) * 100);
+
+        return response()->json([
+            'message' => 'success',
+            'data' => [
+                'user_id' => $user->id,
+                'package' => [
+                    'package_name' => $current_subscription->subscription->title,
+                    'package_limit' => $package_limit,
+                    'package_used' => $used_package,
+                    'package_remaining' => $package_remaining,
+                    'used_percentage' => $used_percentage,
                 ],
-            ]
-        );
+                'shifted_limit' => [
+                    'total_shifted' => $shifted_limit,
+                    'used_shifted' => $used_shifted,
+                ],
+                'total' => [
+                    'total_limit' => $total_limit,
+                ],
+                'expire_date' => $current_subscription->expire_date,
+            ],
+        ]);
     }
 
     public function get_consume_percentage(): JsonResponse

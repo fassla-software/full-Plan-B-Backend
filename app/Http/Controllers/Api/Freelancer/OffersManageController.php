@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api\Freelancer;
 
 use DateTime;
 use App\Enums\MachineType;
+use App\Enums\OperationType;
 use App\Services\FirebaseService;
-use App\Models\{NewProposal, User};
 use App\Http\Controllers\Controller;
 use Illuminate\Validation\Rules\Enum;
 use App\Notifications\FcmNotification;
@@ -16,10 +16,10 @@ use Illuminate\Http\{Request, JsonResponse};
 use Illuminate\Support\Facades\Notification;
 use App\Http\Requests\StoreNewProposalRequest;
 use App\Http\Requests\offers\UpdateOfferRequest;
+use App\Models\{NewProposal, User};
 
 class OffersManageController extends Controller
 {
-
     // add offer
     public function addOffer(StoreNewProposalRequest $request, $jobType, $jobId)
     {
@@ -47,11 +47,18 @@ class OffersManageController extends Controller
         }
 
         $validatedData['request_id'] = $requestEntry->id;
-        $validatedData['user_id'] = auth('sanctum')->user()->id;
+
+        $user = auth('sanctum')->user();
+        $validatedData['user_id'] = $user->id;
+
+        $currentSubscripiton = getCurrentUserSubsicription($user);
+        if ($currentSubscripiton) {
+            minusUserAvailableLimit($currentSubscripiton, OperationType::makeOffer);
+        }
 
         $proposal = NewProposal::create($validatedData);
 
-        // $recipientUser = User::find($requestEntry->user_id);
+        $recipientUser = User::find($requestEntry->user_id);
 
         // if ($recipientUser) {
         //     $notificationData = [
@@ -475,8 +482,13 @@ class OffersManageController extends Controller
                 404
             );
         }
-
         $newProposal->update($request->validated());
+
+        $user = auth('sanctum')->user();
+        $currentSubscripiton = getCurrentUserSubsicription($user);
+        if ($currentSubscripiton) {
+            minusUserAvailableLimit($currentSubscripiton, OperationType::updateOffer);
+        }
 
         return response()->json(
             [
@@ -497,6 +509,12 @@ class OffersManageController extends Controller
         }
 
         $newProposal->delete();
+
+        $user = auth('sanctum')->user();
+        $currentSubscripiton = getCurrentUserSubsicription($user);
+        if ($currentSubscripiton) {
+            minusUserAvailableLimit($currentSubscripiton, OperationType::deleteOffer);
+        }
 
         return response()->json(
             ['message' => 'Offer deleted successfully']

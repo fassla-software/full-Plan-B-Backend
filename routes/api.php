@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\Freelancer\ImageUploadController;
 use App\Http\Controllers\Api\Freelancer\NewCategoryController;
 use App\Http\Controllers\Api\Freelancer\MyEquipmentsController;
 use App\Http\Controllers\Api\Freelancer\OffersManageController;
+use App\Http\Controllers\Api\Freelancer\RequestsManageController;
 
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
@@ -37,7 +38,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'setlang'], function () {
 
     Route::post('image/upload', [ImageUploadController::class, 'handleEquipmentImages']);
 
-    Route::post('job/{subCategory}/{subSubCategory}', [NewJobController::class, 'storeData']);
+    Route::post('job/{subCategory}/{subSubCategory}', [RequestsManageController::class, 'addRequest']);
 
     //freelancer route start
     Route::group(['prefix' => 'freelancer'], function () {
@@ -67,7 +68,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'setlang'], function () {
         });
 
         // requests manage section
-        Route::controller(\App\Http\Controllers\Api\Freelancer\RequestsManageController::class)->group(function () {
+        Route::controller(RequestsManageController::class)->group(function () {
             Route::get('requests-number-on-equipment/{jobType}/{subCategory}', 'getRequestsAndOffersNumber');
             Route::get('requests-on-equipment/{jobType}/{subCategory}', 'getAllRequestsOfEquipment');
             Route::get('request-details/{jobType}/{subCategory}/{request_id}', 'getRequestDetails');

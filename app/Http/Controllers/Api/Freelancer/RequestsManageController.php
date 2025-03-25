@@ -6,14 +6,86 @@ use DateTime;
 use Carbon\Carbon;
 use App\Enums\MachineType;
 use App\Models\NewProposal;
+use App\Enums\OperationType;
+use App\Models\OperationCost;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Modules\Service\Entities\SubCategory;
 use Illuminate\Http\{JsonResponse, Request};
 use App\Http\Requests\requests\UpdateRequestRequest;
+use App\Http\Requests\CategoryRequest\CraneRentJobRequest;
+use App\Http\Requests\CategoryRequest\VehicleRentJobRequest;
+use App\Http\Requests\CategoryRequest\HeavyEquipmentJobRequest;
 
 class RequestsManageController extends Controller
 {
+    public function addRequest(Request $request, $subCategory, $subSubCategory)
+    {
+
+        DB::beginTransaction();
+
+        try {
+            // Validate data using the specific request class
+            $requests = [
+                MachineType::heavyEquipment->value => HeavyEquipmentJobRequest::class,
+                MachineType::vehicleRental->value => VehicleRentJobRequest::class,
+                MachineType::craneRental->value => CraneRentJobRequest::class,
+                // Add other sub-category request classes here
+            ];
+
+            if (!isset($requests[$subCategory])) {
+                return response()->json(['error' => 'Sub-category not found'], 404);
+            }
+
+            $booleanFields = [
+                'safety_compliant',
+                'environmental_compliant',
+                'has_night_lighting',
+            ];
+
+            foreach ($booleanFields as $field) {
+                if (isset($request[$field]) && is_string($request[$field])) {
+                    $request[$field] = json_decode($request[$field], true);
+                }
+            }
+
+            $request['equipment_type'] = $subSubCategory;
+
+            //$request['name'] = ucfirst($subSubCategory);
+
+            // Resolve and validate using the specific request class
+            $validatedData = app($requests[$subCategory])->validated();
+            $user = auth('sanctum')->user();
+            $validatedData['user_id'] = $user->id;
+
+            // Map sub-category to model
+            $models = [
+                MachineType::heavyEquipment->value => \App\Models\HeavyEquipmentJob::class,
+                MachineType::vehicleRental->value => \App\Models\VehicleRentalJob::class,
+                MachineType::craneRental->value => \App\Models\CraneRentalJob::class,
+                // Add other sub-category models here
+            ];
+            $model = $models[$subCategory];
+            $model::create($validatedData);
+
+            $currentSubscripiton = getCurrentUserSubsicription($user);
+            if ($currentSubscripiton) {
+                minusUserAvailableLimit($currentSubscripiton, OperationType::makeRequest);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'message' => ucfirst(str_replace('_', ' ', $subCategory)) . ' data saved successfully!'
+            ], 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'error' => 'There was an error processing your request. Please try again. ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function getAllRequestsOfEquipment(Request $request, string $jobType, SubCategory $subCategory): JsonResponse
     {
         if (!MachineType::tryFrom($jobType)) {
@@ -172,6 +244,12 @@ class RequestsManageController extends Controller
 
         $jobModel = getModelClassFromType($jobType)::findOrFail($id);
         $jobModel->update($request->validated());
+
+        $user = auth('sanctum')->user();
+        $currentSubscripiton = getCurrentUserSubsicription($user);
+        if ($currentSubscripiton) {
+            minusUserAvailableLimit($currentSubscripiton, OperationType::updateRequest);
+        }
 
         return response()->json(
             [
