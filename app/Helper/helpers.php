@@ -62,6 +62,7 @@ function getModelClassFromType(?string $type = null)
         MachineType::heavyEquipment->value => \App\Models\HeavyEquipmentJob::class,
         MachineType::vehicleRental->value => \App\Models\VehicleRentalJob::class,
         MachineType::craneRental->value => \App\Models\CraneRentalJob::class,
+        MachineType::generatorRental->value => \App\Models\GeneratorRentalJop::class,
         // Add other sub-category models here
     ];
 
@@ -76,6 +77,7 @@ function getEquipmentModelFromType($type)
         MachineType::heavyEquipment->value => \App\Models\HeavyEquipment::class,
         MachineType::vehicleRental->value => \App\Models\VehicleRental::class,
         MachineType::craneRental->value => \App\Models\CraneRental::class,
+        MachineType::generatorRental->value => \App\Models\GeneratorRental::class,
         // Add other sub-category models here
     ];
 

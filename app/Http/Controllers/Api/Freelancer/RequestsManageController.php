@@ -13,6 +13,7 @@ use Modules\Service\Entities\SubCategory;
 use Illuminate\Http\{JsonResponse, Request};
 use App\Http\Requests\requests\UpdateRequestRequest;
 use App\Http\Requests\CategoryRequest\CraneRentJobRequest;
+use App\Http\Requests\CategoryRequest\GeneratorJobRequest;
 use App\Http\Requests\CategoryRequest\VehicleRentJobRequest;
 use App\Http\Requests\CategoryRequest\HeavyEquipmentJobRequest;
 
@@ -29,6 +30,7 @@ class RequestsManageController extends Controller
                 MachineType::heavyEquipment->value => HeavyEquipmentJobRequest::class,
                 MachineType::vehicleRental->value => VehicleRentJobRequest::class,
                 MachineType::craneRental->value => CraneRentJobRequest::class,
+                MachineType::generatorRental->value => GeneratorJobRequest::class,
                 // Add other sub-category request classes here
             ];
 
@@ -62,6 +64,7 @@ class RequestsManageController extends Controller
                 MachineType::heavyEquipment->value => \App\Models\HeavyEquipmentJob::class,
                 MachineType::vehicleRental->value => \App\Models\VehicleRentalJob::class,
                 MachineType::craneRental->value => \App\Models\CraneRentalJob::class,
+                MachineType::generatorRental->value => \App\Models\GeneratorRentalJop::class,
                 // Add other sub-category models here
             ];
             $model = $models[$subCategory];

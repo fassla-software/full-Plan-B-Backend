@@ -3,16 +3,17 @@
 namespace App\Http\Controllers\Api\Freelancer;
 
 use App\Enums\MachineType;
-use App\Http\Controllers\Controller;
-use App\Http\Requests\CategoryRequest\CraneRentRequest;
-use App\Http\Requests\CategoryRequest\HeavyEquipmentRequest;
-use App\Http\Requests\CategoryRequest\VehicleRentRequest;
-use App\Http\Resources\NewCategoryResource;
-use App\Traits\ImageUploadTrait;
 use Illuminate\Http\Request;
+use App\Traits\ImageUploadTrait;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\File;
 use Modules\Service\Entities\Category;
+use App\Http\Resources\NewCategoryResource;
+use App\Http\Requests\CategoryRequest\CraneRentRequest;
+use App\Http\Requests\CategoryRequest\GeneratorRequest;
+use App\Http\Requests\CategoryRequest\VehicleRentRequest;
+use App\Http\Requests\CategoryRequest\HeavyEquipmentRequest;
 
 class NewCategoryController extends Controller
 {
@@ -40,6 +41,7 @@ class NewCategoryController extends Controller
                 MachineType::heavyEquipment->value => HeavyEquipmentRequest::class,
                 MachineType::vehicleRental->value => VehicleRentRequest::class,
                 MachineType::craneRental->value => CraneRentRequest::class,
+                MachineType::generatorRental->value => GeneratorRequest::class,
             ];
 
             if (!isset($requests[$subCategory])) {
@@ -64,6 +66,7 @@ class NewCategoryController extends Controller
                 MachineType::heavyEquipment->value => \App\Models\HeavyEquipment::class,
                 MachineType::vehicleRental->value => \App\Models\VehicleRental::class,
                 MachineType::craneRental->value => \App\Models\CraneRental::class,
+                MachineType::generatorRental->value => \App\Models\GeneratorRental::class,
             ];
 
             $model = $models[$subCategory];

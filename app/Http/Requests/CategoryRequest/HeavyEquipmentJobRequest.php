@@ -44,6 +44,8 @@ class HeavyEquipmentJobRequest extends FormRequest
             'additional_requirements' => 'nullable|string',
             'lat' => 'nullable',
             'long' => 'nullable',
+            'isStopped' => 'nullable|in:0,1',
+            'isSeen' => 'nullable|in:0,1',
         ];
     }
 }

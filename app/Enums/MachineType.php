@@ -52,6 +52,9 @@ enum MachineType: string
 
         // Generators and Tools Rental (تأجير المولدات والمعدات الخفيفة)
     case generatorRental = 'generatorRental'; // تأجير المولدات والمعدات الخفيفة
+    case singlePhaseGenerator = 'singlePhaseGenerator'; // مولد 1 فاز
+    case threePhaseGenerator = 'threePhaseGenerator'; // مولد 3 فاز
+
     case electricGenerator = 'electricGenerator'; // مولد كهرباء
     case soilCompactor = 'soilCompactor'; // دكاك تربة
     case concreteMixer = 'concreteMixer'; // خلاطة
