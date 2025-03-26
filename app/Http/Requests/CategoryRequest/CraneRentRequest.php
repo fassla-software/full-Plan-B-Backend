@@ -24,7 +24,6 @@ class CraneRentRequest extends FormRequest
         return [
             'name' => 'nullable|string|max:255',
             'sub_category_id' => 'nullable|exists:sub_categories,id',
-            'user_id' => 'nullable|exists:users,id',
             'category_id' => 'nullable|exists:categories,id',
             'lat' => 'nullable',
             'long' => 'nullable',

@@ -24,7 +24,6 @@ class CraneRentJobRequest extends FormRequest
         return [
             'name' => 'nullable|string|max:255',
             'sub_category_id' => 'nullable|exists:sub_categories,id',
-            'user_id' => 'nullable|exists:users,id',
             'category_id' => 'nullable|exists:categories,id',
             'worksite_location' => 'nullable|string|max:255',
             'hour' => 'nullable|string',
@@ -52,6 +51,8 @@ class CraneRentJobRequest extends FormRequest
             'lat' => 'nullable',
             'long' => 'nullable',
             'search_radius' => 'nullable',
+            'isStopped' => 'nullable|in:0,1',
+            'isSeen' => 'nullable|in:0,1',
         ];
     }
 }

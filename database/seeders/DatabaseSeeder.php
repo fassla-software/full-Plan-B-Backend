@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
             'transaction-manage',
         ];
 
-        foreach ($admin_role_permissions as $permission){
+        foreach ($admin_role_permissions as $permission) {
             \Spatie\Permission\Models\Permission::updateOrCreate([
                 'menu_name' => 'Admin Role and Transaction',
                 'name' => $permission,
@@ -34,7 +34,7 @@ class DatabaseSeeder extends Seeder
             'blog-delete',
         ];
 
-        foreach ($blog_permissions as $permission){
+        foreach ($blog_permissions as $permission) {
             \Spatie\Permission\Models\Permission::updateOrCreate([
                 'menu_name' => 'Blog Manage',
                 'name' => $permission,
@@ -46,14 +46,12 @@ class DatabaseSeeder extends Seeder
             'generate-license-key',
             'update-license',
         ];
-        foreach ($license_permissions as $permission){
+        foreach ($license_permissions as $permission) {
             \Spatie\Permission\Models\Permission::updateOrCreate([
                 'menu_name' => 'License Manage',
                 'name' => $permission,
                 'guard_name' => 'admin'
             ]);
         }
-
-
     }
 }

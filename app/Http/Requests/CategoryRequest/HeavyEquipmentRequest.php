@@ -29,20 +29,14 @@ class HeavyEquipmentRequest extends FormRequest
             'model' => 'required|max:50',
             'year_of_manufacture' => 'required|max:4',
             'current_equipment_location' => 'nullable|string',
-
-
             'data_certificate_image' => 'nullable',
             'driver_license_front_image' => 'nullable',
             'driver_license_back_image' => 'nullable',
-
             'additional_equipment_images' => 'nullable|array|max:5',
             'special_rental_conditions' => 'nullable|max:500',
-
             'flatbed_license_front_image' => 'required_if:equipment_type,equipmentTransportFlatbed',
             'flatbed_license_back_image' => 'required_if:equipment_type,equipmentTransportFlatbed',
-
             'blade_width_near_digging_arm' => 'required_if:equipment_type,backhoeLoader|numeric',
-            //'add_bucket' => 'required_if:equipment_type,backhoeLoader,excavator|string',
             'sprinkler_system_type' => 'required_if:equipment_type,bitumenSprayerTruck|string',
             'tank_capacity' => 'required_if:equipment_type,bitumenSprayerTruck|numeric',
             'panda_width' => 'required_if:equipment_type,bitumenSprayerTruck|max:4',
