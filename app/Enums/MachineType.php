@@ -62,10 +62,13 @@ enum MachineType: string
     case airCompressor = 'airCompressor'; // ماكينة ضغط الهواء (كومبريسور)
     case buildingMaterialCrane = 'buildingMaterialCrane'; // ونش رفع مواد البناء
 
-        // Scaffolding and Construction Tools (أدوات سحب الكابلات)
-    case scaffoldingTools = 'scaffoldingTools'; // تأجير السقالات وأدوات البناء
+
+        // Scaffolding
+    case scaffoldingToolsRental = 'scaffoldingToolsRental'; // تأجير السقالات وأدوات البناء
     case roofPouringScaffolds = 'roofPouringScaffolds'; // شدات صب السقف
     case wallPanelScaffolds = 'wallPanelScaffolds'; // سقالات الحوائط والجدران
+
+
     case cablePullingWinches = 'cablePullingWinches'; // بكرة سحب الكابلات
     case cablePullingRollers = 'cablePullingRollers'; // درفيل (Roller)
     case cableCutters = 'cableCutters'; // مقص كابلات

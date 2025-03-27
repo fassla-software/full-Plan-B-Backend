@@ -61,7 +61,6 @@ trait ImageUploadTrait
                 'vehicle_license_front_image',
                 'vehicle_license_back_image',
             ],
-
             MachineType::craneRental->value => [
                 'additional_equipment_images',
                 'vehicle_license_front',
@@ -72,9 +71,14 @@ trait ImageUploadTrait
                 'insurance_documents',
                 'operator_qualification_documents',
             ],
-
             MachineType::craneRental->value => [
                 'load_image',
+            ],
+            MachineType::scaffoldingToolsRental->value => [
+                'equipment_images',
+            ],
+            MachineType::generatorRental->value => [
+                'generator_image',
             ],
         ];
 

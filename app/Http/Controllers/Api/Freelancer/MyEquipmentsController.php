@@ -7,13 +7,13 @@ use App\Http\Controllers\Controller;
 use Illuminate\Validation\Rules\Enum;
 use Modules\Service\Entities\SubCategory;
 use Illuminate\Support\Facades\{Validator};
-
 use Illuminate\Http\{Request, JsonResponse, Response};
 use App\Http\Requests\CategoryRequest\CraneRentRequest;
 use App\Http\Requests\CategoryRequest\GeneratorRequest;
+use App\Http\Requests\CategoryRequest\ScaffoldingRequest;
 use App\Http\Requests\CategoryRequest\VehicleRentRequest;
-use App\Http\Requests\CategoryRequest\HeavyEquipmentRequest;
 use App\Http\Requests\equipments\{StoreEquipmentRequest};
+use App\Http\Requests\CategoryRequest\HeavyEquipmentRequest;
 
 class MyEquipmentsController extends Controller
 {
@@ -192,6 +192,8 @@ class MyEquipmentsController extends Controller
             MachineType::vehicleRental->value => VehicleRentRequest::class,
             MachineType::craneRental->value => CraneRentRequest::class,
             MachineType::generatorRental->value => GeneratorRequest::class,
+            MachineType::scaffoldingToolsRental->value => ScaffoldingRequest::class,
+            // add more requests
         ];
 
         if (!isset($requests[$categorySlug])) {
