@@ -7,11 +7,11 @@ use Illuminate\Http\Request;
 use App\Traits\ImageUploadTrait;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\File;
 use Modules\Service\Entities\Category;
 use App\Http\Resources\NewCategoryResource;
 use App\Http\Requests\CategoryRequest\CraneRentRequest;
 use App\Http\Requests\CategoryRequest\GeneratorRequest;
+use App\Http\Requests\CategoryRequest\ScaffoldingRequest;
 use App\Http\Requests\CategoryRequest\VehicleRentRequest;
 use App\Http\Requests\CategoryRequest\HeavyEquipmentRequest;
 
@@ -30,7 +30,8 @@ class NewCategoryController extends Controller
                 'additional_equipment_images',
                 'load_data_documents',
                 'insurance_documents',
-                'operator_qualification_documents'
+                'operator_qualification_documents',
+                'equipment_images',
             ];
 
             // Decode JSON fields dynamically before validation
@@ -42,6 +43,8 @@ class NewCategoryController extends Controller
                 MachineType::vehicleRental->value => VehicleRentRequest::class,
                 MachineType::craneRental->value => CraneRentRequest::class,
                 MachineType::generatorRental->value => GeneratorRequest::class,
+                MachineType::scaffoldingToolsRental->value => ScaffoldingRequest::class,
+                // add more requests
             ];
 
             if (!isset($requests[$subCategory])) {
@@ -67,6 +70,8 @@ class NewCategoryController extends Controller
                 MachineType::vehicleRental->value => \App\Models\VehicleRental::class,
                 MachineType::craneRental->value => \App\Models\CraneRental::class,
                 MachineType::generatorRental->value => \App\Models\GeneratorRental::class,
+                MachineType::scaffoldingToolsRental->value => \App\Models\ScaffoldingAndMetalFormworkRental::class,
+                // and more
             ];
 
             $model = $models[$subCategory];
@@ -123,7 +128,6 @@ class NewCategoryController extends Controller
             }
         }
     }
-
 
     /**
      * Dynamically encode array fields to JSON before saving.
