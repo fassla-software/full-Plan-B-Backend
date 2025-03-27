@@ -63,7 +63,7 @@ function getModelClassFromType(?string $type = null)
         MachineType::vehicleRental->value => \App\Models\VehicleRentalJob::class,
         MachineType::craneRental->value => \App\Models\CraneRentalJob::class,
         MachineType::generatorRental->value => \App\Models\GeneratorRentalJop::class,
-        MachineType::scaffoldingToolsRental->value => \App\Models\ScaffoldingAndMetalFormworkRental::class,
+        MachineType::scaffoldingToolsRental->value => \App\Models\ScaffoldingAndMetalFormworkRentalJob::class,
         // Add other sub-category models here
     ];
 

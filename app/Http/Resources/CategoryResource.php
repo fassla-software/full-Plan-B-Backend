@@ -2,12 +2,10 @@
 
 namespace App\Http\Resources;
 
+use Carbon\Carbon;
 use App\Enums\MachineType;
 use App\Models\NewProposal;
-use App\Models\VehicleRental;
-use App\Models\CraneRentalJob;
-use App\Models\HeavyEquipment;
-use App\Models\HeavyEquipmentJob;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class CategoryResource extends JsonResource
@@ -55,7 +53,6 @@ class CategoryResource extends JsonResource
         ];
     }
 
-
     private function getFullImageUrl($imageId)
     {
         if (!$imageId) {
@@ -90,7 +87,7 @@ class CategoryResource extends JsonResource
     {
         if (!isset($userId)) return 0;
 
-        $categoryModel = $this->getModelClassFromType($slug);
+        $categoryModel = getEquipmentModelFromType($slug);
 
         return isset($categoryModel) ? $categoryModel::query()->where('user_id', $userId)
             ->where('sub_category_id', $sub_category)->count() : 0;
@@ -101,15 +98,39 @@ class CategoryResource extends JsonResource
     {
         if (!isset($userId)) return 0;
 
-        $categoryModel = $this->getModelClassFromType($slug);
+        $categoryModel = getModelClassFromType($slug);
 
-        return isset($categoryModel) ? $categoryModel::query()->where('user_id', $userId)
-            ->where('sub_category_id', $sub_category)->count() : 0;
+        $userEquipments = getEquipmentModelFromType($slug)::select(['id', 'lat', 'long'])
+            ->where('user_id', $userId)
+            ->where('sub_category_id', $sub_category)
+            ->whereNotNull('lat')
+            ->whereNotNull('long')
+            ->get();
+
+        $distanceConditions = $userEquipments->map(function ($equipment) {
+            return DB::raw('
+            (6371 * acos(cos(radians(' . $equipment->lat . ')) * cos(radians(lat)) * 
+            cos(radians(`long`) - radians(' . $equipment->long . ')) + sin(radians(' . $equipment->lat . ')) * 
+            sin(radians(lat)))) <= search_radius
+        ');
+        })->toArray();
+
+        $records = $categoryModel::where('sub_category_id', $sub_category)
+            ->where('user_id', '<>', $userId)
+            ->whereDate('max_offer_deadline', '>=', Carbon::today())
+            ->where(function ($query) use ($distanceConditions) {
+                foreach ($distanceConditions as $condition) {
+                    $query->orWhereRaw($condition);
+                }
+            })
+            ->count();
+
+        return $records;
     }
 
     private function getOffersOffRequestsCount($sub_category_id, $userId, $slug): int
     {
-        $categoryModel = $this->getModelClassFromType($slug);
+        $categoryModel = getModelClassFromType($slug);
 
         return NewProposal::query()
             ->whereHas('request', function ($query) use ($categoryModel, $userId, $sub_category_id) {
@@ -119,17 +140,5 @@ class CategoryResource extends JsonResource
                             ->where('sub_category_id', $sub_category_id);
                     });
             })->count();
-    }
-
-    private function getModelClassFromType($type)
-    {
-        $types = [
-            MachineType::heavyEquipment->value => \App\Models\HeavyEquipmentJob::class,
-            MachineType::vehicleRental->value => \App\Models\VehicleRentalJob::class,
-            MachineType::craneRental->value => \App\Models\CraneRentalJob::class,
-            // Add other sub-category models here
-        ];
-
-        return $types[$type] ?? null;
     }
 }
