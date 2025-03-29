@@ -11,6 +11,7 @@
         "doctrine/dbal": "^3.6",
         "endroid/qr-code": "^5.0",
         "google/apiclient": "^2.17",
+        "google/auth": "^1.46",
         "guzzlehttp/guzzle": "^7.2",
         "intervention/image": "^2.7",
         "kkomelin/laravel-translatable-string-exporter": "^1.21",

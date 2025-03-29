@@ -63,7 +63,7 @@ class User extends Authenticatable
         'google_2fa_enable_disable_disable' => 'integer',
     ];
 
-    public function routeNotificationForFcm($notification)
+    public function routeNotificationForFcm($notification = null)
     {
         return $this->firebase_device_token;
     }

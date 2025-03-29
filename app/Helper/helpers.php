@@ -25,6 +25,7 @@ use Kreait\Firebase\Messaging\CloudMessage;
 use Modules\Subscription\Entities\UserSubscription;
 use Carbon\Carbon;
 use App\Models\OperationCost;
+use App\Traits\PushNotificationTrait;
 
 function minusUserAvailableLimit($UserSubscription, $operationType)
 {

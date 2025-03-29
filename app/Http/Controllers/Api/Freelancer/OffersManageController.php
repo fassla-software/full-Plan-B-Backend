@@ -6,21 +6,25 @@ use DateTime;
 use App\Enums\MachineType;
 use App\Enums\OperationType;
 use Illuminate\Validation\Rule;
-use App\Services\FirebaseService;
 use App\Models\{NewProposal, User};
 use App\Http\Controllers\Controller;
 use Illuminate\Validation\Rules\Enum;
-use App\Notifications\FcmNotification;
 use Illuminate\Support\Facades\Validator;
+use App\Services\OfferManagementService;
 use Modules\Service\Entities\SubCategory;
-use App\Notifications\NewProposalReceived;
 use Illuminate\Http\{Request, JsonResponse};
-use Illuminate\Support\Facades\Notification;
 use App\Http\Requests\StoreNewProposalRequest;
 use App\Http\Requests\offers\UpdateOfferRequest;
 
 class OffersManageController extends Controller
 {
+    protected $offerService;
+
+    public function __construct(OfferManagementService $offerService)
+    {
+        $this->offerService = $offerService;
+    }
+
     // add offer
     public function addOffer(StoreNewProposalRequest $request, $jobType, $jobId): JsonResponse
     {
@@ -75,33 +79,8 @@ class OffersManageController extends Controller
 
         $recipientUser = User::find($requestEntry->user_id);
 
-        // if ($recipientUser) {
-        //     $notificationData = [
-        //         'title' => 'New Offer Received!',
-        //         'body' => 'Your request has received a new offer.',
-        //         'data' => [
-        //             'offer_id' => $proposal->id,
-        //             'request_id' => $requestEntry->requestable->id,
-        //             'request_name' => $requestEntry->requestable->name ?? null,
-        //             'job_type' => $jobType
-        //         ],
-        //     ];
-
-        //     Notification::send($recipientUser, new FcmNotification($notificationData));
-
-        //     // $recipientUser->notify();
-        // }
-
-        // if ($recipientUser && $recipientUser->firebase_device_token) {
-
-        //     $firebaseService = new FirebaseService();
-
-        //     $firebaseService->sendNotification(
-        //         $recipientUser->firebase_device_token,
-        //         'New Offer Received!',
-        //         'Your request has received a new offer.'
-        //     );
-        // }
+        // send notification via firebase
+        $request = $this->offerService->pushNotification($recipientUser, $proposal);
 
         return response()->json([
             'message' => 'Proposal created successfully.',
