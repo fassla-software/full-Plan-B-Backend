@@ -40,5 +40,8 @@ return [
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
         'redirect' => env('GOOGLE_CALLBACK_URL')
     ],
+    'firebase' => [
+        'key_path' => public_path(env('FCM_CREDENTIALS_PATH')),
+    ]
 
 ];
