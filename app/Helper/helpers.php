@@ -101,6 +101,15 @@ function paginateCollection($collection, $perPage, $currentPage)
     ];
 }
 
+function getFullImageUrl($imageId)
+{
+    if (!$imageId) {
+        return null;
+    }
+    $imageDetails = get_attachment_image_by_id($imageId);
+    return $imageDetails['img_url'] ?? null;
+}
+
 function checkSubsicriptionAvailability(int $neededCommas, ?int $user = null): bool
 {
     if (!isset($user)) $user = auth()->user()->id;
