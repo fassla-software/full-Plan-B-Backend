@@ -136,12 +136,8 @@ class OffersManageController extends Controller
                 'CategorySlug' => $jobType,
                 'offers_is_stoped' => $record->isStopped,
                 'offers_count' => $record->request ? $record->request->newProposals->count() : 0,
-                'image' => $this->getFullImageUrl($record->subCategory->image),
-                'user' => $record->user ? array_merge(
-                    $record->user->toArray(),
-                    ['image' => $record->user->image ? asset('assets/uploads/profile/' . $record->user->image)
-                        : asset('assets/uploads/profile/1735570464-6772b42011d2d.png')]
-                ) : null,
+                'image' => getFullImageUrl($record->subCategory->image),
+                'user' => $record->user,
             ];
         })->sortByDesc('offers_count')->values();
 
@@ -190,7 +186,6 @@ class OffersManageController extends Controller
 
         $sub_category = SubCategory::findOrFail($sub_category_id);
         $eqName = $sub_category->getTranslatedName($request->header('Accept-Language', 'en'));
-        $eqImage = $sub_category->image ? asset('storage/assets/uploads/sub-category/' . $sub_category->image) : null;
 
         $offers = NewProposal::query()
             ->with([
@@ -208,7 +203,7 @@ class OffersManageController extends Controller
 
         return response()->json([
             'name' => $eqName,
-            'image' => $eqImage,
+            'image' => getFullImageUrl($sub_category->image),
             'sub_category_id' => $sub_category_id,
             'category_slug' => $jobType,
             'offers' => $offers
@@ -244,10 +239,7 @@ class OffersManageController extends Controller
 
         $eqName = $sub_category->getTranslatedName($request->header('Accept-Language', 'en'));
 
-        // $eqImage = $sub_category->image ? asset('storage/assets/uploads/sub-category/' . $sub_category->image) : null;
-
-        $eqImage = $this->getFullImageUrl($sub_category->image);
-
+        $eqImage = getFullImageUrl($sub_category->image);
 
         $offer = NewProposal::query()
             ->with([
@@ -257,12 +249,6 @@ class OffersManageController extends Controller
             ])
             ->where('id', $offer_id)
             ->first();
-
-        if ($offer && $offer->user) {
-            $offer->user->image = $offer->user->image
-                ? asset('assets/uploads/profile/' . $offer->user->image)
-                : asset('assets/uploads/profile/1735570464-6772b42011d2d.png');
-        }
 
         if ($offer && ($offer->isSeen == 0)) {
             $offer->update([
@@ -299,17 +285,15 @@ class OffersManageController extends Controller
 
         $offer = NewProposal::with(['user:id,first_name,last_name,experience_level,email,phone,image'])->findOrFail($offer_id);
 
-        $imageUrl = $offer->user->image ? asset('storage/assets/uploads/profile/' . $offer->user->image) : null;
-
         $userData = $offer->user->only([
             'id',
             'first_name',
             'last_name',
             'experience_level',
             'email',
-            'phone'
+            'phone',
+            'image',
         ]);
-        $userData['image'] = $imageUrl;
 
         return response()->json([
             'user' => $userData,
@@ -553,15 +537,6 @@ class OffersManageController extends Controller
             'rank' => $rank,
             'total_offers' => $sortedOffers->count(),
         ]);
-    }
-
-    private function getFullImageUrl($imageId)
-    {
-        if (!$imageId) {
-            return null;
-        }
-        $imageDetails = get_attachment_image_by_id($imageId);
-        return $imageDetails['img_url'] ?? null;
     }
 
     private function getRemainingTimeForOfferAvailability($end_at)

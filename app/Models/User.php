@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -62,6 +64,13 @@ class User extends Authenticatable
         'is_suspend' => 'integer',
         'google_2fa_enable_disable_disable' => 'integer',
     ];
+
+    protected function image(): Attribute
+    {
+        return Attribute::make(
+            get: fn($value) => $value ? asset('assets/uploads/profile/' . $value) : asset('assets/uploads/profile/1735570464-6772b42011d2d.png')
+        );
+    }
 
     public function routeNotificationForFcm($notification = null)
     {

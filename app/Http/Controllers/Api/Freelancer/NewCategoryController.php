@@ -72,7 +72,7 @@ class NewCategoryController extends Controller
                 MachineType::generatorRental->value => \App\Models\GeneratorRental::class,
                 MachineType::scaffoldingToolsRental->value => \App\Models\ScaffoldingAndMetalFormworkRental::class,
                 // and more
-            ];
+            ];  
 
             $model = $models[$subCategory];
             $model::create($validatedData);
