@@ -29,6 +29,7 @@ class UserRegisterRequest extends FormRequest
             'phone' => 'required|unique:users,phone|max:191',
             'password' => 'required|min:6|max:191',
             'confirm_password' => 'required|min:6|max:191|same:password',
+            'firebase_device_token' => 'nullable|string',
         ];
     }
 }
