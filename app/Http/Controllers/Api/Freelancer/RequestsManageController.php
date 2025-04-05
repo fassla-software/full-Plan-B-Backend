@@ -9,7 +9,9 @@ use App\Models\NewProposal;
 use App\Enums\OperationType;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Jobs\SendRequestNotificationJob;
 use Modules\Service\Entities\SubCategory;
+use App\Services\RequestManagementService;
 use Illuminate\Http\{JsonResponse, Request};
 use App\Http\Requests\requests\UpdateRequestRequest;
 use App\Http\Requests\CategoryRequest\CraneRentJobRequest;
@@ -20,6 +22,7 @@ use App\Http\Requests\CategoryRequest\HeavyEquipmentJobRequest;
 
 class RequestsManageController extends Controller
 {
+
     public function addRequest(Request $request, $subCategory, $subSubCategory)
     {
         try {
@@ -67,8 +70,12 @@ class RequestsManageController extends Controller
                 MachineType::scaffoldingToolsRental->value => \App\Models\ScaffoldingAndMetalFormworkRentalJob::class,
                 // Add other sub-category models here
             ];
+
             $model = $models[$subCategory];
-            $model::create($validatedData);
+            $result = $model::create($validatedData);
+
+            // send notification
+            SendRequestNotificationJob::dispatch($result, $subCategory);
 
             $currentSubscripiton = getCurrentUserSubsicription($user);
             if ($currentSubscripiton) {

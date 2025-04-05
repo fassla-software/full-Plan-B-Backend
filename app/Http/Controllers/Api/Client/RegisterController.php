@@ -36,6 +36,7 @@ class RegisterController extends Controller
             'user_type' => 1,
             'terms_conditions' => 1,
             'email_verify_token' => $email_verify_tokn,
+            'firebase_device_token' => $request->firebase_device_token,
         ]);
 
         //create freelancer wallet
@@ -63,7 +64,7 @@ class RegisterController extends Controller
             'status' => 'success',
         ]);
     }
-    
+
     //send otp
     public function resend_otp(Request $request)
     {

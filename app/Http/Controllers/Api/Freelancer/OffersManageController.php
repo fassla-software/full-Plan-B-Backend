@@ -10,7 +10,6 @@ use App\Models\{NewProposal, User};
 use App\Http\Controllers\Controller;
 use Illuminate\Validation\Rules\Enum;
 use App\Jobs\sendOfferNotificationJob;
-use App\Services\OfferManagementService;
 use Illuminate\Support\Facades\Validator;
 use Modules\Service\Entities\SubCategory;
 use Illuminate\Http\{Request, JsonResponse};
@@ -19,13 +18,6 @@ use App\Http\Requests\offers\UpdateOfferRequest;
 
 class OffersManageController extends Controller
 {
-    protected $offerService;
-
-    public function __construct(OfferManagementService $offerService)
-    {
-        $this->offerService = $offerService;
-    }
-
     // add offer
     public function addOffer(StoreNewProposalRequest $request, $jobType, $jobId): JsonResponse
     {
