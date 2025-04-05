@@ -9,8 +9,9 @@ use Illuminate\Validation\Rule;
 use App\Models\{NewProposal, User};
 use App\Http\Controllers\Controller;
 use Illuminate\Validation\Rules\Enum;
-use Illuminate\Support\Facades\Validator;
+use App\Jobs\sendOfferNotificationJob;
 use App\Services\OfferManagementService;
+use Illuminate\Support\Facades\Validator;
 use Modules\Service\Entities\SubCategory;
 use Illuminate\Http\{Request, JsonResponse};
 use App\Http\Requests\StoreNewProposalRequest;
@@ -80,7 +81,7 @@ class OffersManageController extends Controller
         $recipientUser = User::find($requestEntry->user_id);
 
         // send notification via firebase
-        $request = $this->offerService->pushNotification($recipientUser, $proposal);
+        sendOfferNotificationJob::dispatch($recipientUser, $proposal);
 
         return response()->json([
             'message' => 'Proposal created successfully.',

@@ -22,9 +22,6 @@ class RequestsManageController extends Controller
 {
     public function addRequest(Request $request, $subCategory, $subSubCategory)
     {
-
-        DB::beginTransaction();
-
         try {
             // Validate data using the specific request class
             $requests = [
@@ -78,13 +75,10 @@ class RequestsManageController extends Controller
                 minusUserAvailableLimit($currentSubscripiton, OperationType::makeRequest);
             }
 
-            DB::commit();
-
             return response()->json([
                 'message' => ucfirst(str_replace('_', ' ', $subCategory)) . ' data saved successfully!'
             ], 201);
         } catch (\Exception $e) {
-            DB::rollBack();
             return response()->json([
                 'error' => 'There was an error processing your request. Please try again. ' . $e->getMessage()
             ], 500);

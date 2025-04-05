@@ -41,7 +41,7 @@ return [
         'redirect' => env('GOOGLE_CALLBACK_URL')
     ],
     'firebase' => [
-        'key_path' => public_path(env('FCM_CREDENTIALS_PATH')),
+        'key_path' => public_path(env('FIREBASE_CREDENTIALS')),
     ]
 
 ];

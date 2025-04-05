@@ -13,8 +13,8 @@ class OfferManagementService
     function pushNotification(User $recipientUser, NewProposal $proposal)
     {
         $userToken = $recipientUser->routeNotificationForFcm();
-        $title = "there are new offer on your request!";
-        $body = "Please click here to get the offer details!";
+        $title = "You've Got a New Offer!";
+        $body = "Your request just got a response! Open now to review the offer and move forward.";
         $data = [
             "offer" => $proposal,
             "user" => $recipientUser,
