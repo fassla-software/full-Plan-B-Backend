@@ -9,7 +9,6 @@ use App\Models\NewProposal;
 use App\Enums\OperationType;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use App\Jobs\SendRequestNotificationJob;
 use Modules\Service\Entities\SubCategory;
 use App\Services\RequestManagementService;
 use Illuminate\Http\{JsonResponse, Request};

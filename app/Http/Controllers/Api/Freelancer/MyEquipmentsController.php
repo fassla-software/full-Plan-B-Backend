@@ -48,8 +48,20 @@ class MyEquipmentsController extends Controller
 
         $sub_category = SubCategory::findOrFail($sub_category_id);
 
-        $myEquipments = $equipment::query()
-            ->with(['subCategory', 'user:id,first_name,last_name'])
+        $equipmentQuery = $equipment::query()
+            ->with([
+                'subCategory',
+                'user:id,first_name,last_name',
+            ]);
+
+        if (
+            $equipment === \App\Models\GeneratorRental::class ||
+            $equipment === \App\Models\ScaffoldingAndMetalFormworkRental::class
+        ) {
+            $equipmentQuery->with('locations');
+        }
+
+        $myEquipments = $equipmentQuery
             ->where('sub_category_id', $sub_category_id)
             ->where('user_id', $user->id)
             ->paginate(12)
@@ -161,10 +173,20 @@ class MyEquipmentsController extends Controller
 
         $equipmentModel = getEquipmentModelFromType($categorySlug);
 
-        $equipment = $equipmentModel::find($id);
+        $equipmentQuery = $equipmentModel::query();
+
+        if (
+            $equipmentModel === \App\Models\GeneratorRental::class ||
+            $equipmentModel === \App\Models\ScaffoldingAndMetalFormworkRental::class
+        ) {
+            $equipmentQuery->with('locations');
+        }
+
+        $equipment = $equipmentQuery->find($id);
+
         if (!$equipment) return response()->json(['message' => 'Equipment not found'], Response::HTTP_NOT_FOUND);
 
-        $decodedImages = json_decode($equipment->additional_equipment_images);
+        $decodedImages = $equipment->additional_equipment_images ? json_decode($equipment->additional_equipment_images) : null;
 
         return response()->json([
             'equipment' => array_merge($equipment->toArray(), [

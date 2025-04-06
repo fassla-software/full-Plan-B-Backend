@@ -8,6 +8,8 @@ use App\Traits\ImageUploadTrait;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Modules\Service\Entities\Category;
+use App\Models\generatorRentalLocation;
+use App\Models\ScaffoldingRentalLocation;
 use App\Http\Resources\NewCategoryResource;
 use App\Http\Requests\CategoryRequest\CraneRentRequest;
 use App\Http\Requests\CategoryRequest\GeneratorRequest;
@@ -74,7 +76,49 @@ class NewCategoryController extends Controller
             ];
 
             $model = $models[$subCategory];
-            $model::create($validatedData);
+            $result = $model::create($validatedData);
+
+            if ($model ==  \App\Models\GeneratorRental::class) {
+                $latitudes = $validatedData['lat'] ?? [];
+                $longitudes = $validatedData['long'] ?? [];
+                $locations = $validatedData['current_generator_location'] ?? [];
+
+                foreach ($latitudes as $index => $lat) {
+                    $long = $longitudes[$index] ?? null;
+                    $location = $locations[$index] ?? null;
+
+                    if (is_null($lat) || is_null($long) || is_null($location)) {
+                        continue;
+                    }
+
+                    generatorRentalLocation::create([
+                        'lat' => $lat,
+                        'long' => $long,
+                        'current_generator_location' => $location,
+                        'generator_rental_id' => $result->id,
+                    ]);
+                }
+            } elseif ($model ==  \App\Models\ScaffoldingAndMetalFormworkRental::class) {
+                $latitudes = $validatedData['lat'] ?? [];
+                $longitudes = $validatedData['long'] ?? [];
+                $locations = $validatedData['current_equipment_location'] ?? [];
+
+                foreach ($latitudes as $index => $lat) {
+                    $long = $longitudes[$index] ?? null;
+                    $location = $locations[$index] ?? null;
+
+                    if (is_null($lat) || is_null($long) || is_null($location)) {
+                        continue;
+                    }
+
+                    ScaffoldingRentalLocation::create([
+                        'lat' => $lat,
+                        'long' => $long,
+                        'current_equipment_location' => $location,
+                        'generator_rental_id' => $result->id,
+                    ]);
+                }
+            }
 
             // Commit the transaction
             DB::commit();

@@ -33,7 +33,6 @@ return new class extends Migration
             $table->string('height_of_beginning_of_work_area_the_wall_from_floor')->nullable();
             $table->string('scaffolding_base_mounting_floor_pictures')->nullable();
             $table->string('work_wall_pictures')->nullable();
-
             $table->string('work_site_location')->nullable(); // Required work site location
             $table->decimal('search_radius')->nullable(); // Search range for equipment around the work site
             $table->date('max_arrival_date')->nullable(); // Latest date for equipment arrival
