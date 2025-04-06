@@ -58,19 +58,19 @@ class OffersManageController extends Controller
         $user = auth('sanctum')->user();
         $validatedData['user_id'] = $user->id;
 
-        // $requestValidator = Validator::make($validatedData, [
-        //     'request_id' => [
-        //         Rule::unique('new_proposals')->where(function ($query) use ($user) {
-        //             return $query->where('user_id', $user->id);
-        //         }),
-        //     ],
-        // ], [
-        //     'request_id.unique' => 'This offer has already been submitted by this user.',
-        // ]);
+        $requestValidator = Validator::make($validatedData, [
+            'request_id' => [
+                Rule::unique('new_proposals')->where(function ($query) use ($user) {
+                    return $query->where('user_id', $user->id);
+                }),
+            ],
+        ], [
+            'request_id.unique' => 'This offer has already been submitted by this user.',
+        ]);
 
-        // if ($requestValidator->fails()) {
-        //     return response()->json($requestValidator->errors(), 422);
-        // }
+        if ($requestValidator->fails()) {
+            return response()->json($requestValidator->errors(), 422);
+        }
 
         $proposal = $this->offerService->createOffer($validatedData, $modelClass);
 
@@ -82,9 +82,9 @@ class OffersManageController extends Controller
         $recipientUser = User::find($requestEntry->user_id);
 
         // send notification via firebase
-        $recipientUser->notify(new NewProposalReceived($proposal));
+        $this->offerService->pushNotification($recipientUser, $proposal);
 
-        sendOfferNotificationJob::dispatch($recipientUser, $proposal->withoutRelations());
+        // sendOfferNotificationJob::dispatch($recipientUser, $proposal->withoutRelations());
 
         return response()->json([
             'message' => 'Proposal created successfully.',

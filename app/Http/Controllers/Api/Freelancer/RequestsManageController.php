@@ -22,6 +22,12 @@ use App\Http\Requests\CategoryRequest\HeavyEquipmentJobRequest;
 
 class RequestsManageController extends Controller
 {
+    protected $requestService;
+
+    public function __construct(RequestManagementService $requestService)
+    {
+        $this->requestService = $requestService;
+    }
 
     public function addRequest(Request $request, $subCategory, $subSubCategory)
     {
@@ -75,7 +81,9 @@ class RequestsManageController extends Controller
             $result = $model::create($validatedData);
 
             // send notification
-            SendRequestNotificationJob::dispatch($result, $subCategory);
+            $this->requestService->pushNotification($result, $subCategory);
+
+            // SendRequestNotificationJob::dispatch($result, $subCategory);
 
             $currentSubscripiton = getCurrentUserSubsicription($user);
             if ($currentSubscripiton) {
