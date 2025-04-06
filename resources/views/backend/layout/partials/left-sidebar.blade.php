@@ -20,6 +20,11 @@
                             class="fa-solid fa-chart-simple"></i>{{ __('Dashboard') }}</a>
                 </li>
 
+                <li class="dashboard__bottom__list__item @if (request()->is('admin/commercial-listings*')) active @endif">
+                    <a href="{{ url('admin/commercial-listings') }}"> <i
+                            class="fa-solid fa-building"></i>{{ __('Commercial Listings') }}</a>
+                </li>
+
                 @can('admin-role-manage')
                     <li
                         class="dashboard__bottom__list__item has-children @if (request()->is('admin/manage*') || request()->is('admin/role*')) active open show @endif">
@@ -117,8 +122,6 @@
                         // now i need to get all routes name from externalMenu
                         $activeRoutes = array_column((array) $externalMenu, 'route');
                     @endphp ?> ?> ?> ?> ?> ?> ?> ?> ?> ?> ?> ?> ?> ?> ?> ?> ?> ?> ?> ?> ?> ?> ?> ?> ?> ?> ?>
-                    ?>
-                    ?>
                     ?>
                     ?>
                     ?>

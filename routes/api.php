@@ -131,6 +131,9 @@ Route::group(['prefix' => 'v1', 'middleware' => 'setlang'], function () {
             Route::post('social/login', 'social_login');
         });
 
+        //commercial listings
+        Route::post('commercial-listings', [App\Http\Controllers\Api\Freelancer\CommercialListingController::class, 'store']);
+
         //authenticated api
         Route::group(['middleware' => 'auth:sanctum'], function () {
 
@@ -241,6 +244,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'setlang'], function () {
                 Route::get('chat/credentials', 'credentials');
                 Route::get('chat/unseen-message/count', 'unseen_message_count');
             });
+            Route::post('commercial-listings/upload-image', [App\Http\Controllers\Api\Freelancer\CommercialListingController::class, 'uploadImage']);
         });
     });
     //freelancer route end
