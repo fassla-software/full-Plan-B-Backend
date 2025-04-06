@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\GeneratorOfferDetails;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class NewProposal extends Model
 {
@@ -18,6 +20,8 @@ class NewProposal extends Model
         'offer_ends_at',
         'other_terms',
         'isSeen',
+        'generator_offer_detail_id',
+        'scaffolding_offer_detail_id',
     ];
 
     protected $casts = [
@@ -37,5 +41,15 @@ class NewProposal extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function generatorOfferDetails(): BelongsTo
+    {
+        return $this->belongsTo(GeneratorOfferDetails::class, 'generator_offer_detail_id');
+    }
+
+    public function scaffoldingOfferDetails(): BelongsTo
+    {
+        return $this->belongsTo(ScaffoldingOfferDetails::class, 'scaffolding_offer_detail_id');
     }
 }

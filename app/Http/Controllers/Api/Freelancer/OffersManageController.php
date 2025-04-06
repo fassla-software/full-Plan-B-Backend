@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\Freelancer;
 use DateTime;
 use App\Enums\MachineType;
 use App\Enums\OperationType;
-use Illuminate\Validation\Rule;
 use App\Models\{NewProposal, User};
 use App\Http\Controllers\Controller;
 use Illuminate\Validation\Rules\Enum;
@@ -15,9 +14,17 @@ use Modules\Service\Entities\SubCategory;
 use Illuminate\Http\{Request, JsonResponse};
 use App\Http\Requests\StoreNewProposalRequest;
 use App\Http\Requests\offers\UpdateOfferRequest;
+use App\Services\OfferManagementService;
 
 class OffersManageController extends Controller
 {
+    protected $offerService;
+
+    public function __construct(OfferManagementService $offerService)
+    {
+        $this->offerService = $offerService;
+    }
+
     // add offer
     public function addOffer(StoreNewProposalRequest $request, $jobType, $jobId): JsonResponse
     {
@@ -49,26 +56,26 @@ class OffersManageController extends Controller
         $user = auth('sanctum')->user();
         $validatedData['user_id'] = $user->id;
 
-        $requestValidator = Validator::make($validatedData, [
-            'request_id' => [
-                Rule::unique('new_proposals')->where(function ($query) use ($user) {
-                    return $query->where('user_id', $user->id);
-                }),
-            ],
-        ], [
-            'request_id.unique' => 'This offer has already been submitted by this user.',
-        ]);
+        // $requestValidator = Validator::make($validatedData, [
+        //     'request_id' => [
+        //         Rule::unique('new_proposals')->where(function ($query) use ($user) {
+        //             return $query->where('user_id', $user->id);
+        //         }),
+        //     ],
+        // ], [
+        //     'request_id.unique' => 'This offer has already been submitted by this user.',
+        // ]);
 
-        if ($requestValidator->fails()) {
-            return response()->json($requestValidator->errors(), 422);
-        }
+        // if ($requestValidator->fails()) {
+        //     return response()->json($requestValidator->errors(), 422);
+        // }
+
+        $proposal = $this->offerService->createOffer($validatedData, $modelClass);
 
         $currentSubscripiton = getCurrentUserSubsicription($user);
         if ($currentSubscripiton) {
             minusUserAvailableLimit($currentSubscripiton, OperationType::makeOffer);
         }
-
-        $proposal = NewProposal::create($validatedData);
 
         $recipientUser = User::find($requestEntry->user_id);
 
@@ -184,7 +191,9 @@ class OffersManageController extends Controller
             ->with([
                 'user:id,first_name,last_name,image',
                 'request:id,requestable_id,requestable_type',
-                'request.requestable:id,size,work_site_location,hour,day,month'
+                'request.requestable:id,size,work_site_location,hour,day,month',
+                'generatorOfferDetails',
+                'scaffoldingOfferDetails',
             ])->whereHas('request', function ($query) use ($categoryModel, $job_id) {
                 $query->where('requestable_type', $categoryModel)
                     ->whereHas('requestable', function ($query) use ($job_id) {
@@ -238,7 +247,9 @@ class OffersManageController extends Controller
             ->with([
                 'user:id,first_name,last_name,image',
                 'request:id,requestable_id,requestable_type',
-                'request.requestable:id,size,work_site_location,hour,day,month'
+                'request.requestable:id,size,work_site_location,hour,day,month',
+                'generatorOfferDetails',
+                'scaffoldingOfferDetails',
             ])
             ->where('id', $offer_id)
             ->first();
@@ -276,7 +287,11 @@ class OffersManageController extends Controller
             ], 422);
         }
 
-        $offer = NewProposal::with(['user:id,first_name,last_name,experience_level,email,phone,image'])->findOrFail($offer_id);
+        $offer = NewProposal::with([
+            'user:id,first_name,last_name,experience_level,email,phone,image',
+            'generatorOfferDetails',
+            'scaffoldingOfferDetails',
+        ])->findOrFail($offer_id);
 
         $userData = $offer->user->only([
             'id',
@@ -464,7 +479,7 @@ class OffersManageController extends Controller
         return response()->json(
             [
                 'message' => 'Offer updated successfully',
-                'offer' => $newProposal
+                'offer' => $newProposal->load(['generatorOfferDetails', 'scaffoldingOfferDetails']),
             ]
         );
     }
@@ -529,6 +544,7 @@ class OffersManageController extends Controller
         return response()->json([
             'rank' => $rank,
             'total_offers' => $sortedOffers->count(),
+            'offer' => $newProposal->load(['generatorOfferDetails', 'scaffoldingOfferDetails']),
         ]);
     }
 

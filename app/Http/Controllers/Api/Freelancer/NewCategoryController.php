@@ -31,7 +31,6 @@ class NewCategoryController extends Controller
                 'load_data_documents',
                 'insurance_documents',
                 'operator_qualification_documents',
-                'equipment_images',
             ];
 
             // Decode JSON fields dynamically before validation
@@ -72,7 +71,7 @@ class NewCategoryController extends Controller
                 MachineType::generatorRental->value => \App\Models\GeneratorRental::class,
                 MachineType::scaffoldingToolsRental->value => \App\Models\ScaffoldingAndMetalFormworkRental::class,
                 // and more
-            ];  
+            ];
 
             $model = $models[$subCategory];
             $model::create($validatedData);

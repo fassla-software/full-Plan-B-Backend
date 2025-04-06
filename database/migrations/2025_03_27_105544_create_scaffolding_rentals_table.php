@@ -27,7 +27,6 @@ return new class extends Migration
             $table->decimal('long', 10, 7)->nullable();
             $table->text('special_rental_conditions')->nullable(); // اضف الشروط الخاصة بتأجير هذه المعدة
             $table->string('current_equipment_location')->nullable(); // موقع المعدة الحالي
-            $table->string('equipment_images')->nullable(); // صور المعدة
             $table->timestamps();
         });
     }

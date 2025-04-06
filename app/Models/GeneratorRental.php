@@ -17,15 +17,10 @@ class GeneratorRental extends Model
         'sub_category_id',
         'user_id',
         'category_id',
-        'year_of_manufacture',
         'lat',
         'long',
         'special_rental_conditions',
         'current_generator_location',
-        'generator_image',
-        'generator_power',
-        'model',
-        'maximum_number_of_continuous_operating_hours',
     ];
 
     public function category()

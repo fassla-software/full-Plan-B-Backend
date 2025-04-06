@@ -27,6 +27,13 @@ class StoreNewProposalRequest extends FormRequest
             'current_location' => 'required|string|max:255',
             'offer_ends_at' => 'required|string',
             'other_terms' => 'nullable|string',
+
+            // generator attrs
+            'model' => 'nullable|string',
+            'generator_power' => 'nullable|string',
+            'max_number_of_continues_operating_houres' => 'nullable|string',
+            'number_of_daily_operating_houres' => 'nullable|string',
+            'generator_images' => 'nullable',
         ];
     }
 }
