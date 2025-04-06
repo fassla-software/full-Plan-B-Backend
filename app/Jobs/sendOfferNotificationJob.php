@@ -35,7 +35,6 @@ class sendOfferNotificationJob implements ShouldQueue
     public function handle(OfferManagementService $offerService)
     {
         $offerService->pushNotification($this->recipientUser, $this->proposal);
-
         $this->recipientUser->notify(new NewProposalReceived($this->proposal));
     }
 }

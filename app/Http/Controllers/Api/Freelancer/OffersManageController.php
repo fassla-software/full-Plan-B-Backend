@@ -13,6 +13,7 @@ use App\Jobs\sendOfferNotificationJob;
 use App\Services\OfferManagementService;
 use Illuminate\Support\Facades\Validator;
 use Modules\Service\Entities\SubCategory;
+use App\Notifications\NewProposalReceived;
 use Illuminate\Http\{Request, JsonResponse};
 use App\Http\Requests\StoreNewProposalRequest;
 use App\Http\Requests\offers\UpdateOfferRequest;
@@ -81,7 +82,9 @@ class OffersManageController extends Controller
         $recipientUser = User::find($requestEntry->user_id);
 
         // send notification via firebase
-        sendOfferNotificationJob::dispatch($recipientUser, $proposal);
+        $recipientUser->notify(new NewProposalReceived($proposal));
+
+        sendOfferNotificationJob::dispatch($recipientUser, $proposal->withoutRelations());
 
         return response()->json([
             'message' => 'Proposal created successfully.',
