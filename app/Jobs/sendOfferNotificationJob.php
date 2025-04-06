@@ -8,6 +8,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use App\Services\OfferManagementService;
 use Illuminate\Queue\InteractsWithQueue;
+use App\Notifications\NewProposalReceived;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 
@@ -34,5 +35,7 @@ class sendOfferNotificationJob implements ShouldQueue
     public function handle(OfferManagementService $offerService)
     {
         $offerService->pushNotification($this->recipientUser, $this->proposal);
+
+        $this->recipientUser->notify(new NewProposalReceived($this->proposal));
     }
 }

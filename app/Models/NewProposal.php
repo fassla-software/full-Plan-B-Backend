@@ -43,7 +43,7 @@ class NewProposal extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function generatorOfferDetails(): BelongsTo
+    public function generatorDetails(): BelongsTo
     {
         return $this->belongsTo(GeneratorOfferDetails::class, 'generator_offer_detail_id');
     }

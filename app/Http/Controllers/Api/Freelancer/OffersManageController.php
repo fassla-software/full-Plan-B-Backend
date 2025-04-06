@@ -57,19 +57,19 @@ class OffersManageController extends Controller
         $user = auth('sanctum')->user();
         $validatedData['user_id'] = $user->id;
 
-        $requestValidator = Validator::make($validatedData, [
-            'request_id' => [
-                Rule::unique('new_proposals')->where(function ($query) use ($user) {
-                    return $query->where('user_id', $user->id);
-                }),
-            ],
-        ], [
-            'request_id.unique' => 'This offer has already been submitted by this user.',
-        ]);
+        // $requestValidator = Validator::make($validatedData, [
+        //     'request_id' => [
+        //         Rule::unique('new_proposals')->where(function ($query) use ($user) {
+        //             return $query->where('user_id', $user->id);
+        //         }),
+        //     ],
+        // ], [
+        //     'request_id.unique' => 'This offer has already been submitted by this user.',
+        // ]);
 
-        if ($requestValidator->fails()) {
-            return response()->json($requestValidator->errors(), 422);
-        }
+        // if ($requestValidator->fails()) {
+        //     return response()->json($requestValidator->errors(), 422);
+        // }
 
         $proposal = $this->offerService->createOffer($validatedData, $modelClass);
 
@@ -193,7 +193,7 @@ class OffersManageController extends Controller
                 'user:id,first_name,last_name,image',
                 'request:id,requestable_id,requestable_type',
                 'request.requestable:id,size,work_site_location,hour,day,month',
-                'generatorOfferDetails',
+                'generatorDetails',
                 'scaffoldingOfferDetails',
             ])->whereHas('request', function ($query) use ($categoryModel, $job_id) {
                 $query->where('requestable_type', $categoryModel)
@@ -249,7 +249,7 @@ class OffersManageController extends Controller
                 'user:id,first_name,last_name,image',
                 'request:id,requestable_id,requestable_type',
                 'request.requestable:id,size,work_site_location,hour,day,month',
-                'generatorOfferDetails',
+                'generatorDetails',
                 'scaffoldingOfferDetails',
             ])
             ->where('id', $offer_id)
@@ -290,7 +290,7 @@ class OffersManageController extends Controller
 
         $offer = NewProposal::with([
             'user:id,first_name,last_name,experience_level,email,phone,image',
-            'generatorOfferDetails',
+            'generatorDetails',
             'scaffoldingOfferDetails',
         ])->findOrFail($offer_id);
 
@@ -480,7 +480,7 @@ class OffersManageController extends Controller
         return response()->json(
             [
                 'message' => 'Offer updated successfully',
-                'offer' => $newProposal->load(['generatorOfferDetails', 'scaffoldingOfferDetails']),
+                'offer' => $newProposal->load(['generatorDetails', 'scaffoldingOfferDetails']),
             ]
         );
     }
@@ -545,7 +545,7 @@ class OffersManageController extends Controller
         return response()->json([
             'rank' => $rank,
             'total_offers' => $sortedOffers->count(),
-            'offer' => $newProposal->load(['generatorOfferDetails', 'scaffoldingOfferDetails']),
+            'offer' => $newProposal->load(['generatorDetails', 'scaffoldingOfferDetails']),
         ]);
     }
 

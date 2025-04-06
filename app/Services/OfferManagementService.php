@@ -18,8 +18,9 @@ class OfferManagementService
         $title = "You've Got a New Offer!";
         $body = "Your request just got a response! Open now to review the offer and move forward.";
         $data = [
-            "offer" => $proposal,
-            "user" => $recipientUser,
+            "proposal_id" => $proposal->id,
+            "request_id" => $proposal->request_id,
+            "sender_id" => $proposal->user_id,
         ];
 
         return $this->sendNotification($userToken, $title, $body, $data);
@@ -60,6 +61,6 @@ class OfferManagementService
             ]);
         }
 
-        return $proposal->load(['generatorOfferDetails', 'scaffoldingOfferDetails']);
+        return $proposal->load(['generatorDetails', 'scaffoldingOfferDetails']);
     }
 }
