@@ -6,21 +6,25 @@ use DateTime;
 use App\Enums\MachineType;
 use App\Enums\OperationType;
 use Illuminate\Validation\Rule;
-use App\Services\FirebaseService;
 use App\Models\{NewProposal, User};
 use App\Http\Controllers\Controller;
 use Illuminate\Validation\Rules\Enum;
-use App\Notifications\FcmNotification;
+use App\Services\OfferManagementService;
 use Illuminate\Support\Facades\Validator;
 use Modules\Service\Entities\SubCategory;
-use App\Notifications\NewProposalReceived;
 use Illuminate\Http\{Request, JsonResponse};
-use Illuminate\Support\Facades\Notification;
 use App\Http\Requests\StoreNewProposalRequest;
 use App\Http\Requests\offers\UpdateOfferRequest;
 
 class OffersManageController extends Controller
 {
+    protected $offerService;
+
+    public function __construct(OfferManagementService $offerService)
+    {
+        $this->offerService = $offerService;
+    }
+
     // add offer
     public function addOffer(StoreNewProposalRequest $request, $jobType, $jobId): JsonResponse
     {
@@ -66,42 +70,21 @@ class OffersManageController extends Controller
             return response()->json($requestValidator->errors(), 422);
         }
 
+        $proposal = $this->offerService->createOffer($validatedData, $modelClass);
+
+        $proposal = $this->offerService->createOffer($validatedData, $modelClass);
+
         $currentSubscripiton = getCurrentUserSubsicription($user);
         if ($currentSubscripiton) {
             minusUserAvailableLimit($currentSubscripiton, OperationType::makeOffer);
         }
 
-        $proposal = NewProposal::create($validatedData);
-
         $recipientUser = User::find($requestEntry->user_id);
 
-        // if ($recipientUser) {
-        //     $notificationData = [
-        //         'title' => 'New Offer Received!',
-        //         'body' => 'Your request has received a new offer.',
-        //         'data' => [
-        //             'offer_id' => $proposal->id,
-        //             'request_id' => $requestEntry->requestable->id,
-        //             'request_name' => $requestEntry->requestable->name ?? null,
-        //             'job_type' => $jobType
-        //         ],
-        //     ];
+        // send notification via firebase
+        $this->offerService->pushNotification($recipientUser, $proposal);
 
-        //     Notification::send($recipientUser, new FcmNotification($notificationData));
-
-        //     // $recipientUser->notify();
-        // }
-
-        // if ($recipientUser && $recipientUser->firebase_device_token) {
-
-        //     $firebaseService = new FirebaseService();
-
-        //     $firebaseService->sendNotification(
-        //         $recipientUser->firebase_device_token,
-        //         'New Offer Received!',
-        //         'Your request has received a new offer.'
-        //     );
-        // }
+        // sendOfferNotificationJob::dispatch($recipientUser, $proposal->withoutRelations());
 
         return response()->json([
             'message' => 'Proposal created successfully.',
@@ -157,12 +140,8 @@ class OffersManageController extends Controller
                 'CategorySlug' => $jobType,
                 'offers_is_stoped' => $record->isStopped,
                 'offers_count' => $record->request ? $record->request->newProposals->count() : 0,
-                'image' => $this->getFullImageUrl($record->subCategory->image),
-                'user' => $record->user ? array_merge(
-                    $record->user->toArray(),
-                    ['image' => $record->user->image ? asset('assets/uploads/profile/' . $record->user->image)
-                        : asset('assets/uploads/profile/1735570464-6772b42011d2d.png')]
-                ) : null,
+                'image' => getFullImageUrl($record->subCategory->image),
+                'user' => $record->user,
             ];
         })->sortByDesc('offers_count')->values();
 
@@ -211,13 +190,14 @@ class OffersManageController extends Controller
 
         $sub_category = SubCategory::findOrFail($sub_category_id);
         $eqName = $sub_category->getTranslatedName($request->header('Accept-Language', 'en'));
-        $eqImage = $sub_category->image ? asset('storage/assets/uploads/sub-category/' . $sub_category->image) : null;
 
         $offers = NewProposal::query()
             ->with([
                 'user:id,first_name,last_name,image',
                 'request:id,requestable_id,requestable_type',
-                'request.requestable:id,size,work_site_location,hour,day,month'
+                'request.requestable:id,size,work_site_location,hour,day,month',
+                'generatorDetails',
+                'scaffoldingOfferDetails',
             ])->whereHas('request', function ($query) use ($categoryModel, $job_id) {
                 $query->where('requestable_type', $categoryModel)
                     ->whereHas('requestable', function ($query) use ($job_id) {
@@ -229,7 +209,7 @@ class OffersManageController extends Controller
 
         return response()->json([
             'name' => $eqName,
-            'image' => $eqImage,
+            'image' => getFullImageUrl($sub_category->image),
             'sub_category_id' => $sub_category_id,
             'category_slug' => $jobType,
             'offers' => $offers
@@ -265,25 +245,18 @@ class OffersManageController extends Controller
 
         $eqName = $sub_category->getTranslatedName($request->header('Accept-Language', 'en'));
 
-        // $eqImage = $sub_category->image ? asset('storage/assets/uploads/sub-category/' . $sub_category->image) : null;
-
-        $eqImage = $this->getFullImageUrl($sub_category->image);
-
+        $eqImage = getFullImageUrl($sub_category->image);
 
         $offer = NewProposal::query()
             ->with([
                 'user:id,first_name,last_name,image',
                 'request:id,requestable_id,requestable_type',
-                'request.requestable:id,size,work_site_location,hour,day,month'
+                'request.requestable:id,size,work_site_location,hour,day,month',
+                'generatorDetails',
+                'scaffoldingOfferDetails',
             ])
             ->where('id', $offer_id)
             ->first();
-
-        if ($offer && $offer->user) {
-            $offer->user->image = $offer->user->image
-                ? asset('assets/uploads/profile/' . $offer->user->image)
-                : asset('assets/uploads/profile/1735570464-6772b42011d2d.png');
-        }
 
         if ($offer && ($offer->isSeen == 0)) {
             $offer->update([
@@ -318,9 +291,11 @@ class OffersManageController extends Controller
             ], 422);
         }
 
-        $offer = NewProposal::with(['user:id,first_name,last_name,experience_level,email,phone,image'])->findOrFail($offer_id);
-
-        $imageUrl = $offer->user->image ? asset('storage/assets/uploads/profile/' . $offer->user->image) : null;
+        $offer = NewProposal::with([
+            'user:id,first_name,last_name,experience_level,email,phone,image',
+            'generatorDetails',
+            'scaffoldingOfferDetails',
+        ])->findOrFail($offer_id);
 
         $userData = $offer->user->only([
             'id',
@@ -328,9 +303,9 @@ class OffersManageController extends Controller
             'last_name',
             'experience_level',
             'email',
-            'phone'
+            'phone',
+            'image',
         ]);
-        $userData['image'] = $imageUrl;
 
         return response()->json([
             'user' => $userData,
@@ -383,7 +358,7 @@ class OffersManageController extends Controller
         if (!$equipment) return response()->json(['message' => 'there is no equipment']);
 
         $additionalImages = collect($equipment->additional_equipment_images ?? [])
-            ->map(fn($image) => asset('storage/assets/uploads/equipments/' . $image))
+            ->map(fn($image) => asset('storage/assets/uploads/sub-category-images/' . $image))
             ->all();
 
         return response()->json([
@@ -391,22 +366,22 @@ class OffersManageController extends Controller
             'data' => [
                 'name' => $equipment->subCategory?->getTranslatedName($locale),
                 'data_certificate_image' => $equipment->data_certificate_image
-                    ? asset('storage/assets/uploads/equipments/' . $equipment->data_certificate_image)
+                    ? asset('storage/assets/uploads/sub-category-images/' . $equipment->data_certificate_image)
                     : null,
                 'driver_license_front_image' => $equipment->driver_license_front_image
-                    ? asset('storage/assets/uploads/equipments/' . $equipment->driver_license_front_image)
+                    ? asset('storage/assets/uploads/sub-category-images/' . $equipment->driver_license_front_image)
                     : null,
                 'driver_license_back_image' => $equipment->driver_license_back_image
-                    ? asset('storage/assets/uploads/equipments/' . $equipment->driver_license_back_image)
+                    ? asset('storage/assets/uploads/sub-category-images/' . $equipment->driver_license_back_image)
                     : null,
                 'tractor_license_front_image' => $equipment->tractor_license_front_image
-                    ? asset('storage/assets/uploads/equipments/' . $equipment->tractor_license_front_image)
+                    ? asset('storage/assets/uploads/sub-category-images/' . $equipment->tractor_license_front_image)
                     : null,
                 'tractor_license_back_image' => $equipment->tractor_license_back_image
-                    ? asset('storage/assets/uploads/equipments/' . $equipment->tractor_license_back_image)
+                    ? asset('storage/assets/uploads/sub-category-images/' . $equipment->tractor_license_back_image)
                     : null,
                 'flatbed_license_front_image' => $equipment->flatbed_license_front_image
-                    ? asset('storage/assets/uploads/equipments/' . $equipment->flatbed_license_front_image)
+                    ? asset('storage/assets/uploads/sub-category-images/' . $equipment->flatbed_license_front_image)
                     : null,
                 'additional_equipment_images' => $additionalImages,
             ]
@@ -448,8 +423,19 @@ class OffersManageController extends Controller
 
         $equipmentModel = getEquipmentModelFromType($jobType);
 
-        $equipment = $equipmentModel::where('user_id', $user_id)
-            ->where('sub_category_id', $proposal->request->requestable->subCategory->id)->first();
+        $query = $equipmentModel::where('user_id', $user_id)
+            ->where('sub_category_id', $proposal->request->requestable->subCategory->id);
+
+        $needsLocations = in_array($equipmentModel, [
+            \App\Models\GeneratorRental::class,
+            \App\Models\ScaffoldingAndMetalFormworkRental::class
+        ]);
+
+        if ($needsLocations) {
+            $query->with('locations');
+        }
+
+        $equipment = $query->first();
 
         if (!$equipment) return response()->json(['message' => 'there is no equipment']);
 
@@ -497,6 +483,7 @@ class OffersManageController extends Controller
                 404
             );
         }
+
         $newProposal->update($request->validated());
 
         $user = auth('sanctum')->user();
@@ -508,7 +495,7 @@ class OffersManageController extends Controller
         return response()->json(
             [
                 'message' => 'Offer updated successfully',
-                'offer' => $newProposal
+                'offer' => $newProposal->load(['generatorDetails', 'scaffoldingOfferDetails']),
             ]
         );
     }
@@ -573,16 +560,8 @@ class OffersManageController extends Controller
         return response()->json([
             'rank' => $rank,
             'total_offers' => $sortedOffers->count(),
+            'offer' => $newProposal->load(['generatorDetails', 'scaffoldingOfferDetails']),
         ]);
-    }
-
-    private function getFullImageUrl($imageId)
-    {
-        if (!$imageId) {
-            return null;
-        }
-        $imageDetails = get_attachment_image_by_id($imageId);
-        return $imageDetails['img_url'] ?? null;
     }
 
     private function getRemainingTimeForOfferAvailability($end_at)

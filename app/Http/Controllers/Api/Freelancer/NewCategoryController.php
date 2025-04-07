@@ -3,16 +3,19 @@
 namespace App\Http\Controllers\Api\Freelancer;
 
 use App\Enums\MachineType;
-use App\Http\Controllers\Controller;
-use App\Http\Requests\CategoryRequest\CraneRentRequest;
-use App\Http\Requests\CategoryRequest\HeavyEquipmentRequest;
-use App\Http\Requests\CategoryRequest\VehicleRentRequest;
-use App\Http\Resources\NewCategoryResource;
-use App\Traits\ImageUploadTrait;
 use Illuminate\Http\Request;
+use App\Traits\ImageUploadTrait;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\File;
+use App\Http\Controllers\Controller;
 use Modules\Service\Entities\Category;
+use App\Models\generatorRentalLocation;
+use App\Models\ScaffoldingRentalLocation;
+use App\Http\Resources\NewCategoryResource;
+use App\Http\Requests\CategoryRequest\CraneRentRequest;
+use App\Http\Requests\CategoryRequest\GeneratorRequest;
+use App\Http\Requests\CategoryRequest\ScaffoldingRequest;
+use App\Http\Requests\CategoryRequest\VehicleRentRequest;
+use App\Http\Requests\CategoryRequest\HeavyEquipmentRequest;
 
 class NewCategoryController extends Controller
 {
@@ -29,7 +32,7 @@ class NewCategoryController extends Controller
                 'additional_equipment_images',
                 'load_data_documents',
                 'insurance_documents',
-                'operator_qualification_documents'
+                'operator_qualification_documents',
             ];
 
             // Decode JSON fields dynamically before validation
@@ -40,6 +43,9 @@ class NewCategoryController extends Controller
                 MachineType::heavyEquipment->value => HeavyEquipmentRequest::class,
                 MachineType::vehicleRental->value => VehicleRentRequest::class,
                 MachineType::craneRental->value => CraneRentRequest::class,
+                MachineType::generatorRental->value => GeneratorRequest::class,
+                MachineType::scaffoldingToolsRental->value => ScaffoldingRequest::class,
+                // add more requests
             ];
 
             if (!isset($requests[$subCategory])) {
@@ -64,10 +70,55 @@ class NewCategoryController extends Controller
                 MachineType::heavyEquipment->value => \App\Models\HeavyEquipment::class,
                 MachineType::vehicleRental->value => \App\Models\VehicleRental::class,
                 MachineType::craneRental->value => \App\Models\CraneRental::class,
+                MachineType::generatorRental->value => \App\Models\GeneratorRental::class,
+                MachineType::scaffoldingToolsRental->value => \App\Models\ScaffoldingAndMetalFormworkRental::class,
+                // and more
             ];
 
             $model = $models[$subCategory];
-            $model::create($validatedData);
+            $result = $model::create($validatedData);
+
+            if ($model ==  \App\Models\GeneratorRental::class) {
+                $latitudes = $validatedData['lat'] ?? [];
+                $longitudes = $validatedData['long'] ?? [];
+                $locations = $validatedData['current_generator_location'] ?? [];
+
+                foreach ($latitudes as $index => $lat) {
+                    $long = $longitudes[$index] ?? null;
+                    $location = $locations[$index] ?? null;
+
+                    if (is_null($lat) || is_null($long) || is_null($location)) {
+                        continue;
+                    }
+
+                    generatorRentalLocation::create([
+                        'lat' => $lat,
+                        'long' => $long,
+                        'current_generator_location' => $location,
+                        'generator_rental_id' => $result->id,
+                    ]);
+                }
+            } elseif ($model ==  \App\Models\ScaffoldingAndMetalFormworkRental::class) {
+                $latitudes = $validatedData['lat'] ?? [];
+                $longitudes = $validatedData['long'] ?? [];
+                $locations = $validatedData['current_equipment_location'] ?? [];
+
+                foreach ($latitudes as $index => $lat) {
+                    $long = $longitudes[$index] ?? null;
+                    $location = $locations[$index] ?? null;
+
+                    if (is_null($lat) || is_null($long) || is_null($location)) {
+                        continue;
+                    }
+
+                    ScaffoldingRentalLocation::create([
+                        'lat' => $lat,
+                        'long' => $long,
+                        'current_equipment_location' => $location,
+                        'generator_rental_id' => $result->id,
+                    ]);
+                }
+            }
 
             // Commit the transaction
             DB::commit();
@@ -120,7 +171,6 @@ class NewCategoryController extends Controller
             }
         }
     }
-
 
     /**
      * Dynamically encode array fields to JSON before saving.

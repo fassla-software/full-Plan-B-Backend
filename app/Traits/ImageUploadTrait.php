@@ -44,31 +44,44 @@ trait ImageUploadTrait
     {
         $imageFields = [
             MachineType::heavyEquipment->value => [
-                'data_certificate_image', 'driver_license_front_image',
-                'driver_license_back_image', 'additional_equipment_images',
-                'tractor_license_front_image', 'tractor_license_back_image',
-                'flatbed_license_front_image', 'flatbed_license_back_image',
+                'data_certificate_image',
+                'driver_license_front_image',
+                'driver_license_back_image',
+                'additional_equipment_images',
+                'tractor_license_front_image',
+                'tractor_license_back_image',
+                'flatbed_license_front_image',
+                'flatbed_license_back_image',
             ],
             MachineType::vehicleRental->value => [
-                'data_certificate_image', 'driver_license_front_image',
-                'driver_license_back_image', 'additional_vehicle_images',
-                'vehicle_license_front_image', 'vehicle_license_back_image',
+                'data_certificate_image',
+                'driver_license_front_image',
+                'driver_license_back_image',
+                'additional_vehicle_images',
+                'vehicle_license_front_image',
+                'vehicle_license_back_image',
             ],
-
             MachineType::craneRental->value => [
-                'additional_equipment_images', 'vehicle_license_front',
-                'vehicle_license_back', 'driver_license_front',
-                'driver_license_back', 'load_data_documents',
-                'insurance_documents', 'operator_qualification_documents',
+                'additional_equipment_images',
+                'vehicle_license_front',
+                'vehicle_license_back',
+                'driver_license_front',
+                'driver_license_back',
+                'load_data_documents',
+                'insurance_documents',
+                'operator_qualification_documents',
             ],
-
             MachineType::craneRental->value => [
                 'load_image',
+            ],
+            MachineType::scaffoldingToolsRental->value => [
+                'equipment_images',
+            ],
+            MachineType::generatorRental->value => [
+                'generator_image',
             ],
         ];
 
         return $imageFields[$subCategory] ?? [];
     }
 }
-
-

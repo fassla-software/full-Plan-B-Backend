@@ -10,11 +10,11 @@ class NotificationController extends Controller
 {
     public function unread_notification()
     {
-        $notifications = FreelancerNotification::where('freelancer_id',auth('sanctum')->user()->id)
-            ->where('is_read','unread')
+        $notifications = FreelancerNotification::where('freelancer_id', auth('sanctum')->user()->id)
+            ->where('is_read', 'unread')
             ->paginate(10)
             ->withQueryString();
-        if($notifications->count() >= 1){
+        if ($notifications->count() >= 1) {
             return response()->json([
                 'notifications' => $notifications,
             ]);
@@ -24,8 +24,8 @@ class NotificationController extends Controller
 
     public function unread_notification_count()
     {
-        $notifications = FreelancerNotification::where('freelancer_id',auth('sanctum')->user()->id)
-            ->where('is_read','unread')
+        $notifications = FreelancerNotification::where('freelancer_id', auth('sanctum')->user()->id)
+            ->where('is_read', 'unread')
             ->count();
 
         return response()->json([
@@ -35,8 +35,8 @@ class NotificationController extends Controller
 
     public function read_notification()
     {
-        FreelancerNotification::where('freelancer_id',auth('sanctum')->user()->id)
-            ->where('is_read','unread')
+        FreelancerNotification::where('freelancer_id', auth('sanctum')->user()->id)
+            ->where('is_read', 'unread')
             ->update(['is_read' => 'read']);
         return response()->json(['msg' => __('Read all notifications.')]);
     }

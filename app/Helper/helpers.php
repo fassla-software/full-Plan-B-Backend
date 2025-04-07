@@ -25,6 +25,7 @@ use Kreait\Firebase\Messaging\CloudMessage;
 use Modules\Subscription\Entities\UserSubscription;
 use Carbon\Carbon;
 use App\Models\OperationCost;
+use App\Traits\PushNotificationTrait;
 
 function minusUserAvailableLimit($UserSubscription, $operationType)
 {
@@ -62,6 +63,8 @@ function getModelClassFromType(?string $type = null)
         MachineType::heavyEquipment->value => \App\Models\HeavyEquipmentJob::class,
         MachineType::vehicleRental->value => \App\Models\VehicleRentalJob::class,
         MachineType::craneRental->value => \App\Models\CraneRentalJob::class,
+        MachineType::generatorRental->value => \App\Models\GeneratorRentalJop::class,
+        MachineType::scaffoldingToolsRental->value => \App\Models\ScaffoldingAndMetalFormworkRentalJob::class,
         // Add other sub-category models here
     ];
 
@@ -76,6 +79,8 @@ function getEquipmentModelFromType($type)
         MachineType::heavyEquipment->value => \App\Models\HeavyEquipment::class,
         MachineType::vehicleRental->value => \App\Models\VehicleRental::class,
         MachineType::craneRental->value => \App\Models\CraneRental::class,
+        MachineType::generatorRental->value => \App\Models\GeneratorRental::class,
+        MachineType::scaffoldingToolsRental->value => \App\Models\ScaffoldingAndMetalFormworkRental::class,
         // Add other sub-category models here
     ];
 
@@ -94,6 +99,15 @@ function paginateCollection($collection, $perPage, $currentPage)
         'total' => $total,
         'last_page' => ceil($total / $perPage),
     ];
+}
+
+function getFullImageUrl($imageId)
+{
+    if (!$imageId) {
+        return null;
+    }
+    $imageDetails = get_attachment_image_by_id($imageId);
+    return $imageDetails['img_url'] ?? null;
 }
 
 function checkSubsicriptionAvailability(int $neededCommas, ?int $user = null): bool

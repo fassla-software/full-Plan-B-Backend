@@ -7,7 +7,7 @@ return [
 
     'projects' => [
         'app' => [
-            'credentials' => env('FCM_CREDENTIALS_PATH', env('GOOGLE_APPLICATION_CREDENTIALS')),
+            'credentials' => env('FIREBASE_CREDENTIALS', env('GOOGLE_APPLICATION_CREDENTIALS')),
             'auth' => [
                 'tenant_id' => env('FIREBASE_AUTH_TENANT_ID'),
             ],

@@ -16,19 +16,19 @@ class ImageUploadController extends Controller
             'images.*' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
-        // Storage folder (Don't include 'public/' prefix)
-        $uploadFolder = 'assets/uploads/sub-category-images/';
+        // Define the absolute path for uploads
+        $uploadFolder = 'sub-category-images';
         $imageNames = [];
 
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $image) {
                 $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+                
+                // Store directly in the public assets directory
+                $image->move(public_path('assets/uploads/sub-category-images'), $imageName);
 
-                // Store image in storage/app/public (without 'public/' in the path)
-                $image->storeAs('public/' . $uploadFolder, $imageName, 'public');
-
-                // Generate URL for accessing the image
-                $imageNames[] = asset('storage/' . $uploadFolder . $imageName);
+                // Generate URL using the direct public path
+                $imageNames[] = url('assets/uploads/sub-category-images/' . $imageName);
             }
         }
 

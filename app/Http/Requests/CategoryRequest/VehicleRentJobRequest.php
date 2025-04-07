@@ -22,7 +22,7 @@ class VehicleRentJobRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'sub_category_id'=> 'nullable|exists:sub_categories,id',
+            'sub_category_id' => 'nullable|exists:sub_categories,id',
             'name' => 'nullable|string',
             'category_id' => 'nullable|exists:categories,id',
             'required_load_capacity' => 'nullable|integer',
@@ -38,6 +38,8 @@ class VehicleRentJobRequest extends FormRequest
             'vehicle_type' => 'nullable|string',
             'lat' => 'nullable',
             'long' => 'nullable',
+            'isStopped' => 'nullable|in:0,1',
+            'isSeen' => 'nullable|in:0,1',
         ];
     }
 }

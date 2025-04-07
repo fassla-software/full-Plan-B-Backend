@@ -51,47 +51,46 @@ class UserManageController extends Controller
     //add user
     public function add_user(Request $request)
     {
-        if ($request->isMethod('post')) {
-            $request->validate([
-                'first_name' => 'required|max:191',
-                'last_name' => 'required|max:191',
-                'email' => 'required|email|unique:users|max:191',
-                'username' => 'required|unique:users|max:191',
-                'phone' => 'required|unique:users|max:191',
-                'password' => 'required|min:6|max:191|confirmed',
-                'user_type' => 'required',
-            ]);
+        if ($request->isMethod('get')) return view('backend.pages.user.new-user.add-new-user');
 
-            $email_verify_tokn = sprintf("%d", random_int(123456, 999999));
-            $user = User::create([
-                'first_name' => $request->first_name,
-                'last_name' => $request->last_name,
-                'email' => $request->email,
-                'username' => $request->username,
-                'phone' => $request->phone,
-                'password' => Hash::make($request->password),
-                'user_type' => $request->user_type,
-                'terms_conditions' => 1,
-                'email_verify_token' => $email_verify_tokn,
-                'is_email_verified' => 1,
-            ]);
+        $request->validate([
+            'first_name' => 'required|max:191',
+            'last_name' => 'required|max:191',
+            'email' => 'required|email|unique:users|max:191',
+            'username' => 'required|unique:users|max:191',
+            'phone' => 'required|unique:users|max:191',
+            'password' => 'required|min:6|max:191|confirmed',
+            'user_type' => 'required',
+        ]);
 
-            Wallet::create([
-                'user_id' => $user->id,
-                'balance' => 0,
-                'remaining_balance' => 0,
-                'withdraw_amount' => 0,
-                'status' => 1
-            ]);
+        $email_verify_tokn = sprintf("%d", random_int(123456, 999999));
+        $user = User::create([
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
+            'email' => $request->email,
+            'username' => $request->username,
+            'phone' => $request->phone,
+            'password' => Hash::make($request->password),
+            'user_type' => $request->user_type,
+            'terms_conditions' => 1,
+            'email_verify_token' => $email_verify_tokn,
+            'is_email_verified' => 1,
+        ]);
 
-            //security manage
-            if (moduleExists('SecurityManage')) {
-                LogActivity::addToLog('User added by admin', 'Admin');
-            }
+        Wallet::create([
+            'user_id' => $user->id,
+            'balance' => 0,
+            'remaining_balance' => 0,
+            'withdraw_amount' => 0,
+            'status' => 1
+        ]);
 
-            return back()->with(toastr_success(__('User Successfully Created')));
+        //security manage
+        if (moduleExists('SecurityManage')) {
+            LogActivity::addToLog('User added by admin', 'Admin');
         }
-        return view('backend.pages.user.new-user.add-new-user');
+
+        return back()->with(toastr_success(__('User Successfully Created')));
     }
 
     public function updateDeviceToken(Request $request): JsonResponse

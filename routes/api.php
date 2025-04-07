@@ -54,6 +54,17 @@ Route::group(['prefix' => 'v1', 'middleware' => 'setlang'], function () {
             Route::post('email-verify', 'email_verify');
         });
 
+        // notifications
+        Route::controller(\App\Http\Controllers\Api\Freelancer\NotificationManagementController::class)->group(function () {
+            Route::get('unread-notifications-count', 'unread_notification_count');
+            Route::get('unread-notifications', 'unread_notification');
+            Route::get('read-notifications', 'read_notification');
+            Route::post('read-notification/{id}', 'make_read_notification');
+            Route::post('unread-notification/{id}', 'make_unread_notification');
+            Route::post('read-all-notifications', 'read_all_notification');
+            Route::post('unread-all-notifications', 'unread_all_notification');
+        });
+
         // forget password
         Route::controller(\App\Http\Controllers\Api\Freelancer\ForgetPasswordController::class)->group(function () {
             Route::post('forget-password', 'forget_password');
@@ -130,6 +141,9 @@ Route::group(['prefix' => 'v1', 'middleware' => 'setlang'], function () {
         Route::controller(\App\Http\Controllers\Api\Freelancer\SocialLoginController::class)->group(function () {
             Route::post('social/login', 'social_login');
         });
+
+        //commercial listings
+        Route::post('commercial-listings', [App\Http\Controllers\Api\Freelancer\CommercialListingController::class, 'store']);
 
         //authenticated api
         Route::group(['middleware' => 'auth:sanctum'], function () {
@@ -241,6 +255,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'setlang'], function () {
                 Route::get('chat/credentials', 'credentials');
                 Route::get('chat/unseen-message/count', 'unseen_message_count');
             });
+            Route::post('commercial-listings/upload-image', [App\Http\Controllers\Api\Freelancer\CommercialListingController::class, 'uploadImage']);
         });
     });
     //freelancer route end

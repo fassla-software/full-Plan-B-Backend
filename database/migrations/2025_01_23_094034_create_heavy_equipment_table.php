@@ -29,8 +29,9 @@ return new class extends Migration
             $table->string('tractor_license_back_image')->nullable(); // صورة رخصة سائق المعدة من 
             $table->string('flatbed_license_front_image')->nullable(); // صورة رخصة سائق المعدة من 
             $table->string('flatbed_license_back_image')->nullable(); // صورة رخصة سائق المعدة من 
-            
-            
+            $table->decimal('lat', 10, 7)->nullable();
+            $table->decimal('long', 10, 7)->nullable();
+
             $table->json('additional_equipment_images')->nullable(); // اضف صور المعدة من زوايا مختلفة
             $table->text('special_rental_conditions')->nullable(); // اضف الشروط الخاصة بتأجير هذه المعدة
             $table->string('blade_width')->nullable(); // عرض الشفرة(الباكيت)

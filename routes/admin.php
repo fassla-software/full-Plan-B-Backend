@@ -33,6 +33,7 @@ use App\Http\Controllers\Backend\AdminNotificationController;
 use App\Http\Controllers\Backend\AdditionalSettingsController;
 use App\Http\Controllers\Backend\AdminPasswordResetController;
 use Modules\RolePermission\Http\Controllers\AdminManageController;
+use App\Http\Controllers\Admin\CommercialListingController;
 
 Route::group(['as' => 'admin.', 'prefix' => 'admin'], function () {
 
@@ -434,5 +435,9 @@ Route::group(['as' => 'admin.', 'prefix' => 'admin'], function () {
             Route::post('languages/regenerate-source-text', 'regenerate_source_text')->name('languages.regenerate.source.texts');
             Route::get('languages/default/{id}', 'make_default')->name('languages.make.default');
         });
+
+        // commercial listings
+        Route::get('commercial-listings', [CommercialListingController::class, 'index'])->name('commercial-listings.index');
+        Route::patch('commercial-listings/{listing}/status', [CommercialListingController::class, 'updateStatus'])->name('commercial-listings.update-status');
     });
 });

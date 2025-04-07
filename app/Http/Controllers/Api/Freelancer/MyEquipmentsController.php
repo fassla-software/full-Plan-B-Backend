@@ -3,13 +3,17 @@
 namespace App\Http\Controllers\Api\Freelancer;
 
 use App\Enums\MachineType;
-use Illuminate\Http\{Request, JsonResponse, Response};
-use App\Http\Requests\equipments\{UpdateEquipmentRequest, StoreEquipmentRequest};
 use App\Http\Controllers\Controller;
 use Illuminate\Validation\Rules\Enum;
-
-use Illuminate\Support\Facades\{Validator};
 use Modules\Service\Entities\SubCategory;
+use Illuminate\Support\Facades\{Validator};
+use Illuminate\Http\{Request, JsonResponse, Response};
+use App\Http\Requests\CategoryRequest\CraneRentRequest;
+use App\Http\Requests\CategoryRequest\GeneratorRequest;
+use App\Http\Requests\CategoryRequest\ScaffoldingRequest;
+use App\Http\Requests\CategoryRequest\VehicleRentRequest;
+use App\Http\Requests\equipments\{StoreEquipmentRequest};
+use App\Http\Requests\CategoryRequest\HeavyEquipmentRequest;
 
 class MyEquipmentsController extends Controller
 {
@@ -44,8 +48,20 @@ class MyEquipmentsController extends Controller
 
         $sub_category = SubCategory::findOrFail($sub_category_id);
 
-        $myEquipments = $equipment::query()
-            ->with(['subCategory', 'user:id,first_name,last_name'])
+        $equipmentQuery = $equipment::query()
+            ->with([
+                'subCategory',
+                'user:id,first_name,last_name',
+            ]);
+
+        if (
+            $equipment === \App\Models\GeneratorRental::class ||
+            $equipment === \App\Models\ScaffoldingAndMetalFormworkRental::class
+        ) {
+            $equipmentQuery->with('locations');
+        }
+
+        $myEquipments = $equipmentQuery
             ->where('sub_category_id', $sub_category_id)
             ->where('user_id', $user->id)
             ->paginate(12)
@@ -157,10 +173,20 @@ class MyEquipmentsController extends Controller
 
         $equipmentModel = getEquipmentModelFromType($categorySlug);
 
-        $equipment = $equipmentModel::find($id);
+        $equipmentQuery = $equipmentModel::query();
+
+        if (
+            $equipmentModel === \App\Models\GeneratorRental::class ||
+            $equipmentModel === \App\Models\ScaffoldingAndMetalFormworkRental::class
+        ) {
+            $equipmentQuery->with('locations');
+        }
+
+        $equipment = $equipmentQuery->find($id);
+
         if (!$equipment) return response()->json(['message' => 'Equipment not found'], Response::HTTP_NOT_FOUND);
 
-        $decodedImages = json_decode($equipment->additional_equipment_images);
+        $decodedImages = $equipment->additional_equipment_images ? json_decode($equipment->additional_equipment_images) : null;
 
         return response()->json([
             'equipment' => array_merge($equipment->toArray(), [
@@ -181,24 +207,25 @@ class MyEquipmentsController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateEquipmentRequest $request, string $categorySlug, string $id): JsonResponse
+    public function update(Request $request, string $categorySlug, string $id): JsonResponse
     {
-        $validator = Validator::make([
-            'categorySlug' => $categorySlug,
-        ], [
-            'categorySlug' => ['required', new Enum(MachineType::class)],
-        ]);
+        $requests = [
+            MachineType::heavyEquipment->value => HeavyEquipmentRequest::class,
+            MachineType::vehicleRental->value => VehicleRentRequest::class,
+            MachineType::craneRental->value => CraneRentRequest::class,
+            MachineType::generatorRental->value => GeneratorRequest::class,
+            MachineType::scaffoldingToolsRental->value => ScaffoldingRequest::class,
+            // add more requests
+        ];
 
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Invalid request parameters',
-                'errors' => $validator->errors()
-            ], 422);
+        if (!isset($requests[$categorySlug])) {
+            return response()->json(['error' => 'Sub-category not found'], 404);
         }
+
+        $validatedData = app($requests[$categorySlug])->validated();
 
         $equipmentModel = getEquipmentModelFromType($categorySlug);
         $equipment = $equipmentModel::findOrFail($id);
-        $validatedData = $request->validated();
 
         $equipment->update($validatedData);
 

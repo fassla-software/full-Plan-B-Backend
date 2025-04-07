@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::table('heavy_equipment_jobs', function (Blueprint $table) {
             $table->decimal('lat', 10, 7)->nullable()->after('category_id');
             $table->decimal('long', 10, 7)->nullable()->after('lat');
-
         });
     }
 
