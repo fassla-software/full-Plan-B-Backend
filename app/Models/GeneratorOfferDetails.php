@@ -27,7 +27,7 @@ class GeneratorOfferDetails extends Model
     {
         return Attribute::make(
             get: fn($value) => collect(json_decode($value ?: '[]'))
-                ->map(fn($image) => asset('assets/uploads/generator-offer-details/' . $image))
+                ->map(fn($image) => asset('storage/assets/uploads/sub-category-images/' . $image))
                 ->toArray(),
 
             set: fn($value) => json_encode($value)

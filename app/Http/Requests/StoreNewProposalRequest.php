@@ -34,6 +34,10 @@ class StoreNewProposalRequest extends FormRequest
             'max_number_of_continues_operating_houres' => 'nullable|string',
             'number_of_daily_operating_houres' => 'nullable|string',
             'generator_images' => 'nullable',
+
+            // scaffolding attrs
+            'time_required_for_on_site_installation' => 'nullable|string',
+            'scaffolding_images' => 'nullable|string',
         ];
     }
 }

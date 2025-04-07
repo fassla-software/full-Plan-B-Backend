@@ -45,6 +45,8 @@ class GeneratorRentalJop extends Model
         'additional_requirements',
         'isStopped',
         'isSeen',
+        'rental_status',
+        'no_harm_in_good_health',
     ];
 
     public function request()

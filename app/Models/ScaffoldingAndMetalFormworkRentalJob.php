@@ -6,6 +6,7 @@ use App\Models\User;
 use Modules\Service\Entities\Category;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Service\Entities\SubCategory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class ScaffoldingAndMetalFormworkRentalJob extends Model
@@ -43,6 +44,15 @@ class ScaffoldingAndMetalFormworkRentalJob extends Model
         'scaffolding_base_mounting_floor_pictures',
         'work_wall_pictures',
         'work_site_location',
+
+        'rental_period',
+        'roof_area',
+        'concrete_thickness',
+        'floor_number',
+        'roof_height',
+        'engineering_drawings_images',
+        'concrete_thickness_varies',
+
         'search_radius',
         'max_arrival_date',
         'max_offer_deadline',
@@ -50,6 +60,21 @@ class ScaffoldingAndMetalFormworkRentalJob extends Model
         'isStopped',
         'isSeen',
     ];
+
+    protected $casts = [
+        'engineering_drawings_images' => 'array',
+    ];
+
+    protected function engineeringDrawingsImages(): Attribute
+    {
+        return Attribute::make(
+            get: fn($value) => collect(json_decode($value ?: '[]'))
+                ->map(fn($image) => asset('assets/uploads/requests-images/' . $image))
+                ->toArray(),
+
+            set: fn($value) => json_encode($value)
+        );
+    }
 
     public function request()
     {
