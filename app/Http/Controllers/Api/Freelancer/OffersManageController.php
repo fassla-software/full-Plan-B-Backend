@@ -9,11 +9,9 @@ use Illuminate\Validation\Rule;
 use App\Models\{NewProposal, User};
 use App\Http\Controllers\Controller;
 use Illuminate\Validation\Rules\Enum;
-use App\Jobs\sendOfferNotificationJob;
 use App\Services\OfferManagementService;
 use Illuminate\Support\Facades\Validator;
 use Modules\Service\Entities\SubCategory;
-use App\Notifications\NewProposalReceived;
 use Illuminate\Http\{Request, JsonResponse};
 use App\Http\Requests\StoreNewProposalRequest;
 use App\Http\Requests\offers\UpdateOfferRequest;
@@ -358,7 +356,7 @@ class OffersManageController extends Controller
         if (!$equipment) return response()->json(['message' => 'there is no equipment']);
 
         $additionalImages = collect($equipment->additional_equipment_images ?? [])
-            ->map(fn($image) => asset('storage/assets/uploads/equipments/' . $image))
+            ->map(fn($image) => asset('storage/assets/uploads/sub-category-images/' . $image))
             ->all();
 
         return response()->json([
@@ -366,22 +364,22 @@ class OffersManageController extends Controller
             'data' => [
                 'name' => $equipment->subCategory?->getTranslatedName($locale),
                 'data_certificate_image' => $equipment->data_certificate_image
-                    ? asset('storage/assets/uploads/equipments/' . $equipment->data_certificate_image)
+                    ? asset('storage/assets/uploads/sub-category-images/' . $equipment->data_certificate_image)
                     : null,
                 'driver_license_front_image' => $equipment->driver_license_front_image
-                    ? asset('storage/assets/uploads/equipments/' . $equipment->driver_license_front_image)
+                    ? asset('storage/assets/uploads/sub-category-images/' . $equipment->driver_license_front_image)
                     : null,
                 'driver_license_back_image' => $equipment->driver_license_back_image
-                    ? asset('storage/assets/uploads/equipments/' . $equipment->driver_license_back_image)
+                    ? asset('storage/assets/uploads/sub-category-images/' . $equipment->driver_license_back_image)
                     : null,
                 'tractor_license_front_image' => $equipment->tractor_license_front_image
-                    ? asset('storage/assets/uploads/equipments/' . $equipment->tractor_license_front_image)
+                    ? asset('storage/assets/uploads/sub-category-images/' . $equipment->tractor_license_front_image)
                     : null,
                 'tractor_license_back_image' => $equipment->tractor_license_back_image
-                    ? asset('storage/assets/uploads/equipments/' . $equipment->tractor_license_back_image)
+                    ? asset('storage/assets/uploads/sub-category-images/' . $equipment->tractor_license_back_image)
                     : null,
                 'flatbed_license_front_image' => $equipment->flatbed_license_front_image
-                    ? asset('storage/assets/uploads/equipments/' . $equipment->flatbed_license_front_image)
+                    ? asset('storage/assets/uploads/sub-category-images/' . $equipment->flatbed_license_front_image)
                     : null,
                 'additional_equipment_images' => $additionalImages,
             ]
@@ -423,8 +421,19 @@ class OffersManageController extends Controller
 
         $equipmentModel = getEquipmentModelFromType($jobType);
 
-        $equipment = $equipmentModel::where('user_id', $user_id)
-            ->where('sub_category_id', $proposal->request->requestable->subCategory->id)->first();
+        $query = $equipmentModel::where('user_id', $user_id)
+            ->where('sub_category_id', $proposal->request->requestable->subCategory->id);
+
+        $needsLocations = in_array($equipmentModel, [
+            \App\Models\GeneratorRental::class,
+            \App\Models\ScaffoldingAndMetalFormworkRental::class
+        ]);
+
+        if ($needsLocations) {
+            $query->with('locations');
+        }
+
+        $equipment = $query->first();
 
         if (!$equipment) return response()->json(['message' => 'there is no equipment']);
 
@@ -472,6 +481,7 @@ class OffersManageController extends Controller
                 404
             );
         }
+
         $newProposal->update($request->validated());
 
         $user = auth('sanctum')->user();

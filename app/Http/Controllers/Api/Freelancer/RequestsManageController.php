@@ -119,29 +119,59 @@ class RequestsManageController extends Controller
         $eqImage = $this->getFullImageUrl($subCategory->image);
         $jobModel = getModelClassFromType($jobType);
 
-        $userEquipments = getEquipmentModelFromType($jobType)::select(['id', 'lat', 'long'])
-            ->where('user_id', $user->id)
-            ->where('sub_category_id', $subCategory->id)
-            ->whereNotNull('lat')
-            ->whereNotNull('long')
-            ->get();
+        $equipmentModel = getEquipmentModelFromType($jobType);
 
-        $distanceConditions = $userEquipments->map(function ($equipment) {
-            return DB::raw('
-            (6371 * acos(cos(radians(' . $equipment->lat . ')) * cos(radians(lat)) * 
-            cos(radians(`long`) - radians(' . $equipment->long . ')) + sin(radians(' . $equipment->lat . ')) * 
-            sin(radians(lat)))) <= search_radius
-        ');
-        })->toArray();
+        $usesLocationsRelation = in_array($equipmentModel, [
+            \App\Models\GeneratorRental::class,
+            \App\Models\ScaffoldingAndMetalFormworkRental::class,
+        ]);
+
+        if ($usesLocationsRelation) {
+            $userEquipments = $equipmentModel::with('locations')
+                ->where('user_id', $user->id)
+                ->where('sub_category_id', $subCategory->id)
+                ->get();
+
+            $distanceConditions = [];
+
+            foreach ($userEquipments as $equipment) {
+                foreach ($equipment->locations as $location) {
+                    if ($location->lat && $location->long) {
+                        $distanceConditions[] = DB::raw('
+                            (6371 * acos(cos(radians(' . $location->lat . ')) * cos(radians(lat)) * 
+                            cos(radians(`long`) - radians(' . $location->long . ')) + sin(radians(' . $location->lat . ')) * 
+                            sin(radians(lat)))) <= search_radius
+                        ');
+                    }
+                }
+            }
+        } else {
+            $userEquipments = $equipmentModel::select(['id', 'lat', 'long'])
+                ->where('user_id', $user->id)
+                ->where('sub_category_id', $subCategory->id)
+                ->whereNotNull('lat')
+                ->whereNotNull('long')
+                ->get();
+
+            $distanceConditions = $userEquipments->map(function ($equipment) {
+                return DB::raw('
+                    (6371 * acos(cos(radians(' . $equipment->lat . ')) * cos(radians(lat)) * 
+                    cos(radians(`long`) - radians(' . $equipment->long . ')) + sin(radians(' . $equipment->lat . ')) * 
+                    sin(radians(lat)))) <= search_radius
+                ');
+            })->toArray();
+        }
 
         $records = $jobModel::with(['user:id,first_name,last_name'])
             ->where('sub_category_id', $subCategory->id)
             ->where('user_id', '<>', $user->id)
             ->whereDate('max_offer_deadline', '>=', Carbon::today())
-            ->where(function ($query) use ($distanceConditions) {
-                foreach ($distanceConditions as $condition) {
-                    $query->orWhereRaw($condition);
-                }
+            ->when(!empty($distanceConditions), function ($query) use ($distanceConditions) {
+                $query->where(function ($q) use ($distanceConditions) {
+                    foreach ($distanceConditions as $condition) {
+                        $q->orWhereRaw($condition);
+                    }
+                });
             })
             ->paginate(12);
 
@@ -169,29 +199,59 @@ class RequestsManageController extends Controller
         $locale = $request->header('Accept-Language', 'en');
         $categoryModel = getModelClassFromType($jobType);
 
-        $userEquipments = getEquipmentModelFromType($jobType)::select(['id', 'lat', 'long'])
-            ->where('user_id', $user->id)
-            ->where('sub_category_id', $subCategory->id)
-            ->whereNotNull('lat')
-            ->whereNotNull('long')
-            ->get();
+        $equipmentModel = getEquipmentModelFromType($jobType);
+        $usesLocationsRelation = in_array($equipmentModel, [
+            \App\Models\GeneratorRental::class,
+            \App\Models\ScaffoldingAndMetalFormworkRental::class,
+        ]);
 
-        $distanceConditions = $userEquipments->map(function ($equipment) {
-            return DB::raw('
+        $distanceConditions = [];
+
+        if ($usesLocationsRelation) {
+            $userEquipments = $equipmentModel::with('locations')
+                ->where('user_id', $user->id)
+                ->where('sub_category_id', $subCategory->id)
+                ->get();
+
+            foreach ($userEquipments as $equipment) {
+                foreach ($equipment->locations as $location) {
+                    if ($location->lat && $location->long) {
+                        $distanceConditions[] = DB::raw('
+                    (6371 * acos(cos(radians(' . $location->lat . ')) * cos(radians(lat)) * 
+                    cos(radians(`long`) - radians(' . $location->long . ')) + sin(radians(' . $location->lat . ')) * 
+                    sin(radians(lat)))) <= search_radius
+                ');
+                    }
+                }
+            }
+        } else {
+            $userEquipments = $equipmentModel::select(['id', 'lat', 'long'])
+                ->where('user_id', $user->id)
+                ->where('sub_category_id', $subCategory->id)
+                ->whereNotNull('lat')
+                ->whereNotNull('long')
+                ->get();
+
+            $distanceConditions = $userEquipments->map(function ($equipment) {
+                return DB::raw('
             (6371 * acos(cos(radians(' . $equipment->lat . ')) * cos(radians(lat)) * 
             cos(radians(`long`) - radians(' . $equipment->long . ')) + sin(radians(' . $equipment->lat . ')) * 
             sin(radians(lat)))) <= search_radius
         ');
-        })->toArray();
+            })->toArray();
+        }
 
         $countOfRequests = $categoryModel::where('sub_category_id', $subCategory->id)
             ->where('user_id', '<>', $user->id)
             ->whereDate('max_offer_deadline', '>=', Carbon::today())
-            ->where(function ($query) use ($distanceConditions) {
-                foreach ($distanceConditions as $condition) {
-                    $query->orWhereRaw($condition);
-                }
-            })->count();
+            ->when(!empty($distanceConditions), function ($query) use ($distanceConditions) {
+                $query->where(function ($q) use ($distanceConditions) {
+                    foreach ($distanceConditions as $condition) {
+                        $q->orWhereRaw($condition);
+                    }
+                });
+            })
+            ->count();
 
         $countOfOffers = NewProposal::whereHas('request.requestable', function ($query) use ($categoryModel, $user, $subCategory) {
             $query->where('user_id', $user->id)
