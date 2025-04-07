@@ -5,17 +5,16 @@ namespace App\Http\Controllers\Api\Freelancer;
 use DateTime;
 use App\Enums\MachineType;
 use App\Enums\OperationType;
-use Illuminate\Validation\Rule;
 use App\Models\{NewProposal, User};
 use App\Http\Controllers\Controller;
 use Illuminate\Validation\Rules\Enum;
 use App\Jobs\sendOfferNotificationJob;
-use App\Services\OfferManagementService;
 use Illuminate\Support\Facades\Validator;
 use Modules\Service\Entities\SubCategory;
 use Illuminate\Http\{Request, JsonResponse};
 use App\Http\Requests\StoreNewProposalRequest;
 use App\Http\Requests\offers\UpdateOfferRequest;
+use App\Services\OfferManagementService;
 
 class OffersManageController extends Controller
 {
@@ -57,19 +56,21 @@ class OffersManageController extends Controller
         $user = auth('sanctum')->user();
         $validatedData['user_id'] = $user->id;
 
-        $requestValidator = Validator::make($validatedData, [
-            'request_id' => [
-                Rule::unique('new_proposals')->where(function ($query) use ($user) {
-                    return $query->where('user_id', $user->id);
-                }),
-            ],
-        ], [
-            'request_id.unique' => 'This offer has already been submitted by this user.',
-        ]);
+        // $requestValidator = Validator::make($validatedData, [
+        //     'request_id' => [
+        //         Rule::unique('new_proposals')->where(function ($query) use ($user) {
+        //             return $query->where('user_id', $user->id);
+        //         }),
+        //     ],
+        // ], [
+        //     'request_id.unique' => 'This offer has already been submitted by this user.',
+        // ]);
 
-        if ($requestValidator->fails()) {
-            return response()->json($requestValidator->errors(), 422);
-        }
+        // if ($requestValidator->fails()) {
+        //     return response()->json($requestValidator->errors(), 422);
+        // }
+
+        $proposal = $this->offerService->createOffer($validatedData, $modelClass);
 
         $proposal = $this->offerService->createOffer($validatedData, $modelClass);
 
