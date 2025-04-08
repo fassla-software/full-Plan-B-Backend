@@ -7,6 +7,7 @@ use Modules\Service\Entities\Category;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Service\Entities\SubCategory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ScaffoldingAndMetalFormworkRental extends Model
 {
@@ -19,10 +20,7 @@ class ScaffoldingAndMetalFormworkRental extends Model
         'sub_category_id',
         'user_id',
         'category_id',
-        'lat',
-        'long',
         'special_rental_conditions',
-        'current_equipment_location',
         'equipment_images',
     ];
 
@@ -39,5 +37,10 @@ class ScaffoldingAndMetalFormworkRental extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function locations(): HasMany
+    {
+        return $this->hasMany(ScaffoldingRentalLocation::class, 'scaffolding_rental_id');
     }
 }

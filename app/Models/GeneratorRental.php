@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Modules\Service\Entities\SubCategory;
 use PhpOffice\PhpSpreadsheet\Calculation\Category;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class GeneratorRental extends Model
 {
@@ -17,10 +18,7 @@ class GeneratorRental extends Model
         'sub_category_id',
         'user_id',
         'category_id',
-        'lat',
-        'long',
         'special_rental_conditions',
-        'current_generator_location',
     ];
 
     public function category()
@@ -36,5 +34,10 @@ class GeneratorRental extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function locations(): HasMany
+    {
+        return $this->hasMany(generatorRentalLocation::class, 'generator_rental_id');
     }
 }

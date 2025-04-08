@@ -36,6 +36,15 @@ class ScaffoldingJobRequest extends FormRequest
             'scaffolding_base_mounting_floor_pictures' => 'nullable|string',
             'work_wall_pictures' => 'nullable|string',
             'work_site_location' => 'nullable|string',
+
+            'rental_period' => 'nullable|string',
+            'roof_area' => 'nullable|string',
+            'concrete_thickness' => 'nullable|string',
+            'floor_number' => 'nullable|string',
+            'roof_height' => 'nullable|string',
+            'engineering_drawings_images' => 'nullable|string',
+            'concrete_thickness_varies' => 'nullable|in:0,1',
+
             'search_radius' => 'nullable',
             'max_arrival_date' => 'nullable|date',
             'max_offer_deadline' => 'nullable|date',

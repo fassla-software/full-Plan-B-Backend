@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\DB;
 use App\Traits\PushNotificationTrait;
+use App\Notifications\NewRequestNotification;
 
 class RequestManagementService
 {
@@ -11,28 +11,16 @@ class RequestManagementService
 
     function pushNotification($request, $subCategory)
     {
-        $tokens = $this->getAllAvailableUsersForSendNotiication($request, $subCategory);
-        $title = "New Request Available!";
-        $body = "A user is looking for services like yours. Don’t miss the chance—send your offer now!";
-        $data = [
-            "request" => $request,
-        ];
-
-        return $this->sendMulticastNotification($tokens, $title, $body, $data);
-    }
-
-    function getAllAvailableUsersForSendNotiication($request, $subCategory): array
-    {
         $nearbyEquipments = getEquipmentModelFromType($subCategory)::with('user')
             ->where('user_id', '<>', $request->user_id)
             ->where('sub_category_id', $request->sub_category_id)
             ->whereNotNull('lat')
             ->whereNotNull('long')
             ->whereRaw('
-        (6371 * acos(cos(radians(?)) * cos(radians(lat)) * 
-        cos(radians(`long`) - radians(?)) + sin(radians(?)) * 
-        sin(radians(lat)))) <= ?
-    ', [
+            (6371 * acos(cos(radians(?)) * cos(radians(lat)) * 
+            cos(radians(`long`) - radians(?)) + sin(radians(?)) * 
+            sin(radians(lat)))) <= ?
+        ', [
                 $request->lat,
                 $request->long,
                 $request->lat,
@@ -40,11 +28,16 @@ class RequestManagementService
             ])
             ->get();
 
-
-        $firebaseTokens = $nearbyEquipments
+        $users = $nearbyEquipments
             ->pluck('user')
             ->filter()
-            ->unique('id')
+            ->unique('id');
+
+        foreach ($users as $user) {
+            $user->notify(new NewRequestNotification($request));
+        }
+
+        $tokens = $users
             ->map(function ($user) {
                 return $user->routeNotificationForFcm();
             })
@@ -52,6 +45,13 @@ class RequestManagementService
             ->values()
             ->toArray();
 
-        return $firebaseTokens;
+        $title = "New Request Available!";
+        $body = "A user is looking for services like yours. Don’t miss the chance—send your offer now!";
+        $data = [
+            "request_id" => $request->id,
+            "sender_id" => $request->user_id
+        ];
+
+        return $this->sendMulticastNotification($tokens, $title, $body, $data);
     }
 }

@@ -22,11 +22,7 @@ return new class extends Migration
 
             $table->unsignedBigInteger('category_id')->nullable();
             $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
-
-            $table->decimal('lat', 10, 7)->nullable();
-            $table->decimal('long', 10, 7)->nullable();
             $table->text('special_rental_conditions')->nullable(); // اضف الشروط الخاصة بتأجير هذه المعدة
-            $table->string('current_generator_location')->nullable(); // موقع المعدة الحالي
             $table->timestamps();
         });
     }

@@ -5,8 +5,6 @@ namespace App\Notifications;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Notifications\Messages\BroadcastMessage;
 
 class NewProposalReceived extends Notification implements ShouldBroadcast
 {
@@ -21,29 +19,17 @@ class NewProposalReceived extends Notification implements ShouldBroadcast
 
     public function via($notifiable)
     {
-        return ['database', 'broadcast'];
+        return ['database'];
     }
 
     public function toArray($notifiable)
     {
         return [
-            'title' => 'New Proposal Received',
-            'message' => 'You have received a new proposal for your request.',
+            'title' => "You've Got a New Offer!",
+            'message' => "Your request just got a response! Open now to review the offer and move forward.",
             'proposal_id' => $this->proposal->id,
             'request_id' => $this->proposal->request_id,
             'sender_id' => $this->proposal->user_id
-        ];
-    }
-
-    public function broadcastOn()
-    {
-        return new PrivateChannel('user.' . $this->proposal->request->user_id);
-    }
-
-    public function broadcastWith()
-    {
-        return [
-            'message' => 'You have a new proposal from user ID ' . $this->proposal->user_id
         ];
     }
 }
