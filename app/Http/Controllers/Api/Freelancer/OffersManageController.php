@@ -9,7 +9,6 @@ use Illuminate\Validation\Rule;
 use App\Models\{NewProposal, User};
 use App\Http\Controllers\Controller;
 use Illuminate\Validation\Rules\Enum;
-use App\Jobs\sendOfferNotificationJob;
 use App\Services\OfferManagementService;
 use Illuminate\Support\Facades\Validator;
 use Modules\Service\Entities\SubCategory;
@@ -73,6 +72,8 @@ class OffersManageController extends Controller
 
         $proposal = $this->offerService->createOffer($validatedData, $modelClass);
 
+        $proposal = $this->offerService->createOffer($validatedData, $modelClass);
+
         $currentSubscripiton = getCurrentUserSubsicription($user);
         if ($currentSubscripiton) {
             minusUserAvailableLimit($currentSubscripiton, OperationType::makeOffer);
@@ -81,7 +82,9 @@ class OffersManageController extends Controller
         $recipientUser = User::find($requestEntry->user_id);
 
         // send notification via firebase
-        sendOfferNotificationJob::dispatch($recipientUser, $proposal);
+        $this->offerService->pushNotification($recipientUser, $proposal);
+
+        // sendOfferNotificationJob::dispatch($recipientUser, $proposal->withoutRelations());
 
         return response()->json([
             'message' => 'Proposal created successfully.',
@@ -193,7 +196,7 @@ class OffersManageController extends Controller
                 'user:id,first_name,last_name,image',
                 'request:id,requestable_id,requestable_type',
                 'request.requestable:id,size,work_site_location,hour,day,month',
-                'generatorOfferDetails',
+                'generatorDetails',
                 'scaffoldingOfferDetails',
             ])->whereHas('request', function ($query) use ($categoryModel, $job_id) {
                 $query->where('requestable_type', $categoryModel)
@@ -249,7 +252,7 @@ class OffersManageController extends Controller
                 'user:id,first_name,last_name,image',
                 'request:id,requestable_id,requestable_type',
                 'request.requestable:id,size,work_site_location,hour,day,month',
-                'generatorOfferDetails',
+                'generatorDetails',
                 'scaffoldingOfferDetails',
             ])
             ->where('id', $offer_id)
@@ -290,7 +293,7 @@ class OffersManageController extends Controller
 
         $offer = NewProposal::with([
             'user:id,first_name,last_name,experience_level,email,phone,image',
-            'generatorOfferDetails',
+            'generatorDetails',
             'scaffoldingOfferDetails',
         ])->findOrFail($offer_id);
 
@@ -355,7 +358,7 @@ class OffersManageController extends Controller
         if (!$equipment) return response()->json(['message' => 'there is no equipment']);
 
         $additionalImages = collect($equipment->additional_equipment_images ?? [])
-            ->map(fn($image) => asset('storage/assets/uploads/equipments/' . $image))
+            ->map(fn($image) => asset('storage/assets/uploads/sub-category-images/' . $image))
             ->all();
 
         return response()->json([
@@ -363,22 +366,22 @@ class OffersManageController extends Controller
             'data' => [
                 'name' => $equipment->subCategory?->getTranslatedName($locale),
                 'data_certificate_image' => $equipment->data_certificate_image
-                    ? asset('storage/assets/uploads/equipments/' . $equipment->data_certificate_image)
+                    ? asset('storage/assets/uploads/sub-category-images/' . $equipment->data_certificate_image)
                     : null,
                 'driver_license_front_image' => $equipment->driver_license_front_image
-                    ? asset('storage/assets/uploads/equipments/' . $equipment->driver_license_front_image)
+                    ? asset('storage/assets/uploads/sub-category-images/' . $equipment->driver_license_front_image)
                     : null,
                 'driver_license_back_image' => $equipment->driver_license_back_image
-                    ? asset('storage/assets/uploads/equipments/' . $equipment->driver_license_back_image)
+                    ? asset('storage/assets/uploads/sub-category-images/' . $equipment->driver_license_back_image)
                     : null,
                 'tractor_license_front_image' => $equipment->tractor_license_front_image
-                    ? asset('storage/assets/uploads/equipments/' . $equipment->tractor_license_front_image)
+                    ? asset('storage/assets/uploads/sub-category-images/' . $equipment->tractor_license_front_image)
                     : null,
                 'tractor_license_back_image' => $equipment->tractor_license_back_image
-                    ? asset('storage/assets/uploads/equipments/' . $equipment->tractor_license_back_image)
+                    ? asset('storage/assets/uploads/sub-category-images/' . $equipment->tractor_license_back_image)
                     : null,
                 'flatbed_license_front_image' => $equipment->flatbed_license_front_image
-                    ? asset('storage/assets/uploads/equipments/' . $equipment->flatbed_license_front_image)
+                    ? asset('storage/assets/uploads/sub-category-images/' . $equipment->flatbed_license_front_image)
                     : null,
                 'additional_equipment_images' => $additionalImages,
             ]
@@ -420,8 +423,19 @@ class OffersManageController extends Controller
 
         $equipmentModel = getEquipmentModelFromType($jobType);
 
-        $equipment = $equipmentModel::where('user_id', $user_id)
-            ->where('sub_category_id', $proposal->request->requestable->subCategory->id)->first();
+        $query = $equipmentModel::where('user_id', $user_id)
+            ->where('sub_category_id', $proposal->request->requestable->subCategory->id);
+
+        $needsLocations = in_array($equipmentModel, [
+            \App\Models\GeneratorRental::class,
+            \App\Models\ScaffoldingAndMetalFormworkRental::class
+        ]);
+
+        if ($needsLocations) {
+            $query->with('locations');
+        }
+
+        $equipment = $query->first();
 
         if (!$equipment) return response()->json(['message' => 'there is no equipment']);
 
@@ -469,6 +483,7 @@ class OffersManageController extends Controller
                 404
             );
         }
+
         $newProposal->update($request->validated());
 
         $user = auth('sanctum')->user();
@@ -480,7 +495,7 @@ class OffersManageController extends Controller
         return response()->json(
             [
                 'message' => 'Offer updated successfully',
-                'offer' => $newProposal->load(['generatorOfferDetails', 'scaffoldingOfferDetails']),
+                'offer' => $newProposal->refresh()->load(['generatorDetails', 'scaffoldingOfferDetails']),
             ]
         );
     }
@@ -545,7 +560,7 @@ class OffersManageController extends Controller
         return response()->json([
             'rank' => $rank,
             'total_offers' => $sortedOffers->count(),
-            'offer' => $newProposal->load(['generatorOfferDetails', 'scaffoldingOfferDetails']),
+            'offer' => $newProposal->load(['generatorDetails', 'scaffoldingOfferDetails']),
         ]);
     }
 
