@@ -17,6 +17,7 @@ class GeneratorOfferDetails extends Model
         'max_number_of_continues_operating_houres',
         'number_of_daily_operating_houres',
         'generator_images',
+        'generator_status',
     ];
 
     protected $casts = [

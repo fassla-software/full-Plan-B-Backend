@@ -26,7 +26,10 @@ class CommercialListingController extends Controller
 
         try {
             $logoPath = $request->file('logo')->store('commercial-listings', 'public');
+<<<<<<< Updated upstream
             
+=======
+>>>>>>> Stashed changes
             return response()->json([
                 'status' => true,
                 'message' => 'Image uploaded successfully',
@@ -34,7 +37,10 @@ class CommercialListingController extends Controller
                     'logo' => $logoPath
                 ]
             ], 201);
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
@@ -71,7 +77,10 @@ class CommercialListingController extends Controller
                 'message' => 'Commercial listing created successfully',
                 'data' => $listing
             ], 201);
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,

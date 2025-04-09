@@ -24,7 +24,7 @@ class StoreNewProposalRequest extends FormRequest
         return [
             'price' => 'required|string|min:0',
             'per' => 'required|in:day,week,year,month,hour',
-            'current_location' => 'required|string|max:255',
+            'current_location' => 'nullable|string|max:255',
             'offer_ends_at' => 'required|string',
             'other_terms' => 'nullable|string',
 
@@ -34,6 +34,7 @@ class StoreNewProposalRequest extends FormRequest
             'max_number_of_continues_operating_houres' => 'nullable|string',
             'number_of_daily_operating_houres' => 'nullable|string',
             'generator_images' => 'nullable',
+            'generator_status' => 'nullable|string',
 
             // scaffolding attrs
             'time_required_for_on_site_installation' => 'nullable|string',

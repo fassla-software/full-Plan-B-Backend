@@ -291,8 +291,11 @@ class RequestsManageController extends Controller
         }
 
         $data['remaining_time'] = $this->getRemainingTimeForRequestAvailability($data->max_offer_deadline);
-        $data['offer'] = $data->request?->newProposals
-            ->where('user_id', $user->id)->first();
+
+        $data['offer'] = $data->request?->newProposals()
+            ->with(['generatorDetails', 'scaffoldingOfferDetails'])
+            ->where('user_id', $user->id)
+            ->first();
 
         if ($data->user && $data->user->image) {
             $data->user->image = asset('storage/assets/uploads/users/' . $data->user->image);

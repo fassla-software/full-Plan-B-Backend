@@ -36,7 +36,7 @@ class OfferManagementService
             'request_id' => $validatedData['request_id'],
             'price' => $validatedData['price'],
             'per' => $validatedData['per'],
-            'current_location' => $validatedData['current_location'],
+            'current_location' => $validatedData['current_location'] ?? null,
             'offer_ends_at' => $validatedData['offer_ends_at'],
             'other_terms' => $validatedData['other_terms'],
         ]);
@@ -48,6 +48,7 @@ class OfferManagementService
                 'max_number_of_continues_operating_houres' => $validatedData['max_number_of_continues_operating_houres'],
                 'number_of_daily_operating_houres' => $validatedData['number_of_daily_operating_houres'],
                 'generator_images' => $validatedData['generator_images'],
+                'generator_status' => $validatedData['generator_status'],
             ]);
 
             $proposal->update([
