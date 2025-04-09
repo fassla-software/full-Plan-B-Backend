@@ -19,6 +19,7 @@ class GeneratorRental extends Model
         'user_id',
         'category_id',
         'special_rental_conditions',
+        'rental_status',
     ];
 
     public function category()

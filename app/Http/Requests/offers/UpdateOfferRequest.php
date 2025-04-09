@@ -28,6 +28,18 @@ class UpdateOfferRequest extends FormRequest
             'offer_ends_at'    => ['nullable', 'date', 'after_or_equal:today'],
             'other_terms'      => ['nullable', 'string'],
             'isSeen'           => ['nullable', 'integer', 'in:0,1'],
+
+            // generator attrs
+            'model'                                    => ['nullable', 'string'],
+            'generator_power'                          => ['nullable', 'string'],
+            'max_number_of_continues_operating_houres' => ['nullable', 'string'],
+            'number_of_daily_operating_houres'         => ['nullable', 'string'],
+            'generator_images'                         => ['nullable'],
+            'generator_status'                         => ['nullable', 'string'],
+
+            // scaffolding attrs
+            'time_required_for_on_site_installation' => ['nullable', 'string'],
+            'scaffolding_images'                     => ['nullable', 'string'],
         ];
     }
 }

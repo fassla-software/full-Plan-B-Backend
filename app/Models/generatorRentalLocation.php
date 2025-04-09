@@ -14,7 +14,7 @@ class generatorRentalLocation extends Model
         'generator_rental_id',
         'lat',
         'long',
-        'current_generator_location',
+        'current_equipment_location',
     ];
 
     public function generator(): BelongsTo

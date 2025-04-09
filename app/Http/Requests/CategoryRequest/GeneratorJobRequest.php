@@ -38,8 +38,7 @@ class GeneratorJobRequest extends FormRequest
             'long' => 'nullable',
             'isStopped' => 'nullable|in:0,1',
             'isSeen' => 'nullable|in:0,1',
-
-            'rental_status' => 'nullable|in:renting,supply',
+            'rental_status' => 'nullable|in:Renting,Supply',
             'no_harm_in_good_health' => 'nullable|in:0,1',
         ];
     }

@@ -78,10 +78,10 @@ class NewCategoryController extends Controller
             $model = $models[$subCategory];
             $result = $model::create($validatedData);
 
-            if ($model ==  \App\Models\GeneratorRental::class) {
-                $latitudes = $validatedData['lat'] ?? [];
-                $longitudes = $validatedData['long'] ?? [];
-                $locations = $validatedData['current_generator_location'] ?? [];
+            if ($model == \App\Models\GeneratorRental::class) {
+                $latitudes = json_decode($validatedData['lat'] ?? '[]', true);
+                $longitudes = json_decode($validatedData['long'] ?? '[]', true);
+                $locations = json_decode($validatedData['current_equipment_location'] ?? '[]', true);
 
                 foreach ($latitudes as $index => $lat) {
                     $long = $longitudes[$index] ?? null;
@@ -94,14 +94,14 @@ class NewCategoryController extends Controller
                     generatorRentalLocation::create([
                         'lat' => $lat,
                         'long' => $long,
-                        'current_generator_location' => $location,
+                        'current_equipment_location' => $location,
                         'generator_rental_id' => $result->id,
                     ]);
                 }
-            } elseif ($model ==  \App\Models\ScaffoldingAndMetalFormworkRental::class) {
-                $latitudes = $validatedData['lat'] ?? [];
-                $longitudes = $validatedData['long'] ?? [];
-                $locations = $validatedData['current_equipment_location'] ?? [];
+            } elseif ($model == \App\Models\ScaffoldingAndMetalFormworkRental::class) {
+                $latitudes = json_decode($validatedData['lat'] ?? '[]', true);
+                $longitudes = json_decode($validatedData['long'] ?? '[]', true);
+                $locations = json_decode($validatedData['current_equipment_location'] ?? '[]', true);
 
                 foreach ($latitudes as $index => $lat) {
                     $long = $longitudes[$index] ?? null;
@@ -115,7 +115,7 @@ class NewCategoryController extends Controller
                         'lat' => $lat,
                         'long' => $long,
                         'current_equipment_location' => $location,
-                        'generator_rental_id' => $result->id,
+                        'scaffolding_rental_id' => $result->id,
                     ]);
                 }
             }

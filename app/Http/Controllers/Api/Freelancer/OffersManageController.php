@@ -72,8 +72,6 @@ class OffersManageController extends Controller
 
         $proposal = $this->offerService->createOffer($validatedData, $modelClass);
 
-        $proposal = $this->offerService->createOffer($validatedData, $modelClass);
-
         $currentSubscripiton = getCurrentUserSubsicription($user);
         if ($currentSubscripiton) {
             minusUserAvailableLimit($currentSubscripiton, OperationType::makeOffer);
@@ -484,7 +482,7 @@ class OffersManageController extends Controller
             );
         }
 
-        $newProposal->update($request->validated());
+        $newProposal = $this->offerService->updateOffer($request->validated(), $newProposal);
 
         $user = auth('sanctum')->user();
         $currentSubscripiton = getCurrentUserSubsicription($user);
@@ -495,7 +493,7 @@ class OffersManageController extends Controller
         return response()->json(
             [
                 'message' => 'Offer updated successfully',
-                'offer' => $newProposal->load(['generatorDetails', 'scaffoldingOfferDetails']),
+                'offer' => $newProposal,
             ]
         );
     }

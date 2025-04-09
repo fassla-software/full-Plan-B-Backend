@@ -25,10 +25,11 @@ class GeneratorRequest extends FormRequest
             'sub_category_id' => 'nullable|exists:sub_categories,id',
             'category_id' => 'nullable|max:50',
             'name' => 'nullable|string',
-            'current_generator_location' => 'nullable|array',
-            'lat' => 'nullable|array',
-            'long' => 'nullable|array',
+            'current_equipment_location' => 'nullable',
+            'lat' => 'nullable',
+            'long' => 'nullable',
             'special_rental_conditions' => 'nullable|string|max:500',
+            'rental_status' => 'nullable|in:Renting,Supply',
         ];
     }
 }

@@ -8,6 +8,7 @@ use App\Models\GeneratorOfferDetails;
 use App\Traits\PushNotificationTrait;
 use App\Models\ScaffoldingOfferDetails;
 use App\Notifications\NewProposalReceived;
+use App\Http\Requests\offers\UpdateOfferRequest;
 
 class OfferManagementService
 {
@@ -66,5 +67,39 @@ class OfferManagementService
         }
 
         return $proposal->load(['generatorDetails', 'scaffoldingOfferDetails']);
+    }
+
+    function updateOffer(UpdateOfferRequest $request, NewProposal $newProposal): NewProposal
+    {
+        $validatedData = $request->validated();
+
+        $newProposal->update([
+            'price' => $validatedData['price'] ?? null,
+            'per' => $validatedData['per'] ?? null,
+            'current_location' => $validatedData['current_location'] ?? null,
+            'offer_ends_at' => $validatedData['offer_ends_at'] ?? null,
+            'other_terms' => $validatedData['other_terms'] ?? null,
+            'isSeen' => $validatedData['isSeen'] ?? null,
+        ]);
+
+        if ($newProposal->generatorDetails) {
+            $generatorOfferDetails = $newProposal->generatorDetails;
+            $generatorOfferDetails->update([
+                'model' => $validatedData['model'] ?? null,
+                'generator_power' => $validatedData['generator_power'] ?? null,
+                'max_number_of_continues_operating_houres' => $validatedData['max_number_of_continues_operating_houres'] ?? null,
+                'number_of_daily_operating_houres' => $validatedData['number_of_daily_operating_houres'] ?? null,
+                'generator_images' => $validatedData['generator_images'] ?? null,
+                'generator_status' => $validatedData['generator_status'] ?? null,
+            ]);
+        } elseif ($newProposal->scaffoldingOfferDetails) {
+            $scaffoldingDetails = $newProposal->scaffoldingOfferDetails;
+            $scaffoldingDetails->update([
+                'time_required_for_on_site_installation' => $validatedData['time_required_for_on_site_installation'] ?? null,
+                'scaffolding_images' => $validatedData['scaffolding_images'] ?? null,
+            ]);
+        }
+
+        return $newProposal->load(['generatorDetails', 'scaffoldingOfferDetails']);
     }
 }

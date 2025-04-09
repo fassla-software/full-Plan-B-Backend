@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api\Freelancer;
 use App\Enums\MachineType;
 use App\Http\Controllers\Controller;
 use Illuminate\Validation\Rules\Enum;
+use App\Models\generatorRentalLocation;
+use App\Models\ScaffoldingRentalLocation;
 use Modules\Service\Entities\SubCategory;
 use Illuminate\Support\Facades\{Validator};
 use Illuminate\Http\{Request, JsonResponse, Response};
@@ -54,10 +56,12 @@ class MyEquipmentsController extends Controller
                 'user:id,first_name,last_name',
             ]);
 
-        if (
-            $equipment === \App\Models\GeneratorRental::class ||
-            $equipment === \App\Models\ScaffoldingAndMetalFormworkRental::class
-        ) {
+        $hasLocations = in_array($equipment, [
+            \App\Models\GeneratorRental::class,
+            \App\Models\ScaffoldingAndMetalFormworkRental::class,
+        ]);
+
+        if ($hasLocations) {
             $equipmentQuery->with('locations');
         }
 
@@ -67,8 +71,7 @@ class MyEquipmentsController extends Controller
             ->paginate(12)
             ->withQueryString();
 
-        $myEquipments->getCollection()->transform(function ($equipment) {
-            $decodedImages = json_decode($equipment->additional_equipment_images);
+        $myEquipments->getCollection()->transform(function ($equipment) use ($hasLocations) {
 
             $equipment->data_certificate_image = $equipment->data_certificate_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->data_certificate_image) : null;
             $equipment->driver_license_front_image =  $equipment->driver_license_front_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->driver_license_front_image) : null;
@@ -77,9 +80,17 @@ class MyEquipmentsController extends Controller
             $equipment->tractor_license_back_image =  $equipment->tractor_license_back_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->tractor_license_back_image) : null;
             $equipment->flatbed_license_front_image =  $equipment->flatbed_license_front_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->flatbed_license_front_image) : null;
             $equipment->flatbed_license_back_image =  $equipment->flatbed_license_back_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->flatbed_license_back_image) : null;
-            $equipment->additional_equipment_images = $equipment->additional_equipment_images
-                ? array_map(fn($image) =>  $image ? asset('storage/assets/uploads/sub-category-images/' . $image) : null, $decodedImages ?? [])
-                : [];
+            $equipment->additional_equipment_images = collect(json_decode($equipment->additional_equipment_images, true) ?? [])
+                ->map(fn($img) => asset('storage/assets/uploads/sub-category-images/' . $img))
+                ->filter()
+                ->values();
+
+            if ($hasLocations && $equipment->locations) {
+                $equipment->lat = $equipment->locations->pluck('lat')->toArray();
+                $equipment->long = $equipment->locations->pluck('long')->toArray();
+                $equipment->current_equipment_location = $equipment->locations->pluck('current_equipment_location')->toArray();
+            }
+
             return $equipment;
         });
 
@@ -126,7 +137,6 @@ class MyEquipmentsController extends Controller
         $validatedData['user_id'] = $user->id;
 
         $equipment = $equipmentModel::create($validatedData);
-        $decodedImages = json_decode($equipment->additional_equipment_images);
 
         return response()->json([
             'message' => 'Equipment created successfully',
@@ -138,10 +148,10 @@ class MyEquipmentsController extends Controller
                 'tractor_license_back_image' => $equipment->tractor_license_back_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->tractor_license_back_image) : null,
                 'flatbed_license_front_image' => $equipment->flatbed_license_front_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->flatbed_license_front_image) : null,
                 'flatbed_license_back_image' => $equipment->flatbed_license_back_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->flatbed_license_back_image) : null,
-                'additional_equipment_images' => array_map(
-                    fn($image) => $image ? asset('storage/assets/uploads/sub-category-images/' . $image) : null,
-                    $decodedImages ?? []
-                ),
+                'additional_equipment_images' => collect(json_decode($equipment->additional_equipment_images, true) ?? [])
+                    ->map(fn($img) => asset('storage/assets/uploads/sub-category-images/' . $img))
+                    ->filter()
+                    ->values(),
             ]),
         ]);
     }
@@ -175,18 +185,24 @@ class MyEquipmentsController extends Controller
 
         $equipmentQuery = $equipmentModel::query();
 
-        if (
-            $equipmentModel === \App\Models\GeneratorRental::class ||
-            $equipmentModel === \App\Models\ScaffoldingAndMetalFormworkRental::class
-        ) {
+        $hasLocations = in_array($equipmentModel, [
+            \App\Models\GeneratorRental::class,
+            \App\Models\ScaffoldingAndMetalFormworkRental::class,
+        ]);
+
+        if ($hasLocations) {
             $equipmentQuery->with('locations');
         }
 
         $equipment = $equipmentQuery->find($id);
 
-        if (!$equipment) return response()->json(['message' => 'Equipment not found'], Response::HTTP_NOT_FOUND);
+        if ($hasLocations && $equipment->locations) {
+            $equipment->lat = $equipment->locations->pluck('lat')->toArray();
+            $equipment->long = $equipment->locations->pluck('long')->toArray();
+            $equipment->current_equipment_location = $equipment->locations->pluck('current_equipment_location')->toArray();
+        }
 
-        $decodedImages = $equipment->additional_equipment_images ? json_decode($equipment->additional_equipment_images) : null;
+        if (!$equipment) return response()->json(['message' => 'Equipment not found'], Response::HTTP_NOT_FOUND);
 
         return response()->json([
             'equipment' => array_merge($equipment->toArray(), [
@@ -197,9 +213,10 @@ class MyEquipmentsController extends Controller
                 'tractor_license_back_image' => $equipment->tractor_license_back_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->tractor_license_back_image) : null,
                 'flatbed_license_front_image' => $equipment->flatbed_license_front_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->flatbed_license_front_image) : null,
                 'flatbed_license_back_image' => $equipment->flatbed_license_back_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->flatbed_license_back_image) : null,
-                'additional_equipment_images' => $equipment->additional_equipment_images
-                    ? array_map(fn($image) => $image ? asset('storage/assets/uploads/sub-category-images/' . $image) : null, $decodedImages ?? [])
-                    : [],
+                'additional_equipment_images' => collect(json_decode($equipment->additional_equipment_images, true) ?? [])
+                    ->map(fn($img) => asset('storage/assets/uploads/sub-category-images/' . $img))
+                    ->filter()
+                    ->values(),
             ]),
         ]);
     }
@@ -229,7 +246,45 @@ class MyEquipmentsController extends Controller
 
         $equipment->update($validatedData);
 
-        $decodedImages = json_decode($equipment->additional_equipment_images);
+        if ($equipmentModel == \App\Models\GeneratorRental::class) {
+            $latitudes = json_decode($validatedData['lat'] ?? '[]', true);
+            $longitudes = json_decode($validatedData['long'] ?? '[]', true);
+            $locations = json_decode($validatedData['current_generator_location'] ?? '[]', true);
+
+            foreach ($latitudes as $index => $lat) {
+                $long = $longitudes[$index] ?? null;
+                $location = $locations[$index] ?? null;
+
+                if (is_null($lat) || is_null($long) || is_null($location)) {
+                    continue;
+                }
+
+                generatorRentalLocation::create([
+                    'lat' => $lat,
+                    'long' => $long,
+                    'current_generator_location' => $location,
+                ]);
+            }
+        } elseif ($equipmentModel == \App\Models\ScaffoldingAndMetalFormworkRental::class) {
+            $latitudes = json_decode($validatedData['lat'] ?? '[]', true);
+            $longitudes = json_decode($validatedData['long'] ?? '[]', true);
+            $locations = json_decode($validatedData['current_equipment_location'] ?? '[]', true);
+
+            foreach ($latitudes as $index => $lat) {
+                $long = $longitudes[$index] ?? null;
+                $location = $locations[$index] ?? null;
+
+                if (is_null($lat) || is_null($long) || is_null($location)) {
+                    continue;
+                }
+
+                ScaffoldingRentalLocation::create([
+                    'lat' => $lat,
+                    'long' => $long,
+                    'current_equipment_location' => $location,
+                ]);
+            }
+        }
 
         return response()->json([
             'message' => 'Equipment updated successfully',
@@ -241,10 +296,10 @@ class MyEquipmentsController extends Controller
                 'tractor_license_back_image' => $equipment->tractor_license_back_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->tractor_license_back_image) : null,
                 'flatbed_license_front_image' => $equipment->flatbed_license_front_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->flatbed_license_front_image) : null,
                 'flatbed_license_back_image' => $equipment->flatbed_license_back_image ? asset('storage/assets/uploads/sub-category-images/' . $equipment->flatbed_license_back_image) : null,
-                'additional_equipment_images' => array_map(
-                    fn($image) => $image ? asset('storage/assets/uploads/sub-category-images/' . $image) : null,
-                    $decodedImages ?? []
-                ),
+                'additional_equipment_images' => collect(json_decode($equipment->additional_equipment_images, true) ?? [])
+                    ->map(fn($img) => asset('storage/assets/uploads/sub-category-images/' . $img))
+                    ->filter()
+                    ->values(),
             ]),
         ]);
     }
